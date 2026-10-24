@@ -57,6 +57,21 @@ services:
       redis:
         condition: service_healthy
 
+  frontend:
+    build: ./frontend
+    container_name: iqtidorli_frontend
+    restart: always
+    command: npm run dev -- --host 0.0.0.0
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    expose:
+      - "5173"
+    environment:
+      - VITE_API_BASE_URL=/api/v1
+    depends_on:
+      - web
+
   nginx:
     image: nginx:1.27-alpine
     container_name: iqtidorli_nginx
@@ -68,6 +83,7 @@ services:
       - ./app/static:/app/static:ro
     depends_on:
       - web
+      - frontend
 
 volumes:
   postgres_data:
