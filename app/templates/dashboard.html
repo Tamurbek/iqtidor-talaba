@@ -1427,7 +1427,7 @@
                 </h4>
                 <ul style="color: #475569; font-size: 14px; line-height: 1.8; padding-left: 20px;">
                   <li>Jami savollar soni: <strong>30 ta savol</strong> (IQ: 10 ta, Tarix: 10 ta, Chet tili: 10 ta).</li>
-                  <li>Ajratilgan umumiy vaqt: <strong>30 daqiqa</strong> (teskari taymer hisobi bilan).</li>
+                  <li>Ajratilgan umumiy vaqt: <strong>45 daqiqa</strong> (teskari taymer hisobi bilan).</li>
                   <li>Maksimal to'plash mumkin bo'lgan ball: <strong>40 ball</strong>.</li>
                   <li>IQ savollari: <strong>har biri 2 balldan</strong> (jami 20 ball).</li>
                   <li>O'zbekiston tarixi: <strong>har biri 1 balldan</strong> (jami 10 ball).</li>
@@ -1501,7 +1501,7 @@
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                <span style="font-size: 16px; font-weight: 800; color: #f2721c; font-family: monospace;" id="examTimerDisplay">30:00</span>
+                <span style="font-size: 16px; font-weight: 800; color: #f2721c; font-family: monospace;" id="examTimerDisplay">45:00</span>
               </div>
             </div>
 
@@ -1911,7 +1911,7 @@ let examQuestionsList = [];
 let examUserAnswers = {};
 let currentExamQIndex = 0;
 let examTimerInterval = null;
-let examSecondsRemaining = 30 * 60; // 30 minutes
+let examSecondsRemaining = 45 * 60; // 45 minutes (server-anchored, see /exam/start)
 
 function startFreshExam() {
   document.getElementById('examResultView').style.display = 'none';
@@ -1924,10 +1924,17 @@ async function launchInteractiveExam() {
   try {
     const res = await fetch('/api/v1/exam/questions');
     const data = await res.json();
-    
+
     if (data.already_passed && !confirm("Siz ushbu sinovdan avval o'tgansiz. Yangidan mashq sifatida ishlashni xohlaysizmi?")) {
       return;
     }
+
+    // Anchor the 45-minute clock server-side. If an attempt is already in
+    // progress (e.g. the page was refreshed), the server returns the real
+    // remaining time instead of resetting it.
+    const startRes = await fetch('/api/v1/exam/start', { method: 'POST' });
+    const startData = await startRes.json();
+    if (!startRes.ok) throw new Error(startData.detail || "Imtihonni boshlab bo'lmadi");
 
     const sections = data.sections;
     examQuestionsList = [
@@ -1938,7 +1945,7 @@ async function launchInteractiveExam() {
 
     examUserAnswers = {};
     currentExamQIndex = 0;
-    examSecondsRemaining = 30 * 60;
+    examSecondsRemaining = startData.remaining_seconds;
 
     // Switch Views
     document.getElementById('examIntroView').style.display = 'none';
@@ -2097,7 +2104,7 @@ function startExamTimer() {
       display.innerText = '00:00';
       openAlertModal({
         title: "Vaqt tugadi!",
-        message: "Ajratilgan 30 daqiqa vaqt nihoyasiga yetdi. Javoblaringiz avtomatik hisoblanmoqda...",
+        message: "Ajratilgan 45 daqiqa vaqt nihoyasiga yetdi. Javoblaringiz avtomatik hisoblanmoqda...",
         type: "warning"
       });
       sendExamToServer();

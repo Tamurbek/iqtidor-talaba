@@ -1,9 +1,11 @@
 import time
 import random
+import uuid
 import logging
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, desc
 from datetime import datetime
 
@@ -15,6 +17,11 @@ from app.api.deps import get_current_student
 logger = logging.getLogger("iqtidorli_exam")
 
 router = APIRouter(prefix="/exam", tags=["Stage-1 Online Exam"])
+
+# TTZ 4.4: Stage-1 remote test is time-boxed to 45 minutes, enforced server-side
+# (the client-side countdown is a display only; the clock anchor below is authoritative).
+EXAM_DURATION_SECONDS = 45 * 60
+EXAM_GRACE_SECONDS = 120  # network/processing slack for the final auto-submit
 
 # ==============================================================================
 # OFFICIAL QUESTION BANK (NIZOM MEZONLARI: IQ 20 ball, TARIX 10 ball, TIL 10 ball)
@@ -334,9 +341,16 @@ async def get_exam_questions(db: AsyncSession = Depends(get_db), student: User =
             })
         clean_bank[section_name] = clean_list
 
+    remaining_seconds = EXAM_DURATION_SECONDS
+    if student.exam_started_at:
+        elapsed = (datetime.utcnow() - student.exam_started_at).total_seconds()
+        remaining_seconds = max(0, int(EXAM_DURATION_SECONDS - elapsed))
+
     return {
         "already_passed": bool(existing and existing.status == "passed"),
-        "duration_minutes": 30,
+        "duration_minutes": EXAM_DURATION_SECONDS // 60,
+        "started_at": student.exam_started_at.isoformat() if student.exam_started_at else None,
+        "remaining_seconds": remaining_seconds,
         "total_questions": 30,
         "max_score": 40.0,
         "sections": clean_bank,
@@ -344,6 +358,37 @@ async def get_exam_questions(db: AsyncSession = Depends(get_db), student: User =
             "total_score": existing.total_score,
             "certificate_number": existing.certificate_number
         } if existing else None
+    }
+
+# 2b. Start (or resume) the exam clock — anchors the 45-minute window server-side
+@router.post("/start")
+async def start_exam(db: AsyncSession = Depends(get_db), student: User = Depends(get_current_student)):
+    res = await db.execute(
+        select(StudentExamResult)
+        .where(StudentExamResult.user_id == student.id)
+        .order_by(desc(StudentExamResult.id))
+        .limit(1)
+    )
+    existing = res.scalars().first()
+    if existing and existing.status == "passed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Siz 1-bosqich sinov imtihonidan allaqachon muvaffaqiyatli o'tgansiz va sertifikat olgansiz."
+        )
+
+    # Don't reset an already-running clock — refreshing the page must not grant extra time.
+    if not student.exam_started_at:
+        student.exam_started_at = datetime.utcnow()
+        db.add(student)
+        await db.commit()
+
+    elapsed = (datetime.utcnow() - student.exam_started_at).total_seconds()
+    remaining_seconds = max(0, int(EXAM_DURATION_SECONDS - elapsed))
+
+    return {
+        "started_at": student.exam_started_at.isoformat(),
+        "duration_seconds": EXAM_DURATION_SECONDS,
+        "remaining_seconds": remaining_seconds
     }
 
 # 3. Submit Exam Answers
@@ -403,29 +448,62 @@ async def submit_exam_answers(answers: Dict[str, str], db: AsyncSession = Depend
             detail="Imtihonni qayta topshirishdan oldin kamida 1 daqiqa kutishingiz lozim."
         )
 
-    # Generate unique, collision-proof certificate serial
-    import uuid
-    unique_suffix = uuid.uuid4().hex[:6].upper()
-    cert_num = f"IQTIDOR-2026-{student.hemis_id[-4:]}-{unique_suffix}"
+    # Server-side 45-minute enforcement (TTZ 4.4): the exam must have been
+    # anchored via POST /exam/start, and the submission must land within the
+    # allotted window + grace period. Without this, a student could keep
+    # refreshing the page to dodge the client-only countdown indefinitely.
+    if not student.exam_started_at:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Imtihon boshlanmagan. Avval imtihonni boshlang (/exam/start)."
+        )
+    elapsed_seconds = (datetime.utcnow() - student.exam_started_at).total_seconds()
+    timed_out = elapsed_seconds > (EXAM_DURATION_SECONDS + EXAM_GRACE_SECONDS)
+    if timed_out:
+        status_str = "failed"
 
-    new_result = StudentExamResult(
-        user_id=student.id,
-        hemis_id=student.hemis_id,
-        student_name=student.full_name,
-        faculty=student.faculty or "Amaliy matematika va axborot texnologiyalari",
-        iq_score=iq_score,
-        history_score=history_score,
-        lang_score=lang_score,
-        total_score=total_score,
-        percentage=percentage,
-        status=status_str,
-        certificate_number=cert_num,
-        answers_summary=f"To'g'ri javoblar: {correct_count}/{total_q_count}"
-    )
-
-    db.add(new_result)
-    await db.commit()
+    # Generate a unique certificate serial, retrying on the rare UUID collision
+    # against the DB's unique constraint instead of letting it surface as a 500.
+    new_result = None
+    for attempt in range(5):
+        unique_suffix = uuid.uuid4().hex[:6].upper()
+        cert_num = f"IQTIDOR-2026-{student.hemis_id[-4:]}-{unique_suffix}"
+        new_result = StudentExamResult(
+            user_id=student.id,
+            hemis_id=student.hemis_id,
+            student_name=student.full_name,
+            faculty=student.faculty or "Amaliy matematika va axborot texnologiyalari",
+            iq_score=iq_score,
+            history_score=history_score,
+            lang_score=lang_score,
+            total_score=total_score,
+            percentage=percentage,
+            status=status_str,
+            certificate_number=cert_num,
+            answers_summary=(
+                f"To'g'ri javoblar: {correct_count}/{total_q_count}"
+                + (" (Vaqt tugaganidan keyin topshirildi)" if timed_out else "")
+            )
+        )
+        db.add(new_result)
+        try:
+            await db.commit()
+            break
+        except IntegrityError:
+            await db.rollback()
+            db.expunge(new_result)
+            new_result = None
+    if new_result is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Sertifikat raqamini generatsiya qilishda xatolik. Qayta urinib ko'ring."
+        )
     await db.refresh(new_result)
+
+    # Clear the clock anchor so the next attempt (if this one failed) starts a fresh window.
+    student.exam_started_at = None
+    db.add(student)
+    await db.commit()
 
     return {
         "success": True,
@@ -438,5 +516,9 @@ async def submit_exam_answers(answers: Dict[str, str], db: AsyncSession = Depend
         "certificate_number": cert_num,
         "correct_answers": correct_count,
         "total_questions": total_q_count,
-        "message": "Tabriklaymiz! 1-bosqich sinov imtihonidan muvaffaqiyatli o'tdingiz!" if status_str == "passed" else "Natija 60% dan past bo'ldi."
+        "message": (
+            "Vaqt tugagani sababli imtihon muvaffaqiyatsiz deb belgilandi." if timed_out
+            else "Tabriklaymiz! 1-bosqich sinov imtihonidan muvaffaqiyatli o'tdingiz!" if status_str == "passed"
+            else "Natija 60% dan past bo'ldi."
+        )
     }

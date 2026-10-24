@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, text
 from jose import jwt, JWTError
 
 from app.core.config import settings
@@ -30,7 +30,16 @@ async def lifespan(app: FastAPI):
     try:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        
+            # Lightweight column migration (no Alembic in this project yet):
+            # adds exam_started_at to pre-existing `users` tables that predate it.
+            try:
+                if conn.dialect.name == "postgresql":
+                    await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS exam_started_at TIMESTAMP"))
+                else:
+                    await conn.execute(text("ALTER TABLE users ADD COLUMN exam_started_at DATETIME"))
+            except Exception:
+                pass  # column already exists
+
         async with AsyncSessionLocal() as session:
             await seed_initial_data(session)
         logger.info("Database initialized and seeded successfully.")

@@ -32,6 +32,9 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     eimzo_serial = Column(String(100), nullable=True, index=True)  # Authorized E-IMZO key serial number
 
+    # Server-side anchor for the 45-minute Stage-1 exam timer (TTZ 4.4)
+    exam_started_at = Column(DateTime, nullable=True)
+
     # Ilmiy rahbar va tadqiqot mavzusi (Scientific Advisor / Supervisor)
     supervisor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     supervisor_name = Column(String(255), nullable=True) # F.I.O. (masalan: prof. Turakulov Olim Xolbutayevich)
