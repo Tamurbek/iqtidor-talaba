@@ -18,6 +18,7 @@ class ContestApplication(Base):
     portfolio_score = Column(Float, default=0.0)
     gpa = Column(Float, default=5.0)
     social_points = Column(Float, default=0.0)
+    nomination = Column(String(255), nullable=True)
     
     status = Column(String(50), default="pending")  # pending, under_review, approved, rejected
     decision_note = Column(Text, nullable=True)

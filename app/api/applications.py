@@ -9,12 +9,49 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.achievement import StudentAchievement
 from app.models.application import ContestApplication
+from app.models.exam import StudentExamResult
 from app.schemas.application import ApplicationCreate, ApplicationReview, ApplicationResponse
 from app.api.deps import get_current_student, require_permission
 
 logger = logging.getLogger("iqtidorli_applications")
 
 router = APIRouter(prefix="/applications", tags=["Contest Applications"])
+
+# ==============================================================================
+# Nizom 1-ilova: 6 ta nominatsiyaga ta'lim yo'nalishi bo'yicha avtomatik saralash
+# ==============================================================================
+NOMINATIONS = {
+    "yangi_avlod": "“Yangi avlod yaratuvchisi” nominatsiyasi",
+    "zukko": "“Zukko” nominatsiyasi",
+    "tamaddun": "“Tamaddun” nominatsiyasi",
+    "iftixor": "“Iftixor” nominatsiyasi",
+    "etirof": "“E’tirof” nominatsiyasi",
+    "innovator": "“Innovator” nominatsiyasi",
+}
+
+
+def assign_nomination(faculty: Optional[str], direction: Optional[str]) -> str:
+    """Ta'lim yo'nalishi (direction) va fakultet nomidagi kalit so'zlarga qarab
+    talabani 6 ta rasmiy nominatsiyadan biriga avtomatik ajratadi (Nizom 1-ilova)."""
+
+    def match(text: str) -> Optional[str]:
+        if any(k in text for k in ("dasturiy injiniring", "axborot texnolog", "sun'iy intellekt", "kompyuter")):
+            return NOMINATIONS["yangi_avlod"]
+        if any(k in text for k in ("amaliy matematika", "matematika", "fizika", "kimyo")):
+            return NOMINATIONS["zukko"]
+        if "psixolog" in text:
+            return NOMINATIONS["tamaddun"]
+        if any(k in text for k in ("filologiya", "tilshunoslik", "adabiyot", "jurnalistika")):
+            return NOMINATIONS["iftixor"]
+        if any(k in text for k in ("iqtisodiyot", "turizm", "boshqaruv", "biznes", "menejment")):
+            return NOMINATIONS["etirof"]
+        return None
+
+    for text in ((direction or "").lower(), (faculty or "").lower()):
+        result = match(text)
+        if result:
+            return result
+    return NOMINATIONS["innovator"]
 
 # 1. Submit Application for Contest/Scholarship
 @router.post("", response_model=ApplicationResponse)
@@ -46,12 +83,27 @@ async def submit_application(
     approved_achs = ach_res.scalars().all()
     ach_points = sum(a.points for a in approved_achs)
 
+    # 1-bosqich masofaviy imtihon natijasi (Nizom 1-ilova: maksimal 40 ball)
+    exam_res = await db.execute(
+        select(StudentExamResult)
+        .where(StudentExamResult.user_id == student.id)
+        .order_by(desc(StudentExamResult.id))
+        .limit(1)
+    )
+    exam_result = exam_res.scalars().first()
+    exam_pts = exam_result.total_score if exam_result else 0.0
+
     gpa_val = student.avg_gpa if student.avg_gpa and student.avg_gpa > 0 else 5.0
     social_val = student.social_points if student.social_points and student.social_points > 0 else 50.0
 
-    gpa_pts = gpa_val * 6.0
-    soc_pts = social_val * 0.4
-    total_rating = round(min(100.0, gpa_pts + soc_pts + ach_points), 1)
+    # Nizom 1-ilova baholash shkalasi: GPA*4 (max 20) + Imtihon (max 40) + Portfolio (max 40) = 100
+    gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
+    exam_pts = round(min(40.0, exam_pts), 1)
+    # LIMIT CHEKLOVI: ilmiy-ijodiy yutuqlar yig'indisi 40 balldan oshsa ham, maksimal 40 ball hisoblanadi
+    scientific_pts = round(min(40.0, ach_points), 1)
+    total_rating = round(min(100.0, gpa_pts + exam_pts + scientific_pts), 1)
+
+    nomination = assign_nomination(student.faculty, student.direction)
 
     app_entry = ContestApplication(
         user_id=student.id,
@@ -65,6 +117,7 @@ async def submit_application(
         portfolio_score=total_rating,
         gpa=gpa_val,
         social_points=social_val,
+        nomination=nomination,
         status="pending",
         decision_note="Ariza filial mas'ul komissiyasiga ko'rib chiqish uchun yuborildi"
     )
@@ -152,7 +205,7 @@ async def delete_application(
 # ==============================================================================
 class CalculatorInput(BaseModel):
     gpa: Optional[float] = 5.0
-    social_points: Optional[float] = 50.0
+    exam_score: Optional[float] = 0.0
     scopus_count: Optional[int] = 0
     oak_count: Optional[int] = 0
     conference_count: Optional[int] = 0
@@ -164,13 +217,14 @@ class CalculatorInput(BaseModel):
 
 @router.post("/calculator/evaluate")
 async def evaluate_smart_calculator(data: CalculatorInput):
-    # 1. Academic Performance (max 30 pts)
-    gpa_pts = round((data.gpa or 5.0) * 6.0, 1)
+    # Nizom 1-ilova baholash shkalasi (jami 100 ball):
+    # 1. O'zlashtirish ko'rsatkichi (GPA): max 20 ball, GPA * 4
+    gpa_pts = round(min(20.0, (data.gpa or 5.0) * 4.0), 1)
 
-    # 2. HEMIS Social Activity (max 20 pts)
-    social_pts = round(min(20.0, (data.social_points or 50.0) * 0.4), 1)
+    # 2. 1-bosqich masofaviy imtihon: max 40 ball (IQ 20 + Tarix 10 + Chet tili 10)
+    exam_pts = round(min(40.0, data.exam_score or 0.0), 1)
 
-    # 3. Scientific & Competitive Achievements (up to 50 pts)
+    # 3. Ilmiy-ijodiy yutuqlar (Portfolio): max 40 ball
     scopus_pts = (data.scopus_count or 0) * 25.0
     oak_pts = (data.oak_count or 0) * 15.0
     conf_pts = (data.conference_count or 0) * 8.0
@@ -181,10 +235,11 @@ async def evaluate_smart_calculator(data: CalculatorInput):
     patent_pts = (data.patent_count or 0) * 20.0
 
     scientific_total = scopus_pts + oak_pts + conf_pts + olympiad_intl_pts + olympiad_rep_pts + lang_c1_pts + lang_b2_pts + patent_pts
-    scientific_score = round(min(50.0, scientific_total), 1)
+    # LIMIT CHEKLOVI: yig'indi 40 balldan oshsa ham, maksimal 40 ball sifatida hisobga olinadi
+    scientific_score = round(min(40.0, scientific_total), 1)
 
-    # Total Composite Score
-    total_score = round(min(100.0, gpa_pts + social_pts + scientific_score), 1)
+    # Total Composite Score (GPA 20 + Imtihon 40 + Ilmiy yutuqlar 40 = Jami 100 ball)
+    total_score = round(min(100.0, gpa_pts + exam_pts + scientific_score), 1)
 
     # Recommendation tier
     if total_score >= 90.0:

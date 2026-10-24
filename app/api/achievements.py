@@ -13,6 +13,7 @@ from sqlalchemy import select, desc
 from app.core.database import get_db
 from app.models.user import User
 from app.models.achievement import StudentAchievement
+from app.models.exam import StudentExamResult
 from app.schemas.achievement import AchievementResponse, AchievementApprove, AchievementReject
 from app.api.deps import get_current_student, require_permission
 
@@ -251,12 +252,18 @@ async def reject_achievement(
 
 @router.get("/ranking")
 async def get_students_ranking(db: AsyncSession = Depends(get_db)):
-    # Calculate leaderboard dynamically from User + approved achievements
+    # Nizom 1-ilova baholash shkalasi (jami 100 ball):
+    # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40, LIMIT CHEKLOVI)
     users_res = await db.execute(select(User).where(User.role == "student"))
     students = users_res.scalars().all()
 
+    exam_res = await db.execute(select(StudentExamResult).order_by(desc(StudentExamResult.id)))
+    latest_exams = {}
+    for er in exam_res.scalars().all():
+        if er.user_id not in latest_exams:
+            latest_exams[er.user_id] = er
+
     ranking = []
-    base_rating = 60.0  # Base HEMIS academic score
 
     for s in students:
         ach_res = await db.execute(
@@ -267,7 +274,16 @@ async def get_students_ranking(db: AsyncSession = Depends(get_db)):
         )
         approved_items = ach_res.scalars().all()
         approved_points = sum(a.points for a in approved_items)
-        total_score = round(min(100.0, base_rating + approved_points), 1)
+
+        gpa_val = s.avg_gpa if s.avg_gpa and s.avg_gpa > 0 else 5.0
+        gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
+
+        er = latest_exams.get(s.id)
+        exam_pts = round(min(40.0, er.total_score if er else 0.0), 1)
+
+        ach_pts = round(min(40.0, approved_points), 1)
+
+        total_score = round(min(100.0, gpa_pts + exam_pts + ach_pts), 1)
 
         ranking.append({
             "id": s.id,
@@ -276,8 +292,10 @@ async def get_students_ranking(db: AsyncSession = Depends(get_db)):
             "faculty": s.faculty or "Fakultet ko'rsatilmagan",
             "direction": s.direction or "Yo'nalish ko'rsatilmagan",
             "course": f"{s.course}-kurs" if s.course else "1-kurs",
+            "gpa_points": gpa_pts,
+            "exam_points": exam_pts,
             "approved_count": len(approved_items),
-            "approved_points": approved_points,
+            "approved_points": ach_pts,
             "total_score": total_score
         })
 

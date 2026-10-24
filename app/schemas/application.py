@@ -23,6 +23,7 @@ class ApplicationResponse(BaseModel):
     portfolio_score: float
     gpa: float
     social_points: float
+    nomination: Optional[str] = None
     status: str
     decision_note: Optional[str] = None
     created_at: datetime
