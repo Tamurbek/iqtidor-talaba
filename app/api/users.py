@@ -464,9 +464,10 @@ async def assign_scientific_supervisor(
 
     logger.info(f"Supervisor '{student.supervisor_name}' assigned to student '{student.full_name}' by admin '{current_admin.full_name}'")
 
+    supervisor_label = student.supervisor_name or "Ko'rsatilmadi"
     return {
         "success": True,
-        "message": f"'{student.full_name}' ga ilmiy rahbar ({student.supervisor_name or 'Ko\'rsatilmadi'}) muvaffaqiyatli biriktirildi!",
+        "message": f"'{student.full_name}' ga ilmiy rahbar ({supervisor_label}) muvaffaqiyatli biriktirildi!",
         "supervisor": {
             "id": student.supervisor_id,
             "name": student.supervisor_name,
