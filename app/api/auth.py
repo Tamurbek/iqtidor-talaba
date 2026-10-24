@@ -37,7 +37,7 @@ async def login(
     login_str = login_data.login.strip()
 
     # 1. Ko'p qatlamli Brute-Force & Rate Limiting tekshiruvi (Aylanib o'tib bo'lmaydi)
-    BruteForceProtector.check_rate_limits(request, login_str)
+    await BruteForceProtector.check_rate_limits(request, login_str)
 
     user = None
     hemis_token_str = None
@@ -90,7 +90,7 @@ async def login(
         )
 
     # Success: clear failed counters for this account and IP
-    BruteForceProtector.record_successful_login(request, login_str)
+    await BruteForceProtector.record_successful_login(request, login_str)
 
     # 4. Generate 2-day JWT Access Token (48 hours)
     expires_delta = timedelta(days=2)
@@ -243,7 +243,7 @@ async def verify_eimzo_login(
 
     # Rate limiting tekshiruvi
     rate_identifier = hemis_id or serial_str or signer_name
-    BruteForceProtector.check_rate_limits(request, rate_identifier)
+    await BruteForceProtector.check_rate_limits(request, rate_identifier)
 
     if not signer_name and not hemis_id and not serial_str:
         await BruteForceProtector.record_failed_attempt(request, rate_identifier)
@@ -341,7 +341,7 @@ async def verify_eimzo_login(
     )
 
     # Success: clear failed counter
-    BruteForceProtector.record_successful_login(request, rate_identifier)
+    await BruteForceProtector.record_successful_login(request, rate_identifier)
 
     return Token(
         access_token=access_token,
@@ -385,7 +385,7 @@ async def sign_and_verify_eimzo(
 
     # Rate limiting & brute force tekshiruvi
     rate_identifier = hemis_id or serial_number or signer_name
-    BruteForceProtector.check_rate_limits(request, rate_identifier)
+    await BruteForceProtector.check_rate_limits(request, rate_identifier)
 
     pkcs7_64 = None
     try:
@@ -517,7 +517,7 @@ async def sign_and_verify_eimzo(
     )
 
     # Success: clear failed counter
-    BruteForceProtector.record_successful_login(request, rate_identifier)
+    await BruteForceProtector.record_successful_login(request, rate_identifier)
 
     return Token(
         access_token=access_token,

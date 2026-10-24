@@ -13,8 +13,11 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "db")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "iqtidorli_db")
-    
+
     DATABASE_URL: str = ""
+
+    # Redis (brute-force/rate-limit holatini worker/konteynerlar orasida ulashish uchun)
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     def __init__(self, **values):
         super().__init__(**values)
