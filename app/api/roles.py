@@ -132,6 +132,166 @@ async def create_role(
     return {"message": "Yangi rol muvaffaqiyatli yaratildi", "role_id": new_role.id}
 
 
+@router.get("/starostas")
+async def list_group_starostas(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Returns list of all academic groups with their assigned Starosta.
+    Accessible by Department Head, Super Admin, or users with 'starostas.view' permission.
+    """
+    if not (current_user.is_department_head or current_user.has_permission("starostas.view")):
+        raise HTTPException(status_code=403, detail="Starostalar ro'yxatini ko'rish huquqingiz yo'q")
+
+    # Fetch all students
+    res = await db.execute(select(User).where(User.group_name.is_not(None)).order_by(User.faculty, User.group_name, User.full_name))
+    students = res.scalars().all()
+
+    # Group students by group_name
+    groups_map = {}
+    for s in students:
+        g = s.group_name
+        if not g:
+            continue
+        if g not in groups_map:
+            groups_map[g] = {
+                "group_name": g,
+                "faculty": s.faculty or "Noma'lum fakultet",
+                "direction": s.direction or "Noma'lum yo'nalish",
+                "course": s.course or 1,
+                "starosta": None,
+                "students": []
+            }
+
+        is_star = s.is_starosta
+        student_info = {
+            "id": s.id,
+            "hemis_id": s.hemis_id,
+            "full_name": s.full_name,
+            "avg_gpa": s.avg_gpa or 0.0,
+            "social_points": s.social_points or 0.0,
+            "is_starosta": is_star
+        }
+        groups_map[g]["students"].append(student_info)
+        if is_star:
+            groups_map[g]["starosta"] = student_info
+
+    groups_list = list(groups_map.values())
+    total_groups = len(groups_list)
+    assigned_count = sum(1 for grp in groups_list if grp["starosta"] is not None)
+
+    return {
+        "groups": groups_list,
+        "total_groups": total_groups,
+        "assigned_count": assigned_count,
+        "unassigned_count": total_groups - assigned_count
+    }
+
+
+@router.post("/starostas/assign")
+async def assign_starosta(
+    req: AssignStarostaRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Appoints a student as the Starosta for their group.
+    Enforces 1 Starosta per group rule (revoking previous starosta of that group).
+    """
+    if not (current_user.is_department_head or current_user.has_permission("starostas.manage")):
+        raise HTTPException(status_code=403, detail="Guruhga starosta tayinlash huquqingiz yo'q")
+
+    # Get student
+    student = (await db.execute(select(User).where(User.id == req.student_id))).scalar_one_or_none()
+    if not student:
+        raise HTTPException(status_code=404, detail="Tanlangan talaba topilmadi")
+
+    if student.group_name != req.group_name:
+        raise HTTPException(status_code=400, detail="Talaba ushbu guruhga tegishli emas")
+
+    # Get starosta role
+    starosta_role = (await db.execute(select(Role).where(Role.code == "starosta"))).scalar_one_or_none()
+    if not starosta_role:
+        raise HTTPException(status_code=500, detail="Tizimda 'starosta' roli topilmadi")
+
+    # Find any existing starosta in this group and revoke starosta role
+    group_students = (await db.execute(select(User).where(User.group_name == req.group_name))).scalars().all()
+    for s in group_students:
+        if s.id != student.id and s.is_starosta:
+            s.roles = [r for r in s.roles if r.code != "starosta"]
+
+    # Assign starosta role to target student if not already present
+    if not student.is_starosta:
+        student.roles.append(starosta_role)
+
+    await db.commit()
+
+    return {
+        "message": f"{student.full_name} muvaffaqiyatli ravishda {req.group_name} guruhi starostasi etib tayinlandi",
+        "student": {
+            "id": student.id,
+            "full_name": student.full_name,
+            "group_name": student.group_name,
+            "is_starosta": True
+        }
+    }
+
+
+@router.get("/my-group")
+async def get_my_group_monitoring(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Allows a designated Starosta to view the academic and contest status of their classmates.
+    """
+    if not current_user.is_starosta and not current_user.is_department_head:
+        raise HTTPException(status_code=403, detail="Siz guruh starostasi emassiz")
+
+    if not current_user.group_name:
+        raise HTTPException(status_code=400, detail="Sizga hech qanday guruh biriktirilmagan")
+
+    group_name = current_user.group_name
+
+    # Fetch classmates
+    res = await db.execute(select(User).where(User.group_name == group_name).order_by(User.full_name))
+    classmates = res.scalars().all()
+
+    classmates_data = []
+    for cm in classmates:
+        # Get count of approved achievements
+        ach_res = await db.execute(select(StudentAchievement).where(StudentAchievement.user_id == cm.id))
+        achs = ach_res.scalars().all()
+        approved_achs = sum(1 for a in achs if a.status == "approved")
+        total_points = sum(a.points for a in achs if a.status == "approved")
+
+        # Get contest applications
+        app_res = await db.execute(select(ContestApplication).where(ContestApplication.user_id == cm.id))
+        apps = app_res.scalars().all()
+
+        classmates_data.append({
+            "id": cm.id,
+            "hemis_id": cm.hemis_id,
+            "full_name": cm.full_name,
+            "avg_gpa": cm.avg_gpa or 0.0,
+            "social_points": cm.social_points or 0.0,
+            "approved_achievements": approved_achs,
+            "portfolio_points": round(total_points, 1),
+            "contests_applied": len(apps),
+            "is_starosta": cm.is_starosta
+        })
+
+    return {
+        "group_name": group_name,
+        "faculty": current_user.faculty,
+        "direction": current_user.direction,
+        "course": current_user.course,
+        "total_students": len(classmates_data),
+        "students": classmates_data
+    }
+
+
 @router.get("/{role_id}")
 async def get_role(
     role_id: int,
@@ -264,169 +424,3 @@ async def update_role_permissions(
 
     await db.commit()
     return {"message": f"'{role.name}' roli huquqlari muvaffaqiyatli yangilandi"}
-
-
-# ---------------------------------------------------------------------------
-# 3. STAROSTAS MANAGEMENT (For Iqtidorli bo'lim boshlig'i)
-# ---------------------------------------------------------------------------
-@router.get("/starostas")
-async def list_group_starostas(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Returns list of all academic groups with their assigned Starosta.
-    Accessible by Department Head, Super Admin, or users with 'starostas.view' permission.
-    """
-    if not (current_user.is_department_head or current_user.has_permission("starostas.view")):
-        raise HTTPException(status_code=403, detail="Starostalar ro'yxatini ko'rish huquqingiz yo'q")
-
-    # Fetch all students
-    res = await db.execute(select(User).where(User.group_name.is_not(None)).order_by(User.faculty, User.group_name, User.full_name))
-    students = res.scalars().all()
-
-    # Group students by group_name
-    groups_map = {}
-    for s in students:
-        g = s.group_name
-        if not g:
-            continue
-        if g not in groups_map:
-            groups_map[g] = {
-                "group_name": g,
-                "faculty": s.faculty or "Noma'lum fakultet",
-                "direction": s.direction or "Noma'lum yo'nalish",
-                "course": s.course or 1,
-                "starosta": None,
-                "students": []
-            }
-        
-        is_star = s.is_starosta
-        student_info = {
-            "id": s.id,
-            "hemis_id": s.hemis_id,
-            "full_name": s.full_name,
-            "avg_gpa": s.avg_gpa or 0.0,
-            "social_points": s.social_points or 0.0,
-            "is_starosta": is_star
-        }
-        groups_map[g]["students"].append(student_info)
-        if is_star:
-            groups_map[g]["starosta"] = student_info
-
-    groups_list = list(groups_map.values())
-    total_groups = len(groups_list)
-    assigned_count = sum(1 for grp in groups_list if grp["starosta"] is not None)
-
-    return {
-        "groups": groups_list,
-        "total_groups": total_groups,
-        "assigned_count": assigned_count,
-        "unassigned_count": total_groups - assigned_count
-    }
-
-
-@router.post("/starostas/assign")
-async def assign_starosta(
-    req: AssignStarostaRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Appoints a student as the Starosta for their group.
-    Enforces 1 Starosta per group rule (revoking previous starosta of that group).
-    """
-    if not (current_user.is_department_head or current_user.has_permission("starostas.manage")):
-        raise HTTPException(status_code=403, detail="Guruhga starosta tayinlash huquqingiz yo'q")
-
-    # Get student
-    student = (await db.execute(select(User).where(User.id == req.student_id))).scalar_one_or_none()
-    if not student:
-        raise HTTPException(status_code=404, detail="Tanlangan talaba topilmadi")
-
-    if student.group_name != req.group_name:
-        raise HTTPException(status_code=400, detail="Talaba ushbu guruhga tegishli emas")
-
-    # Get starosta role
-    starosta_role = (await db.execute(select(Role).where(Role.code == "starosta"))).scalar_one_or_none()
-    if not starosta_role:
-        raise HTTPException(status_code=500, detail="Tizimda 'starosta' roli topilmadi")
-
-    # Find any existing starosta in this group and revoke starosta role
-    group_students = (await db.execute(select(User).where(User.group_name == req.group_name))).scalars().all()
-    for s in group_students:
-        if s.id != student.id and s.is_starosta:
-            s.roles = [r for r in s.roles if r.code != "starosta"]
-
-    # Assign starosta role to target student if not already present
-    if not student.is_starosta:
-        student.roles.append(starosta_role)
-
-    await db.commit()
-
-    return {
-        "message": f"{student.full_name} muvaffaqiyatli ravishda {req.group_name} guruhi starostasi etib tayinlandi",
-        "student": {
-            "id": student.id,
-            "full_name": student.full_name,
-            "group_name": student.group_name,
-            "is_starosta": True
-        }
-    }
-
-
-# ---------------------------------------------------------------------------
-# 4. MY GROUP PORTFOLIO & MONITORING (For appointed Starosta)
-# ---------------------------------------------------------------------------
-@router.get("/my-group")
-async def get_my_group_monitoring(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    """
-    Allows a designated Starosta to view the academic and contest status of their classmates.
-    """
-    if not current_user.is_starosta and not current_user.is_department_head:
-        raise HTTPException(status_code=403, detail="Siz guruh starostasi emassiz")
-
-    if not current_user.group_name:
-        raise HTTPException(status_code=400, detail="Sizga hech qanday guruh biriktirilmagan")
-
-    group_name = current_user.group_name
-
-    # Fetch classmates
-    res = await db.execute(select(User).where(User.group_name == group_name).order_by(User.full_name))
-    classmates = res.scalars().all()
-
-    classmates_data = []
-    for cm in classmates:
-        # Get count of approved achievements
-        ach_res = await db.execute(select(StudentAchievement).where(StudentAchievement.user_id == cm.id))
-        achs = ach_res.scalars().all()
-        approved_achs = sum(1 for a in achs if a.status == "approved")
-        total_points = sum(a.points for a in achs if a.status == "approved")
-
-        # Get contest applications
-        app_res = await db.execute(select(ContestApplication).where(ContestApplication.user_id == cm.id))
-        apps = app_res.scalars().all()
-
-        classmates_data.append({
-            "id": cm.id,
-            "hemis_id": cm.hemis_id,
-            "full_name": cm.full_name,
-            "avg_gpa": cm.avg_gpa or 0.0,
-            "social_points": cm.social_points or 0.0,
-            "approved_achievements": approved_achs,
-            "portfolio_points": round(total_points, 1),
-            "contests_applied": len(apps),
-            "is_starosta": cm.is_starosta
-        })
-
-    return {
-        "group_name": group_name,
-        "faculty": current_user.faculty,
-        "direction": current_user.direction,
-        "course": current_user.course,
-        "total_students": len(classmates_data),
-        "students": classmates_data
-    }
