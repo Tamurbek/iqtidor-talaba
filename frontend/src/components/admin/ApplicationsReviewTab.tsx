@@ -70,7 +70,7 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
+          <table style={{ width: '100%', minWidth: 1050, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
                 <th style={thStyle}>Talaba</th>

@@ -383,7 +383,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }} id="adminNewsTable">
+          <table style={{ width: '100%', minWidth: 980, borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }} id="adminNewsTable">
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
                 <th style={thStyle}>Muqova</th>

@@ -69,7 +69,7 @@ export default function AchievementsTab({ achievements, loading, error, onGoToUp
         )}
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
+          <table style={{ width: '100%', minWidth: 900, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
                 <th style={{ padding: '14px 18px' }}>Yutuq turi (Nizom mezoni)</th>

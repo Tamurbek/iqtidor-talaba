@@ -144,7 +144,7 @@ export default function UsersTab({ users, loading, error, currentUserId, onReloa
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table id="adminUsersTable" style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }}>
+          <table id="adminUsersTable" style={{ width: '100%', minWidth: 980, borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
                 <th style={thStyle}>Foydalanuvchi</th>

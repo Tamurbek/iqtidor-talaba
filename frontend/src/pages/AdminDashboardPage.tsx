@@ -92,6 +92,13 @@ export default function AdminDashboardPage() {
     return () => window.removeEventListener('hashchange', onHashChange)
   }, [])
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileOpen])
+
   const handleAdminMenuTab = useCallback((tab: AdminTabKey) => {
     if (window.innerWidth <= 992) setMobileOpen(false)
     setActiveTab(tab)
@@ -139,6 +146,12 @@ export default function AdminDashboardPage() {
         </button>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#0b3b70' }}>Administrator paneli</span>
       </div>
+
+      <div
+        className={`cabinet-sidebar-backdrop${mobileOpen ? ' show' : ''}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
 
       <div className="cabinet-wrapper">
         <AdminSidebar

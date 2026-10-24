@@ -47,7 +47,7 @@ export default function GroupInfoTab({ user }: Props) {
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }} id="myGroupTable">
+          <table style={{ width: '100%', minWidth: 900, borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }} id="myGroupTable">
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
                 <th style={{ padding: '14px 18px' }}>Talaba (F.I.SH.)</th>

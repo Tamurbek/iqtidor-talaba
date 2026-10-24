@@ -78,7 +78,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }} id="starostasTable">
+          <table style={{ width: '100%', minWidth: 980, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }} id="starostasTable">
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
                 <th style={thStyle}>Guruh</th>
@@ -107,7 +107,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
               )}
               {!loading && !error && list.map((g) => (
                 <tr key={g.group_name} id={`group-row-${g.group_name}`} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s' }}>
-                  <td style={{ ...tdStyle, fontWeight: 800, color: '#0b3b70', fontSize: 15 }}>
+                  <td style={{ ...tdStyle, fontWeight: 800, color: '#0b3b70', fontSize: 15, whiteSpace: 'nowrap' }}>
                     {g.group_name}
                   </td>
                   <td style={tdStyle}>
@@ -115,7 +115,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
                     <div style={{ fontSize: 12, color: '#64748b' }}>{g.faculty}</div>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
-                    <span style={{ background: '#f1f5f9', color: '#334155', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>
+                    <span style={{ background: '#f1f5f9', color: '#334155', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap' }}>
                       {g.course}-kurs
                     </span>
                   </td>
@@ -133,16 +133,16 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
                         </div>
                       </div>
                     ) : (
-                      <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}>
+                      <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
                         Tayinlanmagan
                       </span>
                     )}
                   </td>
-                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, color: '#334155' }}>
+                  <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, color: '#334155', whiteSpace: 'nowrap' }}>
                     {g.students.length} nafar
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'right' }}>
-                    <button type="button" onClick={() => openAssignStarostaModal(g)} style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '7px 16px', borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <button type="button" onClick={() => openAssignStarostaModal(g)} style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '7px 16px', borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap' }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="8.5" cy="7" r="4"></circle>

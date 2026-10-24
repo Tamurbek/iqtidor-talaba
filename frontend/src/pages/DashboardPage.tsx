@@ -108,6 +108,13 @@ export default function DashboardPage() {
     }
   }, [])
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileOpen])
+
   const switchTab = useCallback((tab: StudentTabKey) => {
     setActiveTab(tab)
     setMobileOpen(false)
@@ -147,6 +154,12 @@ export default function DashboardPage() {
         </button>
         <span style={{ fontSize: 13, fontWeight: 700, color: '#0b3b70' }}>HEMIS: {currentUser.hemis_id}</span>
       </div>
+
+      <div
+        className={`cabinet-sidebar-backdrop${mobileOpen ? ' show' : ''}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
 
       <CabinetSidebar
         user={currentUser}

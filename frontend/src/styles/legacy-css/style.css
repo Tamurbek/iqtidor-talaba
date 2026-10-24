@@ -50,6 +50,18 @@ img {
   display: block;
 }
 
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #ffffff !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2364748b' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 11px 7px !important;
+  padding-right: 36px !important;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -1630,6 +1642,10 @@ img {
   cursor: pointer;
 }
 
+.cabinet-sidebar-backdrop {
+  display: none;
+}
+
 @media (max-width: 992px) {
   .cabinet-mobile-bar {
     display: flex;
@@ -1653,6 +1669,22 @@ img {
 
   .cabinet-sidebar.mobile-open {
     transform: translateX(0);
+  }
+
+  .cabinet-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  .cabinet-sidebar-backdrop.show {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .cabinet-sidebar.collapsed {

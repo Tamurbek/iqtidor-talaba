@@ -140,12 +140,12 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }}>
+          <table style={{ width: '100%', minWidth: 1180, borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
                 <th style={thStyle}>O'rni</th>
-                <th style={thStyle}>Talaba F.I.SH.</th>
-                <th style={thStyle}>Fakultet va yo'nalish</th>
+                <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Talaba F.I.SH.</th>
+                <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Fakultet va yo'nalish</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>1. GPA (maks 20)</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>2. Test sinovi (maks 40)</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>3. Yutuqlar (maks 40)</th>
@@ -183,11 +183,11 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                       <span style={{ fontWeight: 700, color: '#64748b', fontSize: 13, paddingLeft: 8 }}>{r.rank}</span>
                     )}
                   </td>
-                  <td style={tdStyle}>
+                  <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     <div style={{ fontWeight: 600, color: '#1e293b' }}>{r.full_name}</div>
                     <div style={{ fontSize: 12, color: '#94a3b8' }}>HEMIS: {r.hemis_id} | {r.course}</div>
                   </td>
-                  <td style={{ ...tdStyle, color: '#64748b', fontSize: 12.5 }}>
+                  <td style={{ ...tdStyle, color: '#64748b', fontSize: 12.5, whiteSpace: 'nowrap' }}>
                     {r.faculty}
                     <br />
                     <span style={{ fontSize: 11, color: '#94a3b8' }}>{r.direction}</span>
