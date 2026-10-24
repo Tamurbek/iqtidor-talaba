@@ -172,16 +172,16 @@ export default function AchievementsApprovalTab({
         </div>
 
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', minWidth: 1050, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
+          <table style={{ width: '100%', minWidth: 1280, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
             <thead>
               <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
-                <th style={thStyle}>Talaba</th>
-                <th style={thStyle}>Fakultet</th>
+                <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Talaba</th>
+                <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Fakultet</th>
                 <th style={thStyle}>Yutuq turi</th>
-                <th style={thStyle}>Hujjat nomi</th>
-                <th style={thStyle}>Fayl</th>
-                <th style={thStyle}>Holati</th>
-                <th style={{ ...thStyle, textAlign: 'center' }}>Amallar</th>
+                <th style={{ ...thStyle, minWidth: 320 }}>Hujjat nomi</th>
+                <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Fayl</th>
+                <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Holati</th>
+                <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Amallar</th>
               </tr>
             </thead>
             <tbody>
@@ -202,23 +202,23 @@ export default function AchievementsApprovalTab({
               )}
               {!loading && !error && achievements?.map((item) => (
                 <tr key={item.id} id={`row-ach-${item.id}`} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s', background: rowHighlight[item.id] }}>
-                  <td style={tdStyle}>
+                  <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     <div style={{ fontWeight: 600, color: '#1e293b' }}>{item.student_name}</div>
                     <div style={{ fontSize: 12, color: '#64748b' }}>HEMIS ID: {item.hemis_id}</div>
                   </td>
-                  <td style={{ ...tdStyle, color: '#475569', fontSize: 13 }}>{item.faculty}</td>
+                  <td style={{ ...tdStyle, color: '#475569', fontSize: 13, whiteSpace: 'nowrap' }}>{item.faculty}</td>
                   <td style={tdStyle}>
                     <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
                       {item.achievement_type}
                     </span>
                   </td>
-                  <td style={tdStyle}>
+                  <td style={{ ...tdStyle, maxWidth: 360 }}>
                     <div style={{ fontWeight: 600, color: '#0b3b70' }}>{item.title}</div>
                     {item.description && (
                       <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{item.description}</div>
                     )}
                   </td>
-                  <td style={tdStyle}>
+                  <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     {item.file_url ? (
                       <a href={item.file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#0b3b70', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -231,7 +231,7 @@ export default function AchievementsApprovalTab({
                       <span style={{ color: '#94a3b8', fontSize: 12 }}>Mavjud emas</span>
                     )}
                   </td>
-                  <td style={tdStyle}>
+                  <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     {item.status === 'approved' ? (
                       <span style={{ background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -262,7 +262,7 @@ export default function AchievementsApprovalTab({
                       </span>
                     )}
                   </td>
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
+                  <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {item.status === 'pending' ? (
                       <div style={{ display: 'inline-flex', gap: 8 }}>
                         <button type="button" disabled={busyId === item.id} onClick={() => approveAchievement(item)} style={{ background: '#059669', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
