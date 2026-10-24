@@ -67,26 +67,27 @@ class HemisService:
                     raw = data.get("data", {})
                     
                     # Extract course level integer from 'level.name' (e.g. '2-kurs' -> 2)
-                    lvl_name = raw.get("level", {}).get("name", "1-kurs")
-                    course_int = 1
+                    lvl_name = raw.get("level", {}).get("name") or ""
+                    course_int = None
                     try:
-                        course_int = int(''.join(filter(str.isdigit, lvl_name))) or 1
+                        digits = ''.join(filter(str.isdigit, lvl_name))
+                        course_int = int(digits) if digits else None
                     except Exception:
-                        course_int = 1
+                        course_int = None
 
-                    # Clean zero-PII academic dict
+                    # Clean zero-PII academic dict (missing fields stay None, never fabricated)
                     return {
                         "hemis_id": str(raw.get("student_id_number", "")),
                         "full_name": raw.get("full_name") or raw.get("short_name", ""),
                         "short_name": raw.get("short_name", ""),
                         "image_url": raw.get("image"),
-                        "faculty": raw.get("faculty", {}).get("name", "Magistratura"),
-                        "direction": raw.get("specialty", {}).get("name", "Dasturiy injiniring"),
-                        "group_name": raw.get("group", {}).get("name", "M07-25"),
+                        "faculty": (raw.get("faculty") or {}).get("name"),
+                        "direction": (raw.get("specialty") or {}).get("name"),
+                        "group_name": (raw.get("group") or {}).get("name"),
                         "course": course_int,
-                        "education_type": raw.get("educationType", {}).get("name", "Magistr"),
-                        "payment_form": raw.get("paymentForm", {}).get("name", "Davlat granti"),
-                        "avg_gpa": float(raw.get("avg_gpa", "5.00")) if raw.get("avg_gpa") else 5.00
+                        "education_type": (raw.get("educationType") or {}).get("name"),
+                        "payment_form": (raw.get("paymentForm") or {}).get("name"),
+                        "avg_gpa": float(raw.get("avg_gpa")) if raw.get("avg_gpa") else 0.0
                     }
                 return None
         except Exception as e:
@@ -140,8 +141,8 @@ class HemisService:
                     if stypes:
                         latest = stypes[-1]
                         return {
-                            "stipend_type": latest.get("stipendType", "A'lochi stipendiyasi"),
-                            "status": latest.get("status", "Tasdiqlangan"),
+                            "stipend_type": latest.get("stipendType"),
+                            "status": latest.get("status"),
                             "monthly_tables": latest.get("tables", [])
                         }
                 return None

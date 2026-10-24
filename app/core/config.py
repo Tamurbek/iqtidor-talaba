@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     # Redis (brute-force/rate-limit holatini worker/konteynerlar orasida ulashish uchun)
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
+    # Demo/test ma'lumotlarini seed qilish - productionda HECH QACHON yoqilmasin
+    SEED_DEMO_DATA: bool = os.getenv("SEED_DEMO_DATA", "false").lower() == "true"
+
     def __init__(self, **values):
         super().__init__(**values)
         # Check if asyncpg is installed and we are inside Docker

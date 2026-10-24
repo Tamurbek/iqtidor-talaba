@@ -15,7 +15,7 @@ from jose import jwt, JWTError
 
 from app.core.config import settings
 from app.core.database import engine, get_db, AsyncSessionLocal
-from app.services.seed_data import seed_initial_data
+from app.services.seed_data import seed_initial_data, seed_roles_and_permissions
 from app.models.user import User
 from app.models.news import News
 from app.models.announcement import Announcement
@@ -43,8 +43,14 @@ async def lifespan(app: FastAPI):
         await asyncio.to_thread(_run_migrations)
 
         async with AsyncSessionLocal() as session:
-            await seed_initial_data(session)
-        logger.info("Database initialized and seeded successfully.")
+            # Roles/permissions are real RBAC configuration, always required.
+            await seed_roles_and_permissions(session)
+        if settings.SEED_DEMO_DATA:
+            async with AsyncSessionLocal() as session:
+                await seed_initial_data(session)
+            logger.info("Database initialized and demo data seeded (SEED_DEMO_DATA=true).")
+        else:
+            logger.info("Database initialized. Demo data seeding skipped (SEED_DEMO_DATA is not set).")
     except Exception as e:
         logger.error(f"Database initialization warning: {e}. (Will retry on queries or when DB service is fully up)")
     

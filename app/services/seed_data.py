@@ -288,9 +288,6 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
         await db.commit()
         logger.info("Student achievements seeded successfully.")
 
-    # 5. Seed Dynamic Roles and Permissions
-    await seed_roles_and_permissions(db)
-
 
 async def seed_roles_and_permissions(db: AsyncSession):
     from app.models.role import Role, Permission
