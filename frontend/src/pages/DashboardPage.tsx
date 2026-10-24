@@ -4,6 +4,7 @@ import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import AdminDashboardPage from './AdminDashboardPage'
 import CabinetSidebar from '../components/dashboard/CabinetSidebar'
+import CabinetTopbar from '../components/dashboard/CabinetTopbar'
 import ProfileTab from '../components/dashboard/ProfileTab'
 import AcademicTab from '../components/dashboard/AcademicTab'
 import RatingTab from '../components/dashboard/RatingTab'
@@ -29,6 +30,19 @@ const VALID_TABS: StudentTabKey[] = [
   'upload',
   'calculator',
 ]
+
+const TAB_TITLES: Record<StudentTabKey, string> = {
+  personal: "Shaxsiy ma'lumotlar",
+  academic: "Akademik ma'lumotlar",
+  rating: "Reyting va ko'rsatkichlar",
+  'my-achievements': 'Mening yutuqlarim',
+  'my-applications': 'Topshirgan arizalarim',
+  'my-group': 'Guruhim talabalari',
+  'online-exam': '1-bosqich: Onlayn test',
+  contests: '6 ta Nominatsiyaga ariza',
+  upload: 'Yutuq / Hujjat yuklash',
+  calculator: 'Nizom 100 ball kalkulyatori',
+}
 
 export default function DashboardPage() {
   const { currentUser, isAdmin, logout } = useAuth()
@@ -143,18 +157,6 @@ export default function DashboardPage() {
 
   return (
     <div className="cabinet-wrapper">
-      <div className="cabinet-mobile-bar">
-        <button className="cabinet-mobile-toggle" onClick={() => setMobileOpen((v) => !v)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-          <span>Kabinet menyusi</span>
-        </button>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#0b3b70' }}>HEMIS: {currentUser.hemis_id}</span>
-      </div>
-
       <div
         className={`cabinet-sidebar-backdrop${mobileOpen ? ' show' : ''}`}
         onClick={() => setMobileOpen(false)}
@@ -174,7 +176,17 @@ export default function DashboardPage() {
         onLogout={handleLogout}
       />
 
-      <main className="cabinet-main">
+      <div className="cabinet-content">
+        <CabinetTopbar
+          title={TAB_TITLES[activeTab]}
+          userName={currentUser.full_name}
+          userRole={`HEMIS: ${currentUser.hemis_id}`}
+          avatarUrl={currentUser.image_url}
+          onMenuClick={() => setMobileOpen((v) => !v)}
+          onLogout={handleLogout}
+        />
+
+        <main className="cabinet-main">
         {activeTab === 'personal' && (
           <ProfileTab currentUser={currentUser} me={me} loading={meLoading} error={meError} />
         )}
@@ -230,7 +242,8 @@ export default function DashboardPage() {
           />
         )}
         {activeTab === 'my-group' && me?.is_starosta && <GroupInfoTab user={currentUser} />}
-      </main>
+        </main>
+      </div>
     </div>
   )
 }

@@ -25,7 +25,7 @@ interface Props {
 
 const fmt = (n: number | null) => (n === null ? '—' : n)
 
-export default function AdminSidebar({ fullName, activeTab, counts, mobileOpen, onSwitchTab, onLogout }: Props) {
+export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTab, onLogout }: Props) {
   const linkClass = (tab: AdminTabKey) => `cabinet-menu-link${activeTab === tab ? ' active' : ''}`
   const [collapsed, setCollapsed] = useSidebarCollapse()
 
@@ -33,18 +33,6 @@ export default function AdminSidebar({ fullName, activeTab, counts, mobileOpen, 
     <aside className={`cabinet-sidebar${mobileOpen ? ' mobile-open' : ''}${collapsed ? ' collapsed' : ''}`} id="adminSidebar">
       <div className="cabinet-sidebar-inner">
         <SidebarBrand collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />
-
-        <div className="cabinet-user-box" style={{ background: 'linear-gradient(135deg, #072950 0%, #0b3b70 100%)' }}>
-          <div className="cabinet-user-avatar-placeholder" style={{ background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-            </svg>
-          </div>
-          <div className="cabinet-user-meta">
-            <div className="cabinet-user-name" title={fullName}>{fullName}</div>
-            <div className="cabinet-user-tag" style={{ color: '#f2721c', fontWeight: 600 }}>Bo'lim boshlig'i</div>
-          </div>
-        </div>
 
         <div className="cabinet-menu-title">Boshqaruv bo'limlari</div>
         <ul className="cabinet-menu-list">

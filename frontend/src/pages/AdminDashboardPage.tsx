@@ -14,6 +14,7 @@ import type {
   UsersListResponse,
 } from '../types/admin'
 import AdminSidebar from '../components/admin/AdminSidebar'
+import CabinetTopbar from '../components/dashboard/CabinetTopbar'
 import AdminToasts, { type ToastItem, type ToastType } from '../components/admin/AdminToasts'
 import AchievementsApprovalTab from '../components/admin/AchievementsApprovalTab'
 import ApplicationsReviewTab from '../components/admin/ApplicationsReviewTab'
@@ -39,6 +40,19 @@ const VALID_TABS: AdminTabKey[] = [
   'users-management',
   'profile-security',
 ]
+
+const TAB_TITLES: Record<AdminTabKey, string> = {
+  moderation: 'Moderatsiya (Yutuqlar)',
+  'contests-monitoring': 'Tanlov arizalari',
+  ranking: 'Talabalar reytingi',
+  'starostas-management': 'Guruh sardorlari',
+  'roles-management': 'Rollar va Huquqlar',
+  'add-announcement': "E'lon / Tanlov qo'shish",
+  'add-news': 'Yangiliklar boshqaruvi',
+  'add-document': "Me'yoriy hujjatlar",
+  'users-management': 'Foydalanuvchilar',
+  'profile-security': 'Mening profilim & Parol',
+}
 
 const loadAchievements = () => client.get<AdminAchievementListResponse>('/achievements/all').then(({ data }) => data)
 const loadRanking = () => client.get<RankingResponse>('/achievements/ranking').then(({ data }) => data.ranking)
@@ -135,18 +149,6 @@ export default function AdminDashboardPage() {
 
   return (
     <>
-      <div className="cabinet-mobile-bar">
-        <button type="button" className="cabinet-mobile-toggle" aria-expanded={mobileOpen} aria-controls="adminSidebar" onClick={() => setMobileOpen((v) => !v)}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-          <span>Boshqaruv menyusi</span>
-        </button>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#0b3b70' }}>Administrator paneli</span>
-      </div>
-
       <div
         className={`cabinet-sidebar-backdrop${mobileOpen ? ' show' : ''}`}
         onClick={() => setMobileOpen(false)}
@@ -172,7 +174,16 @@ export default function AdminDashboardPage() {
           onLogout={handleLogout}
         />
 
-        <main className="cabinet-main" style={{ padding: '20px 28px 60px', minWidth: 0 }}>
+        <div className="cabinet-content">
+          <CabinetTopbar
+            title={TAB_TITLES[activeTab]}
+            userName={currentUser.full_name}
+            userRole="Administrator paneli"
+            onMenuClick={() => setMobileOpen((v) => !v)}
+            onLogout={handleLogout}
+          />
+
+          <main className="cabinet-main" style={{ padding: '20px 28px 60px', minWidth: 0 }}>
           {activeTab === 'moderation' && (
             <AchievementsApprovalTab
               achievements={achievements.data?.achievements ?? null}
@@ -280,7 +291,8 @@ export default function AdminDashboardPage() {
           {activeTab === 'profile-security' && (
             <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />
           )}
-        </main>
+          </main>
+        </div>
       </div>
 
       <AdminToasts toasts={toasts} onClose={closeToast} />
