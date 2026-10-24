@@ -1,17 +1,20 @@
 import os
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import Optional
+from alembic import command
+from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, text
+from sqlalchemy import select, desc
 from jose import jwt, JWTError
 
 from app.core.config import settings
-from app.core.database import engine, Base, get_db, AsyncSessionLocal
+from app.core.database import engine, get_db, AsyncSessionLocal
 from app.services.seed_data import seed_initial_data
 from app.models.user import User
 from app.models.news import News
@@ -22,23 +25,22 @@ from app.api import api_router
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("iqtidorli_app")
+# Alembic's fileConfig (run during migrations) resets the root logger's level
+# to WARNING; pin this logger's own level so its INFO messages still show.
+logger.setLevel(logging.INFO)
+
+def _run_migrations() -> None:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    alembic_cfg = AlembicConfig(os.path.join(os.path.dirname(base_dir), "alembic.ini"))
+    command.upgrade(alembic_cfg, "head")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Ensure tables are created and seed data is populated
-    logger.info("Initializing database tables...")
+    # Startup: apply pending Alembic migrations, then seed data.
+    logger.info("Applying database migrations...")
     try:
-        async with engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
-            # Lightweight column migration (no Alembic in this project yet):
-            # adds exam_started_at to pre-existing `users` tables that predate it.
-            try:
-                if conn.dialect.name == "postgresql":
-                    await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS exam_started_at TIMESTAMP"))
-                else:
-                    await conn.execute(text("ALTER TABLE users ADD COLUMN exam_started_at DATETIME"))
-            except Exception:
-                pass  # column already exists
+        await asyncio.to_thread(_run_migrations)
 
         async with AsyncSessionLocal() as session:
             await seed_initial_data(session)
