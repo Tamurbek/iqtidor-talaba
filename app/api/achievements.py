@@ -6,7 +6,6 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from fastapi.responses import StreamingResponse
 import io
-import csv
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 
@@ -16,6 +15,7 @@ from app.models.achievement import StudentAchievement
 from app.models.exam import StudentExamResult
 from app.schemas.achievement import AchievementResponse, AchievementApprove, AchievementReject
 from app.api.deps import get_current_student, require_permission
+from app.services.ranking import compute_ranking
 
 logger = logging.getLogger("iqtidorli_achievements")
 
@@ -251,101 +251,150 @@ async def reject_achievement(
 
 
 @router.get("/ranking")
-async def get_students_ranking(db: AsyncSession = Depends(get_db)):
-    # Nizom 1-ilova baholash shkalasi (jami 100 ball):
-    # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40, LIMIT CHEKLOVI)
-    users_res = await db.execute(select(User).where(User.role == "student"))
-    students = users_res.scalars().all()
-
-    exam_res = await db.execute(select(StudentExamResult).order_by(desc(StudentExamResult.id)))
-    latest_exams = {}
-    for er in exam_res.scalars().all():
-        if er.user_id not in latest_exams:
-            latest_exams[er.user_id] = er
-
-    ranking = []
-
-    for s in students:
-        ach_res = await db.execute(
-            select(StudentAchievement).where(
-                StudentAchievement.hemis_id == s.hemis_id,
-                StudentAchievement.status == "approved"
-            )
-        )
-        approved_items = ach_res.scalars().all()
-        approved_points = sum(a.points for a in approved_items)
-
-        gpa_val = s.avg_gpa if s.avg_gpa and s.avg_gpa > 0 else 5.0
-        gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
-
-        er = latest_exams.get(s.id)
-        exam_pts = round(min(40.0, er.total_score if er else 0.0), 1)
-
-        ach_pts = round(min(40.0, approved_points), 1)
-
-        total_score = round(min(100.0, gpa_pts + exam_pts + ach_pts), 1)
-
-        ranking.append({
-            "id": s.id,
-            "full_name": s.full_name,
-            "hemis_id": s.hemis_id,
-            "faculty": s.faculty or "Fakultet ko'rsatilmagan",
-            "direction": s.direction or "Yo'nalish ko'rsatilmagan",
-            "course": f"{s.course}-kurs" if s.course else "1-kurs",
-            "gpa_points": gpa_pts,
-            "exam_points": exam_pts,
-            "approved_count": len(approved_items),
-            "approved_points": ach_pts,
-            "total_score": total_score
-        })
-
-    # Sort descending by total_score
-    ranking.sort(key=lambda x: x["total_score"], reverse=True)
-
-    for idx, item in enumerate(ranking, 1):
-        item["rank"] = idx
-
+async def get_students_ranking(
+    faculty: Optional[str] = None,
+    direction: Optional[str] = None,
+    course: Optional[int] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    # Nizom 2-ilova baholash shkalasi (jami 100 ball):
+    # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40)
+    ranking = await compute_ranking(db, faculty=faculty, direction=direction, course=course)
     return {"success": True, "ranking": ranking}
 
 
-@router.get("/export-excel")
-async def export_excel_ranking(db: AsyncSession = Depends(get_db)):
-    # Export ranking as clean CSV with UTF-8 BOM for Microsoft Excel compatibility
-    ranking_data = (await get_students_ranking(db))["ranking"]
+RANKING_EXPORT_HEADERS = [
+    "O'rni",
+    "Talaba F.I.SH.",
+    "HEMIS ID",
+    "Fakultet",
+    "Ta'lim yo'nalishi",
+    "Kursi",
+    "GPA bali",
+    "Imtihon bali",
+    "Yutuqlar bali",
+    "Tasdiqlangan yutuqlar soni",
+    "Jami reyting bali",
+]
 
-    output = io.StringIO()
-    # Write UTF-8 BOM
-    output.write('\ufeff')
-    writer = csv.writer(output, delimiter=';')
 
-    # Header
-    writer.writerow([
-        "O'rni",
-        "Talaba F.I.SH.",
-        "HEMIS ID",
-        "Fakultet",
-        "Ta'lim yo'nalishi",
-        "Kursi",
-        "Tasdiqlangan yutuqlar soni",
-        "To'plangan reyting bali"
-    ])
-
-    for r in ranking_data:
-        writer.writerow([
+def _ranking_export_rows(ranking_data: list) -> list:
+    return [
+        [
             r["rank"],
             r["full_name"],
             r["hemis_id"],
             r["faculty"],
             r["direction"],
             r["course"],
+            r["gpa_points"],
+            r["exam_score"],
+            r["ach_points"],
             r["approved_count"],
-            f"{r['total_score']} ball"
-        ])
+            r["total_score"],
+        ]
+        for r in ranking_data
+    ]
 
+
+@router.get("/export-excel")
+async def export_excel_ranking(
+    faculty: Optional[str] = None,
+    direction: Optional[str] = None,
+    course: Optional[int] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    # Haqiqiy .xlsx formatda, filial/yo'nalish/kurs bo'yicha filtrlash imkoniyati bilan
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    ranking_data = (await get_students_ranking(faculty, direction, course, db))["ranking"]
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reyting"
+
+    ws.append(RANKING_EXPORT_HEADERS)
+    header_fill = PatternFill(start_color="0B3B70", end_color="0B3B70", fill_type="solid")
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center")
+
+    for row in _ranking_export_rows(ranking_data):
+        ws.append(row)
+
+    for col_cells in ws.columns:
+        max_len = max(len(str(c.value)) if c.value is not None else 0 for c in col_cells)
+        ws.column_dimensions[col_cells[0].column_letter].width = max(12, min(40, max_len + 2))
+
+    output = io.BytesIO()
+    wb.save(output)
     output.seek(0)
+
     response = StreamingResponse(
-        iter([output.getvalue()]),
-        media_type="text/csv"
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
-    response.headers["Content-Disposition"] = "attachment; filename=iqtidorli_talabalar_reyting.csv"
+    response.headers["Content-Disposition"] = "attachment; filename=iqtidorli_talabalar_reyting.xlsx"
+    return response
+
+
+@router.get("/export-pdf")
+async def export_pdf_ranking(
+    faculty: Optional[str] = None,
+    direction: Optional[str] = None,
+    course: Optional[int] = None,
+    db: AsyncSession = Depends(get_db),
+):
+    # Rasmiy bayonnoma uchun PDF formatda reyting hisoboti
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    ranking_data = (await get_students_ranking(faculty, direction, course, db))["ranking"]
+
+    output = io.BytesIO()
+    doc = SimpleDocTemplate(
+        output,
+        pagesize=landscape(A4),
+        topMargin=15 * mm,
+        bottomMargin=15 * mm,
+        leftMargin=12 * mm,
+        rightMargin=12 * mm,
+    )
+
+    styles = getSampleStyleSheet()
+    title_filters = ", ".join(
+        f for f in [faculty, direction, f"{course}-kurs" if course else None] if f
+    )
+    title_text = "Iqtidorli talabalar umumiy reytingi (Nizom 2-ilovasi, 100 ballik tizim)"
+    if title_filters:
+        title_text += f" \u2014 {title_filters}"
+
+    elements = [
+        Paragraph(title_text, styles["Title"]),
+        Spacer(1, 6 * mm),
+    ]
+
+    table_data = [RANKING_EXPORT_HEADERS] + _ranking_export_rows(ranking_data)
+    table = Table(table_data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0B3B70")),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    elements.append(table)
+
+    doc.build(elements)
+    output.seek(0)
+
+    response = StreamingResponse(output, media_type="application/pdf")
+    response.headers["Content-Disposition"] = "attachment; filename=iqtidorli_talabalar_reyting.pdf"
     return response

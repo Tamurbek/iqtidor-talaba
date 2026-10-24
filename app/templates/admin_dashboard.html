@@ -754,16 +754,49 @@
             <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Nizomning 2-ilovasi: GPA (20b) + 1-bosqich
               sinov imtihoni (40b) + Ilmiy-ijodiy yutuqlar (40b) = Jami 100 ball</p>
           </div>
-          <a href="/api/v1/achievements/export-excel" download
-            style="background: #0b3b70; color: #ffffff; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(11, 59, 112, 0.2);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Excel hisobotni yuklab olish (.csv)</span>
-          </a>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <select id="rankingFacultyFilter" onchange="filterRankingTable()"
+              style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #ffffff;">
+              <option value="">Barcha fakultetlar</option>
+              {% for f in ranking|map(attribute='faculty')|unique|list %}
+              <option value="{{ f }}">{{ f }}</option>
+              {% endfor %}
+            </select>
+            <select id="rankingDirectionFilter" onchange="filterRankingTable()"
+              style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #ffffff;">
+              <option value="">Barcha yo'nalishlar</option>
+              {% for d in ranking|map(attribute='direction')|unique|list %}
+              <option value="{{ d }}">{{ d }}</option>
+              {% endfor %}
+            </select>
+            <select id="rankingCourseFilter" onchange="filterRankingTable()"
+              style="padding: 9px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; background: #ffffff;">
+              <option value="">Barcha kurslar</option>
+              {% for c in ranking|map(attribute='course_num')|unique|list|sort %}
+              <option value="{{ c }}">{{ c }}-kurs</option>
+              {% endfor %}
+            </select>
+            <button type="button" onclick="downloadRankingExport('excel')"
+              style="background: #0b3b70; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(11, 59, 112, 0.2); cursor: pointer;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Excel (.xlsx)</span>
+            </button>
+            <button type="button" onclick="downloadRankingExport('pdf')"
+              style="background: #b91c1c; color: #ffffff; border: none; padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(185, 28, 28, 0.2); cursor: pointer;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>PDF</span>
+            </button>
+          </div>
         </div>
 
         <div style="overflow-x: auto;">
@@ -783,7 +816,7 @@
             </thead>
             <tbody>
               {% for r in ranking %}
-              <tr style="border-bottom: 1px solid #f1f5f9;">
+              <tr class="ranking-row" data-faculty="{{ r.faculty|e }}" data-direction="{{ r.direction|e }}" data-course="{{ r.course_num }}" style="border-bottom: 1px solid #f1f5f9;">
                 <td style="padding: 12px 14px;">
                   {% if r.rank == 1 %}
                   <span
@@ -1946,6 +1979,35 @@
         row.style.display = 'none';
       }
     });
+  }
+
+  function filterRankingTable() {
+    const faculty = document.getElementById('rankingFacultyFilter').value;
+    const direction = document.getElementById('rankingDirectionFilter').value;
+    const course = document.getElementById('rankingCourseFilter').value;
+    const rows = document.querySelectorAll('.ranking-row');
+
+    rows.forEach(row => {
+      const matchesFaculty = !faculty || row.getAttribute('data-faculty') === faculty;
+      const matchesDirection = !direction || row.getAttribute('data-direction') === direction;
+      const matchesCourse = !course || row.getAttribute('data-course') === course;
+      row.style.display = (matchesFaculty && matchesDirection && matchesCourse) ? '' : 'none';
+    });
+  }
+
+  function downloadRankingExport(format) {
+    const faculty = document.getElementById('rankingFacultyFilter').value;
+    const direction = document.getElementById('rankingDirectionFilter').value;
+    const course = document.getElementById('rankingCourseFilter').value;
+
+    const params = new URLSearchParams();
+    if (faculty) params.set('faculty', faculty);
+    if (direction) params.set('direction', direction);
+    if (course) params.set('course', course);
+
+    const path = format === 'pdf' ? '/api/v1/achievements/export-pdf' : '/api/v1/achievements/export-excel';
+    const query = params.toString();
+    window.location.href = query ? `${path}?${query}` : path;
   }
 
   function handleAdminMenuTab(tabName, btnEl) {

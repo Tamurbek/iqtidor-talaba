@@ -197,66 +197,21 @@ async def logout_page(reason: Optional[str] = None):
 async def get_admin_dashboard_data(db: AsyncSession):
     from app.models.achievement import StudentAchievement
     from app.models.exam import StudentExamResult
+    from app.services.ranking import compute_ranking
     ach_res = await db.execute(select(StudentAchievement).order_by(desc(StudentAchievement.id)))
     achievements = ach_res.scalars().all()
     pending_count = sum(1 for a in achievements if a.status == "pending")
     approved_count = sum(1 for a in achievements if a.status == "approved")
 
-    # Fetch 1-stage exam results
     exam_res = await db.execute(select(StudentExamResult).order_by(desc(StudentExamResult.id)))
     exam_results = exam_res.scalars().all()
-    latest_exams = {}
-    for er in exam_results:
-        if er.user_id not in latest_exams:
-            latest_exams[er.user_id] = er
+
+    users_res = await db.execute(select(User).where(User.role == "student"))
+    students = users_res.scalars().all()
 
     # Dynamic Ranking aligned with Annex 2 of the "Iqtidor" Regulation (Total: 100 pts)
     # (GPA*4 max 20 pts + Stage-1 Exam max 40 pts + Scientific achievements max 40 pts)
-    users_res = await db.execute(select(User).where(User.role == "student"))
-    students = users_res.scalars().all()
-    ranking = []
-    for s in students:
-        s_achs = [a for a in achievements if a.hemis_id == s.hemis_id and a.status == "approved"]
-        s_pts = sum(a.points for a in s_achs)
-        
-        # 1. GPA: GPA * 4 (max 20 pts)
-        gpa_val = s.avg_gpa if s.avg_gpa and s.avg_gpa > 0 else 5.0
-        gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
-
-        # 2. Stage-1 Remote Exam: IQ 20 + History 10 + Foreign Lang 10 (max 40 pts)
-        er = latest_exams.get(s.id)
-        exam_score = er.total_score if er else 0.0
-
-        # 3. Scientific achievements (max 40 pts)
-        ach_pts = round(min(40.0, s_pts), 1)
-
-        s_score = round(min(100.0, gpa_pts + exam_score + ach_pts), 1)
-
-        ranking.append({
-            "id": s.id,
-            "full_name": s.full_name,
-            "hemis_id": s.hemis_id,
-            "faculty": s.faculty or "Amaliy matematika",
-            "direction": s.direction or "Dasturiy injiniring",
-            "course": f"{s.course}-kurs" if s.course else "1-kurs",
-            "gpa": gpa_val,
-            "gpa_points": gpa_pts,
-            "exam_score": exam_score,
-            "exam_status": er.status if er else "topshirmagan",
-            "exam_certificate": er.certificate_number if er else None,
-            "ach_points": ach_pts,
-            "approved_count": len(s_achs),
-            "total_score": s_score,
-            "supervisor_id": s.supervisor_id,
-            "supervisor_name": s.supervisor_name,
-            "supervisor_degree": s.supervisor_degree,
-            "supervisor_department": s.supervisor_department,
-            "supervisor_phone": s.supervisor_phone,
-            "research_topic": s.research_topic
-        })
-    ranking.sort(key=lambda x: x["total_score"], reverse=True)
-    for idx, item in enumerate(ranking, 1):
-        item["rank"] = idx
+    ranking = await compute_ranking(db)
 
     # Fetch contest applications
     from app.models.application import ContestApplication
