@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { AdminTabKey } from '../../types/admin'
+import SidebarBrand from '../dashboard/SidebarBrand'
+import { useSidebarCollapse } from '../../hooks/useSidebarCollapse'
 
 export interface AdminSidebarCounts {
   pending: number | null
@@ -25,10 +27,13 @@ const fmt = (n: number | null) => (n === null ? '—' : n)
 
 export default function AdminSidebar({ fullName, activeTab, counts, mobileOpen, onSwitchTab, onLogout }: Props) {
   const linkClass = (tab: AdminTabKey) => `cabinet-menu-link${activeTab === tab ? ' active' : ''}`
+  const [collapsed, setCollapsed] = useSidebarCollapse()
 
   return (
-    <aside className={`cabinet-sidebar${mobileOpen ? ' mobile-open' : ''}`} id="adminSidebar">
+    <aside className={`cabinet-sidebar${mobileOpen ? ' mobile-open' : ''}${collapsed ? ' collapsed' : ''}`} id="adminSidebar">
       <div className="cabinet-sidebar-inner">
+        <SidebarBrand collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />
+
         <div className="cabinet-user-box" style={{ background: 'linear-gradient(135deg, #072950 0%, #0b3b70 100%)' }}>
           <div className="cabinet-user-avatar-placeholder" style={{ background: 'rgba(255,255,255,0.15)', borderColor: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

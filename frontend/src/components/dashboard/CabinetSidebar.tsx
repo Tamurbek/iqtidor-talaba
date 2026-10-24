@@ -1,5 +1,7 @@
 import type { User } from '../../types/user'
 import type { StudentTabKey } from '../../types/dashboard'
+import SidebarBrand from './SidebarBrand'
+import { useSidebarCollapse } from '../../hooks/useSidebarCollapse'
 
 interface Props {
   user: User
@@ -27,10 +29,13 @@ export default function CabinetSidebar({
   onLogout,
 }: Props) {
   const linkClass = (tab: StudentTabKey) => `cabinet-menu-link${activeTab === tab ? ' active' : ''}`
+  const [collapsed, setCollapsed] = useSidebarCollapse()
 
   return (
-    <aside className={`cabinet-sidebar${mobileOpen ? ' mobile-open' : ''}`} id="cabinetSidebar">
+    <aside className={`cabinet-sidebar${mobileOpen ? ' mobile-open' : ''}${collapsed ? ' collapsed' : ''}`} id="cabinetSidebar">
       <div className="cabinet-sidebar-inner">
+        <SidebarBrand collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />
+
         <div className="cabinet-user-box">
           {user.image_url ? (
             <img src={user.image_url} alt={user.full_name} className="cabinet-user-avatar" />

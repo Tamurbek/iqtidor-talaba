@@ -304,25 +304,83 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-card-container">
-      {/* Header with clean logo */}
-      <div className="login-header-section">
-        <a href="/" title="Bosh sahifaga qaytish">
-          <img src="/static/images/logo.png" alt="Iqtidorli talabalar O'zMU Jizzax filiali" className="login-logo" />
-        </a>
-        <h2 className="login-welcome-title">Iqtidorli talabalar tizimiga</h2>
-        <h3 className="login-welcome-sub">xush kelibsiz!</h3>
+    <div className="login-page">
+      {/* Left brand panel */}
+      <div className="login-brand-panel">
+        <div className="login-brand-top">
+          <img src="/static/images/logo.png" alt="Iqtidorli talabalar" className="login-brand-logo" />
+          <div className="login-brand-name">
+            Iqtidorli talabalar
+            <span>O'zMU Jizzax filiali</span>
+          </div>
+        </div>
+
+        <div className="login-brand-middle">
+          <div className="login-brand-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            <span>Xavfsiz tizim</span>
+          </div>
+          <h1 className="login-brand-title">Iqtidorli talabalar tizimiga xush kelibsiz</h1>
+          <p className="login-brand-desc">
+            O'zMU Jizzax filiali talaba va xodimlari uchun yagona HEMIS portali. Shaxsiy kabinetingizga kirib,
+            o'quv jarayoningiz, yangiliklar va boshqa imkoniyatlardan foydalaning.
+          </p>
+          <div className="login-brand-features">
+            <div className="login-brand-feature">
+              <span className="login-brand-feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span>HEMIS ID orqali tezkor kirish</span>
+            </div>
+            <div className="login-brand-feature">
+              <span className="login-brand-feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <span>E-IMZO orqali xavfsiz autentifikatsiya</span>
+            </div>
+            <div className="login-brand-feature">
+              <span className="login-brand-feature-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </span>
+              <span>Ma'lumotlaringiz himoyalangan</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="login-brand-bottom">© {new Date().getFullYear()} O'zMU Jizzax filiali. Barcha huquqlar himoyalangan.</div>
       </div>
 
-      {/* Alert Box */}
-      {alert && (
-        <div className={`login-alert alert-${alert.type}`} style={{ display: 'block' }}>
-          {alert.message}
-        </div>
-      )}
+      {/* Right form panel */}
+      <div className="login-form-panel">
+        <div className="login-card-container">
+          <div className="login-mobile-logo">
+            <img src="/static/images/logo.png" alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
+          </div>
 
-      {/* Login Form */}
-      <form id="loginForm" onSubmit={handleSubmit}>
+          {/* Header */}
+          <div className="login-header-section">
+            <h2 className="login-welcome-title">Tizimga kirish</h2>
+            <h3 className="login-welcome-sub">Davom etish uchun hisobingizga kiring</h3>
+          </div>
+
+          {/* Alert Box */}
+          {alert && (
+            <div className={`login-alert alert-${alert.type}`} style={{ display: 'block' }}>
+              {alert.message}
+            </div>
+          )}
+
+          {/* Login Form */}
+          <form id="loginForm" onSubmit={handleSubmit}>
         {/* Login / Hemis ID */}
         <div className="form-group">
           <label htmlFor="loginInput" className="form-label">Login</label>
@@ -422,6 +480,8 @@ export default function LoginPage() {
         </svg>
         <span>Bosh sahifaga qaytish</span>
       </a>
+        </div>
+      </div>
 
       {/* E-IMZO Keys Selection Modal (Clean & Zero-PII compliant) */}
       {eimzoOpen && (
