@@ -1,0 +1,38 @@
+/* app/templates/admin_dashboard.html ichidagi <style> blokidan ko'chirilgan */
+.admin-tab-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.admin-tab-btn:hover {
+  background: #f1f5f9;
+  color: #0b3b70;
+}
+
+.admin-tab-btn.active-tab {
+  background: #0b3b70;
+  color: #ffffff;
+}
+
+@media (max-width: 1200px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .admin-form-split {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

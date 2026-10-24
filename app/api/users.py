@@ -123,7 +123,7 @@ async def update_my_profile(
             samesite="lax"
         )
 
-    return {
+    result = {
         "success": True,
         "message": "Profil ma'lumotlari muvaffaqiyatli saqlandi",
         "user": {
@@ -132,6 +132,9 @@ async def update_my_profile(
             "full_name": current_user.full_name
         }
     }
+    if login_changed:
+        result["access_token"] = new_token
+    return result
 
 
 @router.post("/me/change-password")

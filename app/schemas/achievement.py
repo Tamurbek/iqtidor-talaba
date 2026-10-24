@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 class AchievementBase(BaseModel):
@@ -30,3 +30,15 @@ class AchievementResponse(AchievementBase):
 
     class Config:
         from_attributes = True
+
+
+class AdminAchievementResponse(AchievementResponse):
+    group_name: Optional[str] = None
+
+class AdminAchievementListResponse(BaseModel):
+    success: bool = True
+    total: int
+    pending_count: int
+    approved_count: int
+    rejected_count: int
+    achievements: List[AdminAchievementResponse]

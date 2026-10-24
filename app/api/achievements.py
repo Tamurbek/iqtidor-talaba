@@ -2,18 +2,24 @@ import os
 import time
 import shutil
 import logging
-from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
+from typing import Optional, List, Literal
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
 from fastapi.responses import StreamingResponse
 import io
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 
 from app.core.database import get_db
 from app.models.user import User
 from app.models.achievement import StudentAchievement
 from app.models.exam import StudentExamResult
-from app.schemas.achievement import AchievementResponse, AchievementApprove, AchievementReject
+from app.schemas.achievement import (
+    AchievementResponse,
+    AchievementApprove,
+    AchievementReject,
+    AdminAchievementResponse,
+    AdminAchievementListResponse,
+)
 from app.api.deps import get_current_student, require_permission
 from app.services.ranking import compute_ranking
 
@@ -191,6 +197,40 @@ async def get_my_achievements(
             for a in achievements
         ]
     }
+
+
+@router.get("/all", response_model=AdminAchievementListResponse)
+async def get_all_achievements(
+    status_filter: Optional[Literal["pending", "approved", "rejected"]] = Query(None, alias="status"),
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(require_permission("achievements.verify"))
+):
+    counts_res = await db.execute(
+        select(StudentAchievement.status, func.count(StudentAchievement.id)).group_by(StudentAchievement.status)
+    )
+    counts = {s: c for s, c in counts_res.all()}
+
+    query = (
+        select(StudentAchievement, User.group_name)
+        .outerjoin(User, User.id == StudentAchievement.user_id)
+        .order_by(desc(StudentAchievement.id))
+    )
+    if status_filter:
+        query = query.where(StudentAchievement.status == status_filter)
+    result = await db.execute(query)
+
+    achievements = [
+        AdminAchievementResponse.model_validate(a).model_copy(update={"group_name": group_name})
+        for a, group_name in result.all()
+    ]
+
+    return AdminAchievementListResponse(
+        total=sum(counts.values()),
+        pending_count=counts.get("pending", 0),
+        approved_count=counts.get("approved", 0),
+        rejected_count=counts.get("rejected", 0),
+        achievements=achievements,
+    )
 
 
 @router.post("/{achievement_id}/approve")

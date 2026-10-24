@@ -9,6 +9,7 @@ interface AuthContextValue {
   login: (hemisId: string, password: string, rememberMe?: boolean) => Promise<User>
   loginWithToken: (accessToken: string, user: User) => void
   logout: () => Promise<void>
+  updateCurrentUser: (patch: Partial<User>) => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -46,6 +47,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.user as User
   }, [loginWithToken])
 
+  const updateCurrentUser = useCallback((patch: Partial<User>) => {
+    setCurrentUser((prev) => {
+      if (!prev) return prev
+      const next = { ...prev, ...patch }
+      localStorage.setItem('current_user', JSON.stringify(next))
+      return next
+    })
+  }, [])
+
   const logout = useCallback(async () => {
     try {
       await client.post('/auth/logout')
@@ -60,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = currentUser?.role === 'admin'
 
   return (
-    <AuthContext.Provider value={{ currentUser, isLoading, isAdmin, login, loginWithToken, logout }}>
+    <AuthContext.Provider value={{ currentUser, isLoading, isAdmin, login, loginWithToken, logout, updateCurrentUser }}>
       {children}
     </AuthContext.Provider>
   )
