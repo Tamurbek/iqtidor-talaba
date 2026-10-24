@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: iqtidorli_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-talaba_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-talaba_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-iqtidorli_db}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U talaba_user -d iqtidorli_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    container_name: iqtidorli_fastapi
+    restart: always
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - .:/app
+    ports:
+      - "8088:8000"
+    environment:
+      - IN_DOCKER=1
+      - POSTGRES_USER=${POSTGRES_USER:-talaba_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-talaba_pass_2026}
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-iqtidorli_db}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-talaba_user}:${POSTGRES_PASSWORD:-talaba_pass_2026}@db:5432/${POSTGRES_DB:-iqtidorli_db}
+      - SECRET_KEY=${SECRET_KEY:-super-secret-key-for-iqtidorli-talabalar-change-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
