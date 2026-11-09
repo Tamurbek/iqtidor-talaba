@@ -4,6 +4,7 @@ from datetime import datetime
 
 class AchievementBase(BaseModel):
     achievement_type: str
+    scope: Optional[str] = None
     title: str
     description: Optional[str] = None
 

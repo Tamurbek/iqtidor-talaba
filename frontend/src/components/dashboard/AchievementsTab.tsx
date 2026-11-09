@@ -1,4 +1,5 @@
 import type { Achievement } from '../../types/dashboard'
+import { getAchievementCategoryLabel } from '../../types/dashboard'
 
 interface Props {
   achievements: Achievement[]
@@ -89,7 +90,7 @@ export default function AchievementsTab({ achievements, loading, error, onGoToUp
                   <tr key={item.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                     <td style={{ padding: '14px 18px' }}>
                       <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 8px', borderRadius: 4, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                        {item.achievement_type}
+                        {getAchievementCategoryLabel(item.achievement_type)}
                       </span>
                     </td>
                     <td style={{ padding: '14px 18px' }}>

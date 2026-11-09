@@ -228,11 +228,11 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
                 student_name="Abdullayev Jasur Olimjon o'g'li",
                 hemis_id="3852011001",
                 faculty="Amaliy matematika va axborot texnologiyalari",
-                achievement_type="Ilmiy maqola (Scopus)",
+                achievement_type="scopus_wos",
                 title="Sun'iy intellekt modellarining tibbiy diagnostikadagi samaradorligi",
                 description="Scopus xalqaro bazasidagi jurnalda maqola chop etildi. DOI: 10.1016/j.ai.2024.1024",
                 file_url="/static/docs/maqola_jasur.pdf",
-                points=25.0,
+                points=4.0,
                 status="pending"
             ),
             StudentAchievement(
@@ -240,11 +240,11 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
                 student_name="Abdullayev Jasur Olimjon o'g'li",
                 hemis_id="3852011001",
                 faculty="Amaliy matematika va axborot texnologiyalari",
-                achievement_type="Til sertifikati",
+                achievement_type="boshqa",
                 title="IELTS 7.5 xalqaro ingliz tili sertifikati",
                 description="Overall Band Score 7.5 (C1 level)",
                 file_url="/static/docs/ielts_jasur.pdf",
-                points=20.0,
+                points=2.0,
                 status="approved"
             ),
             StudentAchievement(
@@ -252,11 +252,12 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
                 student_name="Abdullayev Jasur Olimjon o'g'li",
                 hemis_id="3852011001",
                 faculty="Amaliy matematika va axborot texnologiyalari",
-                achievement_type="Olimpiada",
+                achievement_type="innovatsion_loyiha",
+                scope="respublika_xalqaro",
                 title="Talabalar o'rtasida Respublika dasturlash olimpiadasida 1-o'rin",
                 description="O'zbekiston Respublikasi Oliy ta'lim vazirligi diplomi",
                 file_url="/static/docs/diplom_olimpiada.pdf",
-                points=25.0,
+                points=8.0,
                 status="approved"
             ),
             StudentAchievement(
@@ -264,11 +265,11 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
                 student_name="Karimova Nilufar Bahodir qizi",
                 hemis_id="3852011002",
                 faculty="Amaliy matematika va axborot texnologiyalari",
-                achievement_type="Patent / DGU",
+                achievement_type="patent",
                 title="E-tibbiyot axborot tizimi uchun DGU dasturiy ta'minot guvohnomasi",
                 description="Adliya vazirligi huzuridagi intellektual mulk agentligi guvohnomasi",
                 file_url="/static/docs/patent_nilufar.pdf",
-                points=24.0,
+                points=5.0,
                 status="approved"
             ),
             StudentAchievement(
@@ -276,11 +277,11 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
                 student_name="Rustamov Shavkat Akbar o'g'li",
                 hemis_id="3852011003",
                 faculty="Iqtisodiyot va boshqaruv",
-                achievement_type="Ilmiy maqola (OAK)",
+                achievement_type="oak_maqola",
                 title="Raqamli iqtisodiyotda ekotizimlarni rivojlantirish istiqbollari",
                 description="OAK ro'yxatidagi iqtisodiy jurnalda maqola",
                 file_url="/static/docs/oak_shavkat.pdf",
-                points=18.5,
+                points=4.0,
                 status="approved"
             )
         ]
@@ -369,6 +370,20 @@ async def seed_roles_and_permissions(db: AsyncSession):
             "code": "starosta",
             "name": "Guruh sardori",
             "description": "Guruh yetakchisi / sardori — o'z guruhi talabalarining yutuq va tanlovlardagi qatnashuvini kuzatuvchi",
+            "is_system": True,
+            "permissions": ["group.view"]
+        },
+        {
+            "code": "supervisor",
+            "name": "Ilmiy rahbar",
+            "description": "Nizom 16-modda: talabaning ilmiy qiziqishi va tayyorgarligini aniqlovchi, individual reja va tadqiqot natijalarini ko'rib chiquvchi professor-o'qituvchi",
+            "is_system": True,
+            "permissions": ["achievements.view"]
+        },
+        {
+            "code": "tutor",
+            "name": "Tyutor",
+            "description": "Nizom 17-modda: talabaning o'quv intizomi, davomati va ijtimoiy-psixologik qo'llab-quvvatlanishini kuzatuvchi mas'ul",
             "is_system": True,
             "permissions": ["group.view"]
         },

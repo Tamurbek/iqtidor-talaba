@@ -19,6 +19,7 @@ export interface AdminAchievement {
   hemis_id: string
   faculty?: string | null
   achievement_type: string
+  scope?: string | null
   title: string
   description?: string | null
   file_url?: string | null
@@ -55,8 +56,11 @@ export interface RankingItem {
   exam_status: 'passed' | 'failed' | 'topshirmagan' | string
   exam_certificate: string | null
   ach_points: number
+  category_points: Record<string, number>
   approved_count: number
   total_score: number
+  tier_code: 'yuqori_salohiyat' | 'istiqbolli' | 'tavsiya' | string
+  tier_label: string
   supervisor_id: number | null
   supervisor_name: string | null
   supervisor_degree: string | null
@@ -165,6 +169,36 @@ export interface SupervisorOption {
   faculty: string | null
   degree: string | null
   department: string | null
+  capacity: number | null
+  current_load: number
+  is_full: boolean
+}
+
+// GET /supervisor-requests/mine
+export interface SupervisorRequestItem {
+  id: number
+  supervisor_id: number
+  supervisor_name: string
+  supervisor_degree: string | null
+  supervisor_department: string | null
+  research_topic: string | null
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | string
+  rejection_reason: string | null
+  requested_at: string
+  decided_at: string | null
+}
+
+// GET /supervisor-requests/incoming
+export interface IncomingSupervisorRequest {
+  id: number
+  student_id: number
+  student_name: string
+  hemis_id: string
+  faculty: string | null
+  direction: string | null
+  group_name: string | null
+  research_topic: string | null
+  requested_at: string
 }
 
 export interface MessageResponse {

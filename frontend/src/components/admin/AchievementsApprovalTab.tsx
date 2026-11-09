@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import client from '../../api/client'
 import type { AdminAchievement } from '../../types/admin'
-import { extractErrorMessage } from '../../types/dashboard'
+import { ACHIEVEMENT_SCOPES, extractErrorMessage, getAchievementCategoryLabel } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 
 interface Props {
@@ -32,7 +32,7 @@ export default function AchievementsApprovalTab({
   const [rowHighlight, setRowHighlight] = useState<Record<number, string>>({})
 
   const approveAchievement = async (item: AdminAchievement) => {
-    const recPts = item.points || 20
+    const recPts = item.points || 1
     const input = window.prompt(
       `${item.student_name} uchun tasdiqlanadigan reyting balini kiriting:\nReyting bali (tavsiya etilgan: ${recPts})`,
       recPts.toString()
@@ -209,8 +209,11 @@ export default function AchievementsApprovalTab({
                   <td style={{ ...tdStyle, color: '#475569', fontSize: 13, whiteSpace: 'nowrap' }}>{item.faculty}</td>
                   <td style={tdStyle}>
                     <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
-                      {item.achievement_type}
+                      {getAchievementCategoryLabel(item.achievement_type)}
                     </span>
+                    {item.scope && ACHIEVEMENT_SCOPES[item.scope] && (
+                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>{ACHIEVEMENT_SCOPES[item.scope].label}</div>
+                    )}
                   </td>
                   <td style={{ ...tdStyle, maxWidth: 360 }}>
                     <div style={{ fontWeight: 600, color: '#0b3b70' }}>{item.title}</div>

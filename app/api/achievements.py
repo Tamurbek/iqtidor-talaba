@@ -11,7 +11,12 @@ from sqlalchemy import select, desc, func
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.achievement import StudentAchievement
+from app.models.achievement import (
+    StudentAchievement,
+    ACHIEVEMENT_CATEGORIES,
+    ACHIEVEMENT_SCOPES,
+    INNOVATION_TYPE_CODE,
+)
 from app.models.exam import StudentExamResult
 from app.schemas.achievement import (
     AchievementResponse,
@@ -34,12 +39,29 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @router.post("/upload")
 async def upload_achievement(
     achievement_type: str = Form(...),
+    scope: Optional[str] = Form(None),
     title: str = Form(...),
     description: Optional[str] = Form(None),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     student: User = Depends(get_current_student)
 ):
+
+    # Nizom 14-modda: faqat 8 ta standartlashtirilgan indikator kodi qabul qilinadi
+    if achievement_type not in ACHIEVEMENT_CATEGORIES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Yutuq toifasi Nizomning 14-moddasidagi indikatorlar ro'yxatiga mos kelmaydi"
+        )
+
+    if achievement_type == INNOVATION_TYPE_CODE:
+        if scope not in ACHIEVEMENT_SCOPES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ilmiy-innovatsion tanlov uchun miqyosni (filial yoki respublika/xalqaro) tanlang"
+            )
+    else:
+        scope = None
 
     # Anti-spam check: prevent excessive pending submissions
     res_pending = await db.execute(
@@ -119,25 +141,11 @@ async def upload_achievement(
 
     file_url = f"/static/uploads/achievements/{filename}"
 
-    # Auto-suggest points strictly based on Annex 2 of the official "Iqtidor" Regulation
-    suggested_pts = 0.0
-    type_lower = achievement_type.lower()
-    if "scopus" in type_lower or "web of science" in type_lower:
-        suggested_pts = 4.0  # Har biri uchun 4 ball (maks 8 ball)
-    elif "oak" in type_lower:
-        suggested_pts = 4.0  # Maksimal 4 ballgacha
-    elif "patent" in type_lower or "dgu" in type_lower or "ixtiro" in type_lower or "mualliflik" in type_lower:
-        suggested_pts = 5.0  # Maksimal 5 ballgacha
-    elif "ilmiy-innovatsion" in type_lower or "innovatsion" in type_lower:
-        suggested_pts = 4.0  # Universitetda 2 ball, respublika/xalqaro 8 ballgacha
-    elif "intellektual" in type_lower or "kitobxonlik" in type_lower or "zakovat" in type_lower:
-        suggested_pts = 1.0  # Har biri uchun 1 ball (maks 5 ball)
-    elif "ma'naviy" in type_lower or "ma'rifiy" in type_lower:
-        suggested_pts = 0.5  # Har biri uchun 0.5 ball (maks 4 ball)
-    elif "konferensiya" in type_lower or "tezis" in type_lower:
-        suggested_pts = 2.0  # Maksimal 2 ballgacha
+    # Auto-suggest points strictly based on Nizom 13-modda jadvali indikatorlari
+    if achievement_type == INNOVATION_TYPE_CODE:
+        suggested_pts = ACHIEVEMENT_SCOPES[scope]["per_item"]
     else:
-        suggested_pts = 1.0  # Boshqa yutuqlar (maks 3 ball)
+        suggested_pts = ACHIEVEMENT_CATEGORIES[achievement_type]["per_item"]
 
     new_achievement = StudentAchievement(
         user_id=student.id,
@@ -145,6 +153,7 @@ async def upload_achievement(
         hemis_id=student.hemis_id,
         faculty=student.faculty or "Amaliy matematika va axborot texnologiyalari",
         achievement_type=achievement_type,
+        scope=scope,
         title=clean_title,
         description=clean_desc,
         file_url=file_url,
@@ -163,6 +172,7 @@ async def upload_achievement(
             "id": new_achievement.id,
             "title": new_achievement.title,
             "achievement_type": new_achievement.achievement_type,
+            "scope": new_achievement.scope,
             "file_url": new_achievement.file_url,
             "status": new_achievement.status,
             "points": new_achievement.points,
@@ -186,6 +196,7 @@ async def get_my_achievements(
             {
                 "id": a.id,
                 "achievement_type": a.achievement_type,
+                "scope": a.scope,
                 "title": a.title,
                 "description": a.description,
                 "file_url": a.file_url,
@@ -297,7 +308,7 @@ async def get_students_ranking(
     course: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
 ):
-    # Nizom 2-ilova baholash shkalasi (jami 100 ball):
+    # Nizom 13-14-moddalari baholash shkalasi (jami 100 ball):
     # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40)
     ranking = await compute_ranking(db, faculty=faculty, direction=direction, course=course)
     return {"success": True, "ranking": ranking}
@@ -315,6 +326,7 @@ RANKING_EXPORT_HEADERS = [
     "Yutuqlar bali",
     "Tasdiqlangan yutuqlar soni",
     "Jami reyting bali",
+    "Saralash darajasi",
 ]
 
 
@@ -332,6 +344,7 @@ def _ranking_export_rows(ranking_data: list) -> list:
             r["ach_points"],
             r["approved_count"],
             r["total_score"],
+            r["tier_label"],
         ]
         for r in ranking_data
     ]
@@ -410,7 +423,7 @@ async def export_pdf_ranking(
     title_filters = ", ".join(
         f for f in [faculty, direction, f"{course}-kurs" if course else None] if f
     )
-    title_text = "Iqtidorli talabalar umumiy reytingi (Nizom 2-ilovasi, 100 ballik tizim)"
+    title_text = "Iqtidorli talabalar umumiy reytingi (Nizom 13-14-moddalari, 100 ballik tizim)"
     if title_filters:
         title_text += f" \u2014 {title_filters}"
 

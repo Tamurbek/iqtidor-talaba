@@ -1,18 +1,19 @@
 import type { User } from '../../types/user'
-import type { ExamStatus } from '../../types/dashboard'
+import type { Achievement, ExamStatus } from '../../types/dashboard'
+import { computeAchievementBreakdown } from '../../types/dashboard'
 
 interface Props {
   user: User
   examStatus: ExamStatus | null
-  achievementsPoints: number
+  achievements: Achievement[]
   onGoToCalculator: () => void
 }
 
-export default function RatingTab({ user, examStatus, achievementsPoints, onGoToCalculator }: Props) {
+export default function RatingTab({ user, examStatus, achievements, onGoToCalculator }: Props) {
   const examScore = examStatus?.status === 'passed' ? (examStatus.total_score ?? 0) : 0
   const gpa = user.avg_gpa || 5.0
   const gpaScore = Math.min(20, gpa * 4)
-  const achScore = Math.min(40, achievementsPoints)
+  const { total: achScore, byCategory } = computeAchievementBreakdown(achievements)
   const totalScore = Math.min(100, Math.round((examScore + gpaScore + achScore) * 10) / 10)
 
   return (
@@ -89,7 +90,7 @@ export default function RatingTab({ user, examStatus, achievementsPoints, onGoTo
         </div>
       </div>
 
-      {/* Nizom 2-ilovasidagi 10 ta indikatorning to'liq jadvali */}
+      {/* Nizom 13-moddasidagi 10 ta indikatorning to'liq jadvali */}
       <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 28, marginTop: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
           <div>
@@ -99,7 +100,7 @@ export default function RatingTab({ user, examStatus, achievementsPoints, onGoTo
                 <line x1="12" y1="20" x2="12" y2="4"></line>
                 <line x1="6" y1="20" x2="6" y2="14"></line>
               </svg>
-              <span>Nizomning 2-ilovasidagi 10 ta baholash indikatori bo'yicha to'plangan ballar</span>
+              <span>Nizomning 13-moddasidagi 10 ta baholash indikatori bo'yicha to'plangan ballar</span>
             </h3>
             <p style={{ color: '#64748b', fontSize: 13.5, marginTop: 3 }}>Har bir indikator bo'yicha maksimal va joriy to'plangan ballar taqsimoti</p>
           </div>
@@ -124,14 +125,14 @@ export default function RatingTab({ user, examStatus, achievementsPoints, onGoTo
               {[
                 ['1', 'Sinov imtihon natijalari', 'IQ (20 ball) + Tarix (10 ball) + Chet tili (10 ball)', '40', examScore.toFixed(1)],
                 ['2', "Fanlarni o'zlashtirish ko'rsatkichi", 'GPA * 4 proporsiyasi', '20', gpaScore.toFixed(1)],
-                ['3', "Ma'naviy-ma'rifiy tanlovlardagi ishtiroki", 'Kamida universitet miqyosida, har biri 0.5 balldan', '4', '-'],
-                ['4', 'Ilmiy-innovatsion tanlovlardagi ishtiroki', 'Universitet miqyosida 2 ball, respublika/xalqaro 8 ballgacha', '8', '-'],
-                ['5', 'Intellektual o\'yinlar va kitobxonlik tanlovlari', 'Kamida universitet miqyosida, har biri 1 balldan', '5', '-'],
-                ['6', '"Scopus" va "Web of Science" maqolalari', 'Har bir maqola uchun 4 balldan', '8', '-'],
-                ['7', 'OAK tasarrufidagi jurnallardagi maqolalar', 'Soniga nisbatan', '4', '-'],
-                ['8', 'Mahalliy va xalqaro konferensiya maqola/tezislari', 'Maqola va tezislar soniga qarab', '2', '-'],
-                ['9', 'Ixtiro, patent hamda mualliflik loyihalari (DGU)', 'Soniga nisbatan', '5', '-'],
-                ['10', 'Boshqa yutuqlar', "Ko'rik-tanlov diplomlari", '3', '-'],
+                ['3', "Ma'naviy-ma'rifiy tanlovlardagi ishtiroki", 'Kamida universitet miqyosida, har biri 0.5 balldan', '4', (byCategory['manaviy_marifiy'] ?? 0).toFixed(1)],
+                ['4', 'Ilmiy-innovatsion tanlovlardagi ishtiroki', 'Filial miqyosida 2 ball, respublika/xalqaro 8 ballgacha', '8', (byCategory['innovatsion_loyiha'] ?? 0).toFixed(1)],
+                ['5', 'Intellektual o\'yinlar va bilimlar tanlovlari', 'Kamida universitet miqyosida, har biri 1 balldan', '5', (byCategory['intellektual_oyin'] ?? 0).toFixed(1)],
+                ['6', '"Scopus" va "Web of Science" maqolalari', 'Har bir maqola uchun 4 balldan', '8', (byCategory['scopus_wos'] ?? 0).toFixed(1)],
+                ['7', 'OAK tasarrufidagi jurnallardagi maqolalar', 'Soniga nisbatan', '4', (byCategory['oak_maqola'] ?? 0).toFixed(1)],
+                ['8', 'Mahalliy va xalqaro konferensiya maqola/tezislari', 'Maqola va tezislar soniga qarab', '2', (byCategory['konferensiya'] ?? 0).toFixed(1)],
+                ['9', 'Ixtiro, patent hamda mualliflik loyihalari (DGU)', 'Soniga nisbatan', '5', (byCategory['patent'] ?? 0).toFixed(1)],
+                ['10', 'Boshqa tasdiqlangan yutuqlar', 'Stipendiya, diplom, sertifikat', '4', (byCategory['boshqa'] ?? 0).toFixed(1)],
               ].map((row) => (
                 <tr key={row[0]} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '12px 16px', fontWeight: 700 }}>{row[0]}</td>

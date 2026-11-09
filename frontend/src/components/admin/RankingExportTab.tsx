@@ -99,7 +99,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0b3b70' }}>Filial iqtidorli talabalari umumiy reytingi</h3>
-            <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Nizomning 2-ilovasi: GPA (20b) + 1-bosqich sinov imtihoni (40b) + Ilmiy-ijodiy yutuqlar (40b) = Jami 100 ball</p>
+            <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Nizomning 13-14-moddalari: GPA (20b) + 1-bosqich sinov imtihoni (40b) + Ilmiy-ijodiy yutuqlar, 8 indikator bo'yicha (40b) = Jami 100 ball</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <select id="rankingFacultyFilter" aria-label="Fakultet bo'yicha filtr" value={faculty} onChange={(e) => setFaculty(e.target.value)} style={selectStyle}>
@@ -151,23 +151,24 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>3. Yutuqlar (maks 40)</th>
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Ilmiy rahbar & Mavzu</th>
                 <th style={{ ...thStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>JAMI (100)</th>
+                <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Saralash darajasi</th>
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Guvohnoma</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
+                  <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
                 </tr>
               )}
               {!loading && error && (
                 <tr>
-                  <td colSpan={9} role="alert" style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={10} role="alert" style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>{error}</td>
                 </tr>
               )}
               {!loading && !error && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={9} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Reyting ma'lumotlari mavjud emas.</td>
+                  <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Reyting ma'lumotlari mavjud emas.</td>
                 </tr>
               )}
               {!loading && !error && filtered.map((r) => (
@@ -253,6 +254,15 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 800, color: '#0b3b70', fontSize: 16, whiteSpace: 'nowrap' }}>
                     {r.total_score} ball
+                  </td>
+                  <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    <span style={{
+                      padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 11.5,
+                      background: r.tier_code === 'yuqori_salohiyat' ? '#ecfdf5' : r.tier_code === 'istiqbolli' ? '#fff7ed' : '#fef2f2',
+                      color: r.tier_code === 'yuqori_salohiyat' ? '#059669' : r.tier_code === 'istiqbolli' ? '#ea580c' : '#dc2626',
+                    }}>
+                      {r.tier_label}
+                    </span>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {r.exam_certificate ? (

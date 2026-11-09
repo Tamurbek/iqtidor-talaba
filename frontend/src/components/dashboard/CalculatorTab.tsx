@@ -61,7 +61,8 @@ export default function CalculatorTab({ user }: Props) {
   const [scopus, setScopus] = useState(2)
   const [oak, setOak] = useState(1)
   const [patent, setPatent] = useState(1)
-  const [innov, setInnov] = useState(1)
+  const [innovFilial, setInnovFilial] = useState(0)
+  const [innovRespublika, setInnovRespublika] = useState(1)
   const [zakovat, setZakovat] = useState(4)
   const [spiritual, setSpiritual] = useState(4)
   const [conf, setConf] = useState(1)
@@ -74,24 +75,26 @@ export default function CalculatorTab({ user }: Props) {
     const scopusPts = Math.min(8.0, scopus * 4.0)
     const oakPts = Math.min(4.0, oak * 4.0)
     const patentPts = Math.min(5.0, patent * 5.0)
-    const innovPts = Math.min(8.0, innov * 8.0)
+    const innovFilialPts = Math.min(2.0, innovFilial * 2.0)
+    const innovRespublikaPts = Math.min(8.0, innovRespublika * 8.0)
+    const innovPts = Math.min(8.0, innovFilialPts + innovRespublikaPts)
     const zakovatPts = Math.min(5.0, zakovat * 1.0)
     const spiritualPts = Math.min(4.0, spiritual * 0.5)
-    const confPts = Math.min(2.0, conf * 2.0)
-    const otherPts = Math.min(3.0, other * 1.5)
+    const confPts = Math.min(2.0, conf * 1.0)
+    const otherPts = Math.min(4.0, other * 2.0)
 
     const achTotal = Math.min(40.0, scopusPts + oakPts + patentPts + innovPts + zakovatPts + spiritualPts + confPts + otherPts)
     const total = Math.min(100.0, Math.round((examPts + gpaPts + achTotal) * 10) / 10)
 
     return { examPts, gpaPts, achTotal, total }
-  }, [exam, gpa, scopus, oak, patent, innov, zakovat, spiritual, conf, other])
+  }, [exam, gpa, scopus, oak, patent, innovFilial, innovRespublika, zakovat, spiritual, conf, other])
 
   const tier = getTier(result.total)
 
   return (
     <div className="student-tab-pane" id="student-tab-calculator" style={{ display: 'block' }}>
       <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
-        <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0b3b70', marginBottom: 6 }}>Nizom baholash mezonlari aqlli kalkulyatori (2-ilova)</h3>
+        <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0b3b70', marginBottom: 6 }}>Nizom baholash mezonlari aqlli kalkulyatori (13-14-modda)</h3>
         <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>Ko'rsatkichlarni kiritib, yig'ma 100 ballik natijangizni jonli hisoblang.</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 28 }}>
@@ -111,20 +114,23 @@ export default function CalculatorTab({ user }: Props) {
             <label style={{ display: 'block', marginTop: 14 }}>Patent / DGU loyihalari soni
               <input type="number" value={patent} min={0} max={3} onChange={(e) => setPatent(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
             </label>
-            <label style={{ display: 'block', marginTop: 14 }}>Ilmiy-innovatsion tanlov ishtiroki soni
-              <input type="number" value={innov} min={0} max={2} onChange={(e) => setInnov(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
+            <label style={{ display: 'block', marginTop: 14 }}>Ilmiy-innovatsion tanlov (filial miqyosi) soni
+              <input type="number" value={innovFilial} min={0} max={1} onChange={(e) => setInnovFilial(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
             </label>
-            <label style={{ display: 'block', marginTop: 14 }}>Zakovat / kitobxonlik tanlovlari soni
+            <label style={{ display: 'block', marginTop: 14 }}>Ilmiy-innovatsion tanlov (respublika/xalqaro) soni
+              <input type="number" value={innovRespublika} min={0} max={1} onChange={(e) => setInnovRespublika(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
+            </label>
+            <label style={{ display: 'block', marginTop: 14 }}>Intellektual o'yin / bilimlar tanlovi soni
               <input type="number" value={zakovat} min={0} max={5} onChange={(e) => setZakovat(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
             </label>
-            <label style={{ display: 'block', marginTop: 14 }}>Ma'naviy-ma'rifiy tanlovlar soni
+            <label style={{ display: 'block', marginTop: 14 }}>Ma'naviy-ma'rifiy tadbirlar soni
               <input type="number" value={spiritual} min={0} max={8} onChange={(e) => setSpiritual(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
             </label>
             <label style={{ display: 'block', marginTop: 14 }}>Konferensiya maqola/tezislari soni
-              <input type="number" value={conf} min={0} max={4} onChange={(e) => setConf(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
+              <input type="number" value={conf} min={0} max={2} onChange={(e) => setConf(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
             </label>
-            <label style={{ display: 'block', marginTop: 14 }}>Boshqa yutuqlar soni
-              <input type="number" value={other} min={0} max={3} onChange={(e) => setOther(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
+            <label style={{ display: 'block', marginTop: 14 }}>Boshqa tasdiqlangan yutuqlar soni
+              <input type="number" value={other} min={0} max={2} onChange={(e) => setOther(parseInt(e.target.value, 10) || 0)} style={numberFieldStyle} />
             </label>
           </div>
 

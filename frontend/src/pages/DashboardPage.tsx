@@ -15,6 +15,7 @@ import ContestsTab from '../components/dashboard/ContestsTab'
 import CalculatorTab from '../components/dashboard/CalculatorTab'
 import ExamTab from '../components/dashboard/ExamTab'
 import GroupInfoTab from '../components/dashboard/GroupInfoTab'
+import SupervisorTab from '../components/dashboard/SupervisorTab'
 import type { Achievement, Application, ExamStatus, MeResponse, StudentTabKey } from '../types/dashboard'
 import { extractErrorMessage } from '../types/dashboard'
 
@@ -29,6 +30,7 @@ const VALID_TABS: StudentTabKey[] = [
   'contests',
   'upload',
   'calculator',
+  'supervisor',
 ]
 
 const TAB_TITLES: Record<StudentTabKey, string> = {
@@ -42,6 +44,7 @@ const TAB_TITLES: Record<StudentTabKey, string> = {
   contests: '6 ta Nominatsiyaga ariza',
   upload: 'Yutuq / Hujjat yuklash',
   calculator: 'Nizom 100 ball kalkulyatori',
+  supervisor: 'Ilmiy rahbar',
 }
 
 export default function DashboardPage() {
@@ -151,10 +154,6 @@ export default function DashboardPage() {
 
   if (!currentUser) return null
 
-  const achievementsPoints = achievements
-    .filter((a) => a.status === 'approved')
-    .reduce((sum, a) => sum + a.points, 0)
-
   return (
     <div className="cabinet-wrapper">
       <div
@@ -191,11 +190,12 @@ export default function DashboardPage() {
           <ProfileTab currentUser={currentUser} me={me} loading={meLoading} error={meError} />
         )}
         {activeTab === 'academic' && <AcademicTab user={currentUser} />}
+        {activeTab === 'supervisor' && <SupervisorTab user={currentUser} />}
         {activeTab === 'rating' && (
           <RatingTab
             user={currentUser}
             examStatus={examStatus}
-            achievementsPoints={achievementsPoints}
+            achievements={achievements}
             onGoToCalculator={() => switchTab('calculator')}
           />
         )}

@@ -43,6 +43,10 @@ class User(Base):
     supervisor_phone = Column(String(50), nullable=True) # Aloqa telefoni
     research_topic = Column(String(500), nullable=True) # Ilmiy-tadqiqot mavzusi
 
+    # Nizom 10.5-modda: professor-o'qituvchiga biriktirilishi mumkin bo'lgan
+    # talabalar soni (kvota). NULL = cheklanmagan.
+    supervisor_capacity = Column(Integer, nullable=True)
+
     # Dynamic Roles relationship (Many-to-Many)
     roles = relationship("Role", secondary="user_roles", back_populates="users", lazy="selectin")
     supervisor = relationship("User", remote_side=[id], foreign_keys=[supervisor_id], backref="mentored_students", lazy="selectin")
@@ -71,7 +75,9 @@ class User(Base):
                 "coordinator": "Fakultet koordinatori",
                 "starosta": "Guruh sardori",
                 "department_head": "Iqtidorli bo'lim boshlig'i",
-                "jury_expert": "Hakamlar hay'ati / Ekspert"
+                "jury_expert": "Hakamlar hay'ati / Ekspert",
+                "supervisor": "Ilmiy rahbar",
+                "tutor": "Tyutor"
             }
             names.append(mapping.get(self.role, self.role.capitalize()))
         return names

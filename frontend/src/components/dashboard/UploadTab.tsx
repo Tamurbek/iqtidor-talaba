@@ -1,21 +1,21 @@
 import { useRef, useState, type FormEvent } from 'react'
 import client from '../../api/client'
 import type { Achievement } from '../../types/dashboard'
-import { extractErrorMessage } from '../../types/dashboard'
+import { ACHIEVEMENT_SCOPES, INNOVATION_TYPE_CODE, extractErrorMessage } from '../../types/dashboard'
 
 interface Props {
   onUploaded: (achievement: Achievement) => void
 }
 
 const ACHIEVEMENT_TYPES = [
-  { value: '“Scopus” va “Web of Science” bazalaridagi maqola', label: '“Scopus” va “Web of Science” bazasidagi maqola [+4 ball / maks. 8 ball]' },
-  { value: 'OAK tasarrufidagi jurnal maqolasi', label: 'OAK tasarrufidagi jurnalda chop etilgan maqola [maks. 4 ball]' },
-  { value: 'Ixtiro, patent hamda mualliflik loyihasi (DGU)', label: 'Ixtiro, patent hamda mualliflik loyihasi (DGU guvohnomasi) [maks. 5 ball]' },
-  { value: 'Ilmiy-innovatsion tanlov ishtiroki / sovrini', label: 'Ilmiy-innovatsion tanlovlardagi ishtiroki (Respublika/Xalqaro) [maks. 8 ball]' },
-  { value: '‘Intellektual o‘yinlar va kitobxonlik tanlovi', label: "Intellektual o'yinlar (Zakovat) va kitobxonlik tanlovi [+1 ball / maks. 5 ball]" },
-  { value: "Ma’naviy-ma'rifiy tanlov ishtiroki", label: "Ma'naviy-ma'rifiy tanlovlardagi ishtirok [+0.5 ball / maks. 4 ball]" },
-  { value: 'Mahalliy va xalqaro konferensiya maqola/tezisi', label: 'Mahalliy va xalqaro konferensiya maqolasi hamda tezisi [maks. 2 ball]' },
-  { value: "Boshqa yutuqlar (ko'rik-tanlov diplomi)", label: 'Boshqa yutuqlar yoki sertifikatlar [maks. 3 ball]' },
+  { value: 'scopus_wos', label: '“Scopus” va “Web of Science” bazasidagi maqola [+4 ball / maks. 8 ball]' },
+  { value: 'oak_maqola', label: 'OAK ro\'yxatidagi jurnalda chop etilgan maqola [maks. 4 ball]' },
+  { value: 'patent', label: 'Ixtiro, patent hamda mualliflik loyihasi (DGU guvohnomasi) [maks. 5 ball]' },
+  { value: INNOVATION_TYPE_CODE, label: 'Ilmiy-innovatsion tanlov/loyihadagi ishtirok [filial: maks. 2, respublika/xalqaro: maks. 8 ball]' },
+  { value: 'intellektual_oyin', label: "Intellektual o'yinlar (Zakovat) va bilimlar tanlovi [+1 ball / maks. 5 ball]" },
+  { value: 'manaviy_marifiy', label: "Ma'naviy-ma'rifiy tadbir va jamoat ishi [+0.5 ball / maks. 4 ball]" },
+  { value: 'konferensiya', label: 'Mahalliy va xalqaro konferensiya maqolasi hamda tezisi [maks. 2 ball]' },
+  { value: 'boshqa', label: "Boshqa tasdiqlangan yutuq (stipendiya, diplom, sertifikat) [maks. 4 ball]" },
 ]
 
 interface UploadResponse {
@@ -27,6 +27,7 @@ interface UploadResponse {
 export default function UploadTab({ onUploaded }: Props) {
   const formRef = useRef<HTMLFormElement>(null)
   const [achType, setAchType] = useState(ACHIEVEMENT_TYPES[0].value)
+  const [scope, setScope] = useState<string>('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [file, setFile] = useState<File | null>(null)
@@ -39,12 +40,17 @@ export default function UploadTab({ onUploaded }: Props) {
       setFeedback({ type: 'error', message: 'Iltimos, tasdiqlovchi hujjat faylini tanlang.' })
       return
     }
+    if (achType === INNOVATION_TYPE_CODE && !scope) {
+      setFeedback({ type: 'error', message: "Ilmiy-innovatsion tanlov uchun miqyosni (filial yoki respublika/xalqaro) tanlang." })
+      return
+    }
 
     setSubmitting(true)
     setFeedback(null)
 
     const formData = new FormData()
     formData.append('achievement_type', achType)
+    if (achType === INNOVATION_TYPE_CODE) formData.append('scope', scope)
     formData.append('title', title)
     if (description) formData.append('description', description)
     formData.append('file', file)
@@ -58,6 +64,7 @@ export default function UploadTab({ onUploaded }: Props) {
       setDescription('')
       setFile(null)
       setAchType(ACHIEVEMENT_TYPES[0].value)
+      setScope('')
     } catch (err) {
       setFeedback({ type: 'error', message: extractErrorMessage(err, 'Yuklashda xatolik yuz berdi') })
     } finally {
@@ -78,7 +85,7 @@ export default function UploadTab({ onUploaded }: Props) {
             <span>Yutuq yoki ilmiy ish hujjatini yuklash</span>
           </h3>
           <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>
-            Nizomning 2-ilovasidagi 10 ta baholash indikatoriga muvofiq tegishli toifani tanlang va tasdiqlovchi faylni biriktiring.
+            Nizomning 13-moddasidagi 10 ta baholash indikatoriga muvofiq tegishli toifani tanlang va tasdiqlovchi faylni biriktiring.
           </p>
         </div>
 
@@ -120,6 +127,27 @@ export default function UploadTab({ onUploaded }: Props) {
             </select>
             <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>* Hammualliflikdagi ishlar mualliflar soniga nisbatan proporsional hisoblanadi.</p>
           </div>
+
+          {achType === INNOVATION_TYPE_CODE && (
+            <div style={{ marginBottom: 18 }}>
+              <label htmlFor="achScope" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>
+                Tanlov/loyiha miqyosi
+              </label>
+              <select
+                id="achScope"
+                name="scope"
+                required
+                value={scope}
+                onChange={(e) => setScope(e.target.value)}
+                style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', background: '#ffffff' }}
+              >
+                <option value="" disabled>Miqyosni tanlang...</option>
+                {Object.entries(ACHIEVEMENT_SCOPES).map(([code, meta]) => (
+                  <option key={code} value={code}>{meta.label} [maks. {meta.maxPoints} ball]</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div style={{ marginBottom: 18 }}>
             <label htmlFor="achTitle" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>Hujjat nomi / Maqola sarlavhasi</label>

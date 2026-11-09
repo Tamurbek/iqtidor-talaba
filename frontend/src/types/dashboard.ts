@@ -14,9 +14,33 @@ export interface MeResponse {
   is_starosta: boolean
 }
 
+// Nizom IV bo'lim, 13-modda jadvali: 8 ta "Ilmiy-ijodiy yutuqlar" indikatori (jami maks. 40 ball)
+export const ACHIEVEMENT_CATEGORIES: Record<string, { label: string; maxPoints: number; perItem: number | null }> = {
+  manaviy_marifiy: { label: "Ma'naviy-ma'rifiy tadbir va jamoat ishi", maxPoints: 4, perItem: 0.5 },
+  innovatsion_loyiha: { label: 'Ilmiy-innovatsion tanlov/loyihadagi ishtirok', maxPoints: 8, perItem: null },
+  intellektual_oyin: { label: "Intellektual o'yin / bilimlar tanlovi", maxPoints: 5, perItem: 1 },
+  scopus_wos: { label: 'Scopus / Web of Science bazasidagi maqola', maxPoints: 8, perItem: 4 },
+  oak_maqola: { label: "OAK ro'yxatidagi jurnal maqolasi", maxPoints: 4, perItem: 4 },
+  konferensiya: { label: 'Mahalliy/xalqaro konferensiya maqola yoki tezisi', maxPoints: 2, perItem: 1 },
+  patent: { label: 'Ixtiro, patent va mualliflik loyihasi (DGU)', maxPoints: 5, perItem: 5 },
+  boshqa: { label: 'Boshqa tasdiqlangan yutuq (stipendiya, diplom, sertifikat)', maxPoints: 4, perItem: 2 },
+}
+
+export const INNOVATION_TYPE_CODE = 'innovatsion_loyiha'
+
+export const ACHIEVEMENT_SCOPES: Record<string, { label: string; maxPoints: number; perItem: number }> = {
+  filial: { label: 'Filial miqyosida', maxPoints: 2, perItem: 2 },
+  respublika_xalqaro: { label: 'Respublika / xalqaro miqyosda', maxPoints: 8, perItem: 8 },
+}
+
+export function getAchievementCategoryLabel(code: string): string {
+  return ACHIEVEMENT_CATEGORIES[code]?.label ?? code
+}
+
 export interface Achievement {
   id: number
   achievement_type: string
+  scope?: string | null
   title: string
   description?: string | null
   file_url?: string | null
@@ -134,6 +158,40 @@ export type StudentTabKey =
   | 'contests'
   | 'upload'
   | 'calculator'
+  | 'supervisor'
+
+// app/services/ranking.py -> compute_achievement_points() bilan bir xil mantiq:
+// faqat hujjat biriktirilgan va tasdiqlangan yutuqlar, har bir indikator o'z cap'i bilan.
+export function computeAchievementBreakdown(achievements: Achievement[]): { total: number; byCategory: Record<string, number> } {
+  const approvedWithDoc = achievements.filter((a) => a.status === 'approved' && a.file_url)
+
+  const rawByCategory: Record<string, number> = {}
+  const innovationByScope: Record<string, number> = { filial: 0, respublika_xalqaro: 0 }
+
+  for (const a of approvedWithDoc) {
+    if (a.achievement_type === INNOVATION_TYPE_CODE) {
+      const scope = a.scope && ACHIEVEMENT_SCOPES[a.scope] ? a.scope : 'filial'
+      innovationByScope[scope] += a.points
+    } else if (ACHIEVEMENT_CATEGORIES[a.achievement_type]) {
+      rawByCategory[a.achievement_type] = (rawByCategory[a.achievement_type] || 0) + a.points
+    }
+  }
+
+  const byCategory: Record<string, number> = {}
+  for (const [code, meta] of Object.entries(ACHIEVEMENT_CATEGORIES)) {
+    if (code === INNOVATION_TYPE_CODE) continue
+    byCategory[code] = Math.round(Math.min(meta.maxPoints, rawByCategory[code] || 0) * 10) / 10
+  }
+
+  let innovationTotal = 0
+  for (const [scopeCode, scopeMeta] of Object.entries(ACHIEVEMENT_SCOPES)) {
+    innovationTotal += Math.min(scopeMeta.maxPoints, innovationByScope[scopeCode] || 0)
+  }
+  byCategory[INNOVATION_TYPE_CODE] = Math.round(Math.min(ACHIEVEMENT_CATEGORIES[INNOVATION_TYPE_CODE].maxPoints, innovationTotal) * 10) / 10
+
+  const total = Math.round(Math.min(40, Object.values(byCategory).reduce((sum, v) => sum + v, 0)) * 10) / 10
+  return { total, byCategory }
+}
 
 export function extractErrorMessage(err: unknown, fallback: string): string {
   const axiosErr = err as { response?: { data?: { detail?: unknown; message?: string } } }

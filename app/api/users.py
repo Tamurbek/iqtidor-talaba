@@ -5,7 +5,7 @@ from typing import List, Optional
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc, or_
+from sqlalchemy import select, desc, or_, func
 from pydantic import BaseModel, Field
 
 from app.core.database import get_db
@@ -414,23 +414,40 @@ async def get_available_supervisors(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Filialdagi ilmiy rahbarlar (professor-o'qituvchilar, koordinatorlar) ro'yxatini olish."""
+    """Nizom 10.1-modda: talaba tanlashi uchun ilmiy rahbar bo'la oladigan
+    professor-o'qituvchilar ro'yxati, har biri uchun joriy yuklama/kvota bilan."""
+    from app.models.role import user_roles as user_roles_table
+
     res = await db.execute(
         select(User).where(
             or_(
-                User.role.in_(["coordinator", "admin", "department_head", "jury_expert", "teacher"]),
-                User.supervisor_degree != None
+                User.role.in_(["coordinator", "admin", "department_head", "jury_expert", "teacher", "supervisor"]),
+                User.supervisor_degree != None,
+                User.id.in_(
+                    select(user_roles_table.c.user_id).join(
+                        Role, Role.id == user_roles_table.c.role_id
+                    ).where(Role.code == "supervisor")
+                )
             )
         ).order_by(User.full_name)
     )
     users = res.scalars().all()
+
+    mentee_counts_res = await db.execute(
+        select(User.supervisor_id, func.count(User.id)).where(User.supervisor_id.isnot(None)).group_by(User.supervisor_id)
+    )
+    mentee_counts = {row[0]: row[1] for row in mentee_counts_res.all()}
+
     return [
         {
             "id": u.id,
             "full_name": u.full_name,
             "faculty": u.faculty,
             "degree": u.supervisor_degree or ("Professor" if "prof" in u.full_name.lower() else "Dotsent"),
-            "department": u.supervisor_department or u.faculty
+            "department": u.supervisor_department or u.faculty,
+            "capacity": u.supervisor_capacity,
+            "current_load": mentee_counts.get(u.id, 0),
+            "is_full": u.supervisor_capacity is not None and mentee_counts.get(u.id, 0) >= u.supervisor_capacity
         }
         for u in users
     ]
