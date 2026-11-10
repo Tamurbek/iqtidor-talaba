@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import client from '../../api/client'
+import { useAuth } from '../../context/AuthContext'
 import type { IncomingSupervisorRequest, SupervisorOption, SupervisorRequestItem } from '../../types/admin'
 import type { User } from '../../types/user'
 import { extractErrorMessage } from '../../types/dashboard'
 
 interface Props {
   user: User
+  /** Admin panelidagi professor-o'qituvchi (ilmiy rahbar) ko'rinishida talaba uchun
+   * mo'ljallangan "rahbar tanlash" blokini yashirish uchun. */
+  hideSelfRequest?: boolean
 }
 
 const cardStyle: React.CSSProperties = {
@@ -22,7 +26,8 @@ const statusLabel: Record<string, { text: string; color: string; bg: string }> =
   cancelled: { text: 'Bekor qilindi', color: '#64748b', bg: '#f8fafc' },
 }
 
-export default function SupervisorTab({ user }: Props) {
+export default function SupervisorTab({ user, hideSelfRequest = false }: Props) {
+  const { updateCurrentUser } = useAuth()
   const [supervisors, setSupervisors] = useState<SupervisorOption[]>([])
   const [myRequests, setMyRequests] = useState<SupervisorRequestItem[]>([])
   const [incoming, setIncoming] = useState<IncomingSupervisorRequest[]>([])
@@ -41,20 +46,37 @@ export default function SupervisorTab({ user }: Props) {
     setLoading(true)
     setError(null)
     try {
+      // /supervisor-requests/mine faqat talaba/starosta uchun ochiq (get_current_student),
+      // shu sababli professor-o'qituvchi (hideSelfRequest) uni chaqirmaydi.
       const [supRes, reqRes, incRes] = await Promise.all([
-        client.get<SupervisorOption[]>('/users/supervisors/list'),
-        client.get<SupervisorRequestItem[]>('/supervisor-requests/mine'),
+        hideSelfRequest ? Promise.resolve({ data: [] as SupervisorOption[] }) : client.get<SupervisorOption[]>('/users/supervisors/list'),
+        hideSelfRequest ? Promise.resolve({ data: [] as SupervisorRequestItem[] }) : client.get<SupervisorRequestItem[]>('/supervisor-requests/mine'),
         client.get<IncomingSupervisorRequest[]>('/supervisor-requests/incoming').catch(() => ({ data: [] })),
       ])
+      const requests = Array.isArray(reqRes.data) ? reqRes.data : []
       setSupervisors(Array.isArray(supRes.data) ? supRes.data : [])
-      setMyRequests(Array.isArray(reqRes.data) ? reqRes.data : [])
+      setMyRequests(requests)
       setIncoming(Array.isArray(incRes.data) ? incRes.data : [])
+
+      // Talabaning so'rovi tasdiqlangan bo'lsa-yu, lekin keshlangan currentUser
+      // hali eski (supervisor_id bo'sh) bo'lsa — qayta login talab qilmasdan
+      // kartani yangilaymiz (AuthContext.updateCurrentUser localStorage'ni ham yozadi).
+      const accepted = requests.find((r) => r.status === 'accepted')
+      if (accepted && !user.supervisor_id) {
+        updateCurrentUser({
+          supervisor_id: accepted.supervisor_id,
+          supervisor_name: accepted.supervisor_name,
+          supervisor_degree: accepted.supervisor_degree,
+          supervisor_department: accepted.supervisor_department,
+          research_topic: accepted.research_topic,
+        })
+      }
     } catch (err) {
       setError(extractErrorMessage(err, "Ma'lumotlarni yuklashda xatolik yuz berdi"))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [user.supervisor_id, updateCurrentUser, hideSelfRequest])
 
   useEffect(() => {
     load()
@@ -163,7 +185,7 @@ export default function SupervisorTab({ user }: Props) {
         <div role="status" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: '#ecfdf5', color: '#059669' }}>{message}</div>
       )}
 
-      {hasSupervisor ? (
+      {!hideSelfRequest && (hasSupervisor ? (
         <div style={cardStyle}>
           <h3 style={{ margin: '0 0 10px', fontSize: 16, color: '#0b3b70' }}>Sizning ilmiy rahbaringiz</h3>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: '#0f172a' }}>{user.supervisor_name}</div>
@@ -217,9 +239,9 @@ export default function SupervisorTab({ user }: Props) {
             </form>
           )}
         </div>
-      )}
+      ))}
 
-      {myRequests.length > 0 && (
+      {!hideSelfRequest && myRequests.length > 0 && (
         <div style={cardStyle}>
           <h3 style={{ margin: '0 0 12px', fontSize: 16, color: '#0b3b70' }}>So'rovlarim tarixi</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

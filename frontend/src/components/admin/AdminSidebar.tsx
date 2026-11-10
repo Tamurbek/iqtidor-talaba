@@ -18,6 +18,7 @@ interface Props {
   fullName: string
   activeTab: AdminTabKey
   counts: AdminSidebarCounts
+  visibleTabs: Set<AdminTabKey>
   mobileOpen: boolean
   onSwitchTab: (tab: AdminTabKey) => void
   onLogout: () => void
@@ -25,7 +26,7 @@ interface Props {
 
 const fmt = (n: number | null) => (n === null ? '—' : n)
 
-export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTab, onLogout }: Props) {
+export default function AdminSidebar({ activeTab, counts, visibleTabs, mobileOpen, onSwitchTab, onLogout }: Props) {
   const linkClass = (tab: AdminTabKey) => `cabinet-menu-link${activeTab === tab ? ' active' : ''}`
   const [collapsed, setCollapsed] = useSidebarCollapse()
 
@@ -36,6 +37,7 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
 
         <div className="cabinet-menu-title">Boshqaruv bo'limlari</div>
         <ul className="cabinet-menu-list">
+          {visibleTabs.has('moderation') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('moderation')} className={linkClass('moderation')} id="admin-side-moderation">
               <span className="cabinet-menu-icon">
@@ -48,6 +50,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge badge-orange" id="sidePendingBadge">{fmt(counts.pending)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('contests-monitoring') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('contests-monitoring')} className={linkClass('contests-monitoring')} id="admin-side-contests">
               <span className="cabinet-menu-icon">
@@ -60,6 +64,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge">{fmt(counts.applications)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('ranking') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('ranking')} className={linkClass('ranking')} id="admin-side-ranking">
               <span className="cabinet-menu-icon">
@@ -74,6 +80,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge badge-green">{fmt(counts.ranking)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('starostas-management') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('starostas-management')} className={linkClass('starostas-management')} id="admin-side-starostas">
               <span className="cabinet-menu-icon">
@@ -87,6 +95,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge badge-blue">{fmt(counts.groups)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('roles-management') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('roles-management')} className={linkClass('roles-management')} id="admin-side-roles">
               <span className="cabinet-menu-icon">
@@ -99,6 +109,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge">{fmt(counts.roles)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('add-announcement') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('add-announcement')} className={linkClass('add-announcement')} id="admin-side-announcement">
               <span className="cabinet-menu-icon">
@@ -111,6 +123,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span>E'lon / Tanlov qo'shish</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('add-news') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('add-news')} className={linkClass('add-news')} id="admin-side-news">
               <span className="cabinet-menu-icon">
@@ -123,6 +137,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge" style={{ background: '#f1f5f9', color: '#475569' }} id="sideNewsBadge">{fmt(counts.news)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('add-document') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('add-document')} className={linkClass('add-document')} id="admin-side-documents">
               <span className="cabinet-menu-icon">
@@ -135,6 +151,8 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge" style={{ background: '#f1f5f9', color: '#475569' }} id="sideDocsBadge">{fmt(counts.documents)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('users-management') && (
           <li>
             <button type="button" onClick={() => onSwitchTab('users-management')} className={linkClass('users-management')} id="admin-side-users">
               <span className="cabinet-menu-icon">
@@ -149,6 +167,22 @@ export default function AdminSidebar({ activeTab, counts, mobileOpen, onSwitchTa
               <span className="cabinet-menu-badge badge-blue" id="sideUsersBadge">{fmt(counts.users)}</span>
             </button>
           </li>
+          )}
+          {visibleTabs.has('supervisor-requests') && (
+          <li>
+            <button type="button" onClick={() => onSwitchTab('supervisor-requests')} className={linkClass('supervisor-requests')} id="admin-side-supervisor-requests">
+              <span className="cabinet-menu-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </span>
+              <span>Ilmiy rahbarlik so'rovlari</span>
+            </button>
+          </li>
+          )}
           <li>
             <button type="button" onClick={() => onSwitchTab('profile-security')} className={linkClass('profile-security')} id="admin-side-profile">
               <span className="cabinet-menu-icon">

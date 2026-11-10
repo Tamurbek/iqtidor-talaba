@@ -421,7 +421,10 @@ async def get_available_supervisors(
     res = await db.execute(
         select(User).where(
             or_(
-                User.role.in_(["coordinator", "admin", "department_head", "jury_expert", "teacher", "supervisor"]),
+                # Nizom 15-16-modda: faqat professor-o'qituvchi (ilmiy darajasi/unvoni
+                # belgilangan yoki RBAC "supervisor" roli biriktirilgan) ilmiy rahbar
+                # bo'la oladi — admin, koordinator va hakamlar hay'ati a'zolari kirmaydi.
+                User.role.in_(["supervisor", "teacher"]),
                 User.supervisor_degree != None,
                 User.id.in_(
                     select(user_roles_table.c.user_id).join(

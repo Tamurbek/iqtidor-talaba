@@ -26,6 +26,8 @@ import NewsTab from '../components/admin/NewsTab'
 import UsersTab from '../components/admin/UsersTab'
 import DocumentsTab from '../components/admin/DocumentsTab'
 import ProfileTab from '../components/admin/ProfileTab'
+import SupervisorTab from '../components/dashboard/SupervisorTab'
+import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
 const VALID_TABS: AdminTabKey[] = [
@@ -38,6 +40,7 @@ const VALID_TABS: AdminTabKey[] = [
   'add-news',
   'add-document',
   'users-management',
+  'supervisor-requests',
   'profile-security',
 ]
 
@@ -51,6 +54,7 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'add-news': 'Yangiliklar boshqaruvi',
   'add-document': "Me'yoriy hujjatlar",
   'users-management': 'Foydalanuvchilar',
+  'supervisor-requests': "Ilmiy rahbarlik so'rovlari",
   'profile-security': 'Mening profilim & Parol',
 }
 
@@ -71,21 +75,47 @@ function tabFromHash(): AdminTabKey | null {
 export default function AdminDashboardPage() {
   const { currentUser, isLoading, logout, updateCurrentUser, loginWithToken } = useAuth()
   const navigate = useNavigate()
-  const isAdmin = currentUser?.role === 'admin'
 
-  const [activeTab, setActiveTab] = useState<AdminTabKey>(() => tabFromHash() ?? 'moderation')
+  const caps = getAdminCapabilities(currentUser?.role)
+  const visibleTabs = new Set<AdminTabKey>(['profile-security'])
+  if (caps.canVerifyAchievements) visibleTabs.add('moderation')
+  if (caps.canReviewContests) visibleTabs.add('contests-monitoring')
+  if (caps.canViewReports) visibleTabs.add('ranking')
+  if (caps.canViewStarostas) visibleTabs.add('starostas-management')
+  if (caps.canManageRoles) visibleTabs.add('roles-management')
+  if (caps.canManageContent) {
+    visibleTabs.add('add-announcement')
+    visibleTabs.add('add-news')
+    visibleTabs.add('add-document')
+  }
+  if (caps.canManageUsers) visibleTabs.add('users-management')
+  if (caps.canManageSupervisorRequests) visibleTabs.add('supervisor-requests')
+
+  const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
+    const fromHash = tabFromHash()
+    return fromHash ?? 'moderation'
+  })
   const [mobileOpen, setMobileOpen] = useState(false)
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const toastId = useRef(0)
 
-  const achievements = useApiResource(loadAchievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", isAdmin)
-  const ranking = useApiResource(loadRanking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", isAdmin)
-  const applications = useApiResource(loadApplications, 'Tanlov arizalarini yuklashda xatolik yuz berdi', isAdmin)
-  const starostas = useApiResource(loadStarostas, "Guruh ma'lumotlarini yuklab bo'lmadi", isAdmin)
-  const roles = useApiResource(loadRoles, "Rollar ro'yxatini yuklashda xatolik yuz berdi", isAdmin)
-  const news = useApiResource(loadNews, 'Yangiliklarni yuklashda xatolik yuz berdi', isAdmin)
-  const documents = useApiResource(loadDocuments, "Hujjatlar ro'yxatini yuklashda xatolik yuz berdi", isAdmin)
-  const users = useApiResource(loadUsers, "Foydalanuvchilar ro'yxatini yuklashda xatolik yuz berdi", isAdmin)
+  // Joriy rolga tegishli bo'lmagan tab ochilib qolsa (masalan hash orqali),
+  // foydalanuvchiga ko'rinadigan birinchi tabga o'tkazamiz.
+  useEffect(() => {
+    if (!visibleTabs.has(activeTab)) {
+      setActiveTab(visibleTabs.values().next().value ?? 'profile-security')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.role])
+
+  const achievements = useApiResource(loadAchievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", caps.canVerifyAchievements)
+  const ranking = useApiResource(loadRanking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports)
+  const applications = useApiResource(loadApplications, 'Tanlov arizalarini yuklashda xatolik yuz berdi', caps.canReviewContests)
+  const starostas = useApiResource(loadStarostas, "Guruh ma'lumotlarini yuklab bo'lmadi", caps.canViewStarostas)
+  const roles = useApiResource(loadRoles, "Rollar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageRoles)
+  const news = useApiResource(loadNews, 'Yangiliklarni yuklashda xatolik yuz berdi', caps.canManageContent)
+  const documents = useApiResource(loadDocuments, "Hujjatlar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageContent)
+  const users = useApiResource(loadUsers, "Foydalanuvchilar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageUsers)
 
   const closeToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -142,7 +172,7 @@ export default function AdminDashboardPage() {
 
   if (isLoading) return null
   if (!currentUser) return <Navigate to="/login?next=/admin" replace />
-  if (!isAdmin) return <Navigate to="/dashboard" replace />
+  if (currentUser.role === 'student') return <Navigate to="/dashboard" replace />
 
   const pendingCount = achievements.data?.pending_count ?? null
   const approvedCount = achievements.data?.approved_count ?? null
@@ -169,6 +199,7 @@ export default function AdminDashboardPage() {
             documents: documents.data?.length ?? null,
             users: users.data?.length ?? null,
           }}
+          visibleTabs={visibleTabs}
           mobileOpen={mobileOpen}
           onSwitchTab={handleAdminMenuTab}
           onLogout={handleLogout}
@@ -287,6 +318,9 @@ export default function AdminDashboardPage() {
               onReload={users.reload}
               showToast={showToast}
             />
+          )}
+          {activeTab === 'supervisor-requests' && (
+            <SupervisorTab user={currentUser} hideSelfRequest />
           )}
           {activeTab === 'profile-security' && (
             <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />

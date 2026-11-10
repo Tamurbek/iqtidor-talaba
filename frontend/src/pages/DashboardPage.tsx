@@ -18,6 +18,7 @@ import GroupInfoTab from '../components/dashboard/GroupInfoTab'
 import SupervisorTab from '../components/dashboard/SupervisorTab'
 import type { Achievement, Application, ExamStatus, MeResponse, StudentTabKey } from '../types/dashboard'
 import { extractErrorMessage } from '../types/dashboard'
+import { isStaffRole } from '../utils/roles'
 
 const VALID_TABS: StudentTabKey[] = [
   'personal',
@@ -48,8 +49,9 @@ const TAB_TITLES: Record<StudentTabKey, string> = {
 }
 
 export default function DashboardPage() {
-  const { currentUser, isAdmin, logout } = useAuth()
+  const { currentUser, logout } = useAuth()
   const navigate = useNavigate()
+  const isStaff = isStaffRole(currentUser?.role)
 
   const [activeTab, setActiveTab] = useState<StudentTabKey>('personal')
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -109,12 +111,12 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => {
-    if (!currentUser || isAdmin) return
+    if (!currentUser || isStaff) return
     loadAchievements()
     loadApplications()
     loadExamStatus()
     loadMe()
-  }, [currentUser, isAdmin, loadAchievements, loadApplications, loadExamStatus, loadMe])
+  }, [currentUser, isStaff, loadAchievements, loadApplications, loadExamStatus, loadMe])
 
   useEffect(() => {
     if (window.location.hash) {
@@ -146,9 +148,10 @@ export default function DashboardPage() {
     navigate('/login')
   }
 
-  // Backend serves the admin dashboard for admin/department-head style roles on this
-  // same route (see app/main.py:312-356); mirror that behaviour on the frontend.
-  if (isAdmin) {
+  // Talaba/starosta bo'lmagan barcha rollar (admin, department_head, coordinator,
+  // faculty_coordinator, jury_expert, tutor, supervisor) boshqaruv paneliga yo'naltiriladi;
+  // u yerda har bir rolga mos tablar getAdminCapabilities() orqali filtrlanadi.
+  if (isStaff) {
     return <AdminDashboardPage />
   }
 

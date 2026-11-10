@@ -10,6 +10,7 @@ from app.models.user import User
 from app.models.role import Role, Permission
 from app.models.achievement import StudentAchievement
 from app.models.application import ContestApplication
+from app.services.ranking import compute_achievement_points
 
 router = APIRouter(prefix="/roles", tags=["Dynamic Roles & Starostas"])
 
@@ -260,11 +261,12 @@ async def get_my_group_monitoring(
 
     classmates_data = []
     for cm in classmates:
-        # Get count of approved achievements
+        # Nizom 13-14-modda: ranking.py bilan bir xil kategoriya cap'lari qo'llanadi
         ach_res = await db.execute(select(StudentAchievement).where(StudentAchievement.user_id == cm.id))
         achs = ach_res.scalars().all()
-        approved_achs = sum(1 for a in achs if a.status == "approved")
-        total_points = sum(a.points for a in achs if a.status == "approved")
+        approved_achs_list = [a for a in achs if a.status == "approved"]
+        total_points, _ = compute_achievement_points(approved_achs_list)
+        approved_achs = sum(1 for a in approved_achs_list if a.file_url)
 
         # Get contest applications
         app_res = await db.execute(select(ContestApplication).where(ContestApplication.user_id == cm.id))
