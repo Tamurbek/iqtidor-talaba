@@ -170,6 +170,7 @@ export interface SupervisorOption {
   faculty: string | null
   degree: string | null
   department: string | null
+  image_url: string | null
   capacity: number | null
   current_load: number
   is_full: boolean

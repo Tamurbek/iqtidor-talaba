@@ -448,6 +448,7 @@ async def get_available_supervisors(
             "faculty": u.faculty,
             "degree": u.supervisor_degree or ("Professor" if "prof" in u.full_name.lower() else "Dotsent"),
             "department": u.supervisor_department or u.faculty,
+            "image_url": u.image_url,
             "capacity": u.supervisor_capacity,
             "current_load": mentee_counts.get(u.id, 0),
             "is_full": u.supervisor_capacity is not None and mentee_counts.get(u.id, 0) >= u.supervisor_capacity

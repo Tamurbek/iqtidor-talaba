@@ -98,7 +98,7 @@ export default function CalculatorTab({ user }: Props) {
         <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>Ko'rsatkichlarni kiritib, yig'ma 100 ballik natijangizni jonli hisoblang.</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 28 }}>
-          <div>
+          <div style={{ color: '#334155' }}>
             <label>Sinov imtihoni bali (maks. 40)
               <input type="number" value={exam} min={0} max={40} step={1} onChange={(e) => setExam(parseFloat(e.target.value) || 0)} style={numberFieldStyle} />
             </label>

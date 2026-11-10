@@ -50,6 +50,31 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
   const [secondsRemaining, setSecondsRemaining] = useState(45 * 60)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [certDownloading, setCertDownloading] = useState(false)
+  const [certError, setCertError] = useState<string | null>(null)
+
+  const downloadCertificatePdf = async () => {
+    setCertDownloading(true)
+    setCertError(null)
+    try {
+      const response = await client.get<Blob>('/exam/certificate/pdf', { responseType: 'blob' })
+      const disposition = String(response.headers['content-disposition'] ?? '')
+      const match = /filename="?([^";]+)"?/i.exec(disposition)
+      const filename = match ? match[1] : `sertifikat_${certNumber || 'iqtidor'}.pdf`
+      const url = window.URL.createObjectURL(response.data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      setCertError(extractErrorMessage(err, 'Sertifikatni yuklab olishda xatolik yuz berdi'))
+    } finally {
+      setCertDownloading(false)
+    }
+  }
 
   useEffect(() => {
     setView(passed ? 'result' : 'intro')
@@ -143,6 +168,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
   const totalScore = resultData?.total_score ?? 0
   const percentage = resultData?.percentage ?? 0
   const certNumber = resultData?.certificate_number ?? ''
+  const examPassed = resultData?.status === 'passed'
 
   return (
     <div className="student-tab-pane" id="student-tab-online-exam" style={{ display: 'block' }}>
@@ -182,21 +208,29 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
 
             {view === 'result' && (
               <div id="examResultView">
-                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 16, padding: 24, marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                <div style={{ background: examPassed ? '#f0fdf4' : '#fef2f2', border: `1px solid ${examPassed ? '#bbf7d0' : '#fecaca'}`, borderRadius: 16, padding: 24, marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: '#059669', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(5, 150, 105, 0.3)', flexShrink: 0 }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: examPassed ? '#059669' : '#dc2626', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${examPassed ? 'rgba(5, 150, 105, 0.3)' : 'rgba(220, 38, 38, 0.3)'}`, flexShrink: 0 }}>
+                      {examPassed ? (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      )}
                     </div>
                     <div>
-                      <h4 style={{ fontSize: 18, fontWeight: 800, color: '#166534' }}>1-bosqich imtihoni muvaffaqiyatli topshirilgan!</h4>
-                      <p style={{ fontSize: 13.5, color: '#15803d', marginTop: 2 }}>
-                        Siz saralashdan o'tdingiz va rasmiy elektron sertifikat bilan 2-yakuniy bosqichga tavsiya etildingiz.
+                      <h4 style={{ fontSize: 18, fontWeight: 800, color: examPassed ? '#166534' : '#991b1b' }}>
+                        {examPassed ? '1-bosqich imtihoni muvaffaqiyatli topshirilgan!' : 'Imtihon natijasi o\'tish balidan past'}
+                      </h4>
+                      <p style={{ fontSize: 13.5, color: examPassed ? '#15803d' : '#b91c1c', marginTop: 2 }}>
+                        {examPassed
+                          ? "Siz saralashdan o'tdingiz va rasmiy elektron sertifikat bilan 2-yakuniy bosqichga tavsiya etildingiz."
+                          : `Siz ${totalScore.toFixed(1)} ball to'pladingiz, o'tish uchun kamida 24 ball (60%) talab etiladi. Qaytadan urinib ko'rishingiz mumkin.`}
                       </p>
                     </div>
                   </div>
                   <button onClick={startFreshExam} style={{ background: '#ffffff', color: '#0b3b70', border: '1px solid #cbd5e1', padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                    <span>Testni qayta ishlash (mashq)</span>
+                    <span>{examPassed ? 'Testni qayta ishlash (mashq)' : 'Testni qayta topshirish'}</span>
                   </button>
                 </div>
 
@@ -223,6 +257,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                   </div>
                 </div>
 
+                {examPassed && (
                 <div id="printableCertificate" style={{ border: '4px double #0b3b70', borderRadius: 20, padding: 36, background: '#fdfefe', position: 'relative', boxShadow: '0 10px 30px rgba(0,0,0,0.05)', maxWidth: 820, margin: '0 auto' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '2px solid #0b3b70', paddingBottom: 18 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -268,17 +303,26 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                     </div>
 
                     <div style={{ textAlign: 'right' }}>
-                      <button onClick={() => window.print()} className="cert-no-print" style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '9px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        onClick={downloadCertificatePdf}
+                        disabled={certDownloading}
+                        className="cert-no-print"
+                        style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '9px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: certDownloading ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, opacity: certDownloading ? 0.7 : 1 }}
+                      >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                          <rect x="6" y="14" width="12" height="8"></rect>
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="7 10 12 15 17 10"></polyline>
+                          <line x1="12" y1="15" x2="12" y2="3"></line>
                         </svg>
-                        <span>Sertifikatni chop etish</span>
+                        <span>{certDownloading ? 'Tayyorlanmoqda...' : 'Rasmiy sertifikatni yuklab olish (PDF)'}</span>
                       </button>
+                      {certError && (
+                        <div className="cert-no-print" style={{ marginTop: 8, fontSize: 12, color: '#dc2626' }}>{certError}</div>
+                      )}
                     </div>
                   </div>
                 </div>
+                )}
               </div>
             )}
 

@@ -209,19 +209,70 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <select
-                value={selectedId}
-                onChange={(e) => setSelectedId(e.target.value)}
-                required
-                style={{ padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5 }}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                  gap: 12,
+                }}
               >
-                <option value="">-- Ilmiy rahbarni tanlang --</option>
-                {supervisors.map((s) => (
-                  <option key={s.id} value={String(s.id)} disabled={s.is_full}>
-                    {s.full_name} ({s.degree || "O'qituvchi"}){s.is_full ? ' — kvota to\'lgan' : s.capacity ? ` — ${s.current_load}/${s.capacity}` : ''}
-                  </option>
-                ))}
-              </select>
+                {supervisors.map((s) => {
+                  const isSelected = selectedId === String(s.id)
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      disabled={s.is_full}
+                      onClick={() => setSelectedId(String(s.id))}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        gap: 6,
+                        padding: '16px 12px',
+                        border: isSelected ? '2px solid #059669' : '1px solid #e2e8f0',
+                        background: isSelected ? '#ecfdf5' : s.is_full ? '#f8fafc' : '#ffffff',
+                        borderRadius: 12,
+                        cursor: s.is_full ? 'not-allowed' : 'pointer',
+                        opacity: s.is_full ? 0.6 : 1,
+                        font: 'inherit',
+                      }}
+                    >
+                      {s.image_url ? (
+                        <img
+                          src={s.image_url}
+                          alt={s.full_name}
+                          style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: '50%',
+                            background: '#e0f2fe',
+                            color: '#0369a1',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 22,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {s.full_name ? s.full_name[0] : '?'}
+                        </div>
+                      )}
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.3 }}>{s.full_name}</div>
+                      <div style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>{s.degree || "O'qituvchi"}</div>
+                      {s.department && <div style={{ fontSize: 11.5, color: '#64748b' }}>{s.department}</div>}
+                      <div style={{ fontSize: 11, color: s.is_full ? '#dc2626' : '#94a3b8', marginTop: 2 }}>
+                        {s.is_full ? "Kvota to'lgan" : s.capacity ? `${s.current_load}/${s.capacity} talaba` : `${s.current_load} talaba`}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
               <textarea
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}

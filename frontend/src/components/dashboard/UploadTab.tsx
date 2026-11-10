@@ -185,7 +185,7 @@ export default function UploadTab({ onUploaded }: Props) {
               accept=".pdf,.png,.jpg,.jpeg"
               required
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              style={{ width: '100%', fontSize: 14, padding: 8, border: '1px dashed #94a3b8', borderRadius: 8, background: '#f8fafc' }}
+              style={{ width: '100%', fontSize: 14, padding: 8, border: '1px dashed #94a3b8', borderRadius: 8, background: '#f8fafc', color: '#0f172a' }}
             />
           </div>
 

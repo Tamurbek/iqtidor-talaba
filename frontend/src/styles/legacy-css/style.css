@@ -289,8 +289,7 @@ select {
 .about-section {
   position: relative;
   padding: 70px 0;
-  background: linear-gradient(135deg, rgba(235, 244, 255, 0.9) 0%, rgba(240, 247, 255, 0.95) 100%),
-    url('/static/images/about-bg.png') center/cover no-repeat;
+  background: linear-gradient(135deg, rgba(235, 244, 255, 0.9) 0%, rgba(240, 247, 255, 0.95) 100%);
   border-top: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
 }
@@ -2067,4 +2066,28 @@ select {
 :root[data-theme='dark'] .cabinet-footer-btn.btn-logout:hover {
   background: rgba(220, 38, 38, 0.15);
   color: #f87171;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #printableCertificate,
+  #printableCertificate * {
+    visibility: visible;
+  }
+
+  #printableCertificate {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0;
+    box-shadow: none;
+  }
+
+  .cert-no-print {
+    display: none !important;
+  }
 }

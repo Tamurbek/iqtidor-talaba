@@ -1,9 +1,12 @@
+import os
 import time
 import random
 import uuid
+import io
 import logging
 from typing import Dict, Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, desc
@@ -17,6 +20,34 @@ from app.api.deps import get_current_student
 logger = logging.getLogger("iqtidorli_exam")
 
 router = APIRouter(prefix="/exam", tags=["Stage-1 Online Exam"])
+
+STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
+LOGO_PATH = os.path.join(STATIC_DIR, "images", "logo.png")
+FONT_DIR = os.path.join(STATIC_DIR, "fonts")
+
+# Certificate typography (Google Fonts, OFL-licensed): classic engraved serif for
+# titles/labels, a calligraphic script for the student's name.
+CERT_FONTS = {
+    "CinzelDeco-Bold": "CinzelDecorative-Bold.ttf",
+    "CinzelDeco-Regular": "CinzelDecorative-Regular.ttf",
+    "Cinzel-SemiBold": "Cinzel-SemiBold.ttf",
+    "EBGaramond": "EBGaramond-Regular.ttf",
+    "EBGaramond-SemiBold": "EBGaramond-SemiBold.ttf",
+    "GreatVibes": "GreatVibes-Regular.ttf",
+}
+
+
+def _register_certificate_fonts():
+    from reportlab.pdfbase import pdfmetrics
+    from reportlab.pdfbase.ttfonts import TTFont
+
+    registered = pdfmetrics.getRegisteredFontNames()
+    for font_name, filename in CERT_FONTS.items():
+        if font_name in registered:
+            continue
+        font_path = os.path.join(FONT_DIR, filename)
+        if os.path.isfile(font_path):
+            pdfmetrics.registerFont(TTFont(font_name, font_path))
 
 # TTZ 4.4: Stage-1 remote test is time-boxed to 45 minutes, enforced server-side
 # (the client-side countdown is a display only; the clock anchor below is authoritative).
@@ -522,3 +553,303 @@ async def submit_exam_answers(answers: Dict[str, str], db: AsyncSession = Depend
             else "Natija 60% dan past bo'ldi."
         )
     }
+
+
+# 4. Official Certificate (professional, server-rendered PDF — engraved diploma style)
+def _build_certificate_pdf(result: StudentExamResult) -> bytes:
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.units import mm
+    from reportlab.lib.utils import ImageReader
+    from reportlab.pdfgen import canvas
+    from reportlab.platypus import Paragraph
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.graphics.barcode import qr
+    from reportlab.graphics.shapes import Drawing
+    from reportlab.graphics import renderPDF
+
+    _register_certificate_fonts()
+
+    buf = io.BytesIO()
+    width, height = landscape(A4)
+    c = canvas.Canvas(buf, pagesize=landscape(A4))
+
+    NAVY = colors.HexColor("#0B2545")
+    NAVY_SOFT = colors.HexColor("#13315C")
+    GOLD = colors.HexColor("#B08D2B")
+    GOLD_LIGHT = colors.HexColor("#D4B85A")
+    CREAM = colors.HexColor("#FBF6EA")
+    CREAM_EDGE = colors.HexColor("#F1E8D2")
+    SLATE = colors.HexColor("#3A3A3A")
+    MUTED = colors.HexColor("#746B55")
+    GREEN = colors.HexColor("#0E7C4A")
+
+    # ---------- Background: soft radial vignette ----------
+    c.saveState()
+    c.radialGradient(width / 2, height / 2, width * 0.75, [CREAM, CREAM_EDGE], [0, 1], extend=False)
+    c.restoreState()
+
+    margin = 11 * mm
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(1.6)
+    c.roundRect(margin, margin, width - 2 * margin, height - 2 * margin, 4 * mm, fill=0, stroke=1)
+    c.setLineWidth(0.6)
+    c.roundRect(margin + 2.2 * mm, margin + 2.2 * mm, width - 2 * (margin + 2.2 * mm), height - 2 * (margin + 2.2 * mm), 3 * mm, fill=0, stroke=1)
+    c.setStrokeColor(NAVY)
+    c.setLineWidth(0.9)
+    inset = margin + 6 * mm
+    c.rect(inset, inset, width - 2 * inset, height - 2 * inset, fill=0, stroke=1)
+
+    # ---------- Corner flourishes ----------
+    def corner_flourish(x, y, sx, sy):
+        c.saveState()
+        c.translate(x, y)
+        c.scale(sx, sy)
+        c.setStrokeColor(GOLD)
+        c.setLineWidth(1.1)
+        p = c.beginPath()
+        p.moveTo(0, 16 * mm)
+        p.curveTo(0, 4 * mm, 4 * mm, 0, 16 * mm, 0)
+        c.drawPath(p, fill=0, stroke=1)
+        p2 = c.beginPath()
+        p2.moveTo(0, 10 * mm)
+        p2.curveTo(0, 5 * mm, 5 * mm, 0, 10 * mm, 0)
+        c.setLineWidth(0.6)
+        c.drawPath(p2, fill=0, stroke=1)
+        c.setFillColor(GOLD)
+        c.circle(2.2 * mm, 2.2 * mm, 0.9 * mm, fill=1, stroke=0)
+        c.restoreState()
+
+    off = inset + 1.5 * mm
+    corner_flourish(off, off, 1, 1)
+    corner_flourish(width - off, off, -1, 1)
+    corner_flourish(off, height - off, 1, -1)
+    corner_flourish(width - off, height - off, -1, -1)
+
+    inner_left = inset + 14 * mm
+    inner_right = width - inset - 14 * mm
+    cursor_y = height - inset - 13 * mm
+
+    # ---------- Header ----------
+    text_x = inner_left
+    if os.path.isfile(LOGO_PATH):
+        try:
+            logo = ImageReader(LOGO_PATH)
+            logo_h = 15 * mm
+            c.drawImage(logo, inner_left, cursor_y - logo_h + 4.5 * mm, width=logo_h, height=logo_h,
+                        preserveAspectRatio=True, mask='auto')
+            text_x = inner_left + logo_h + 5 * mm
+        except Exception:
+            pass
+
+    c.setFillColor(MUTED)
+    c.setFont("Cinzel-SemiBold", 7.3)
+    c.drawString(text_x, cursor_y, "O'ZBEKISTON RESPUBLIKASI OLIY TA'LIM, FAN VA INNOVATSIYALAR VAZIRLIGI")
+    c.setFillColor(NAVY)
+    c.setFont("Cinzel-SemiBold", 11.5)
+    c.drawString(text_x, cursor_y - 6.3 * mm, "Mirzo Ulug'bek nomidagi O'zMU Jizzax filiali")
+
+    c.setFillColor(MUTED)
+    c.setFont("EBGaramond", 8.3)
+    c.drawRightString(inner_right, cursor_y, "Guvohnoma raqami")
+    c.setFillColor(NAVY)
+    c.setFont("EBGaramond-SemiBold", 11.5)
+    c.drawRightString(inner_right, cursor_y - 6.3 * mm, result.certificate_number or "")
+
+    rule_y = cursor_y - 11.5 * mm
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(0.9)
+    c.line(inner_left, rule_y, inner_right, rule_y)
+    c.setFillColor(GOLD)
+    c.circle(width / 2, rule_y, 1.3 * mm, fill=1, stroke=0)
+
+    # ---------- Title block ----------
+    label_y = rule_y - 11 * mm
+    c.setFillColor(GOLD)
+    c.setFont("Cinzel-SemiBold", 9.2)
+    c.drawCentredString(width / 2, label_y, "R A S M I Y   G U V O H N O M A   ·   S E R T I F I K A T")
+
+    title_y = label_y - 13 * mm
+    c.setFillColor(NAVY)
+    c.setFont("CinzelDeco-Bold", 21)
+    c.drawCentredString(width / 2, title_y, "“IQTIDOR”  TANLOVI")
+    c.setFont("CinzelDeco-Regular", 13)
+    c.setFillColor(NAVY_SOFT)
+    c.drawCentredString(width / 2, title_y - 8 * mm, "1-BOSQICH SARALASHI")
+
+    intro_y = title_y - 17 * mm
+    c.setFillColor(SLATE)
+    c.setFont("EBGaramond", 11.5)
+    c.drawCentredString(width / 2, intro_y, "Ushbu sertifikat tasdiqlaydiki,")
+
+    def smart_case(full_name: str) -> str:
+        return " ".join(w[:1].upper() + w[1:].lower() for w in full_name.split(" ") if w)
+
+    display_name = smart_case(result.student_name)
+    name_y = intro_y - 13 * mm
+    max_name_w = (inner_right - inner_left) - 20 * mm
+    name_font_size = 34
+    name_w = c.stringWidth(display_name, "GreatVibes", name_font_size)
+    while name_w > max_name_w and name_font_size > 16:
+        name_font_size -= 1
+        name_w = c.stringWidth(display_name, "GreatVibes", name_font_size)
+    c.setFillColor(NAVY)
+    c.setFont("GreatVibes", name_font_size)
+    c.drawCentredString(width / 2, name_y, display_name)
+    half = min(90 * mm, max(55 * mm, name_w / 2 + 10 * mm))
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(0.8)
+    c.line(width / 2 - half, name_y - 3.2 * mm, width / 2 + half, name_y - 3.2 * mm)
+    c.setFillColor(GOLD)
+    c.circle(width / 2 - half, name_y - 3.2 * mm, 0.7 * mm, fill=1, stroke=0)
+    c.circle(width / 2 + half, name_y - 3.2 * mm, 0.7 * mm, fill=1, stroke=0)
+
+    c.setFillColor(MUTED)
+    c.setFont("EBGaramond", 9.3)
+    c.drawCentredString(width / 2, name_y - 9.5 * mm, f"(HEMIS ID: {result.hemis_id}  |  {result.faculty or ''})")
+
+    body_text = (
+        "Filial Kengashining 11-sonli bayonnomasi bilan tasdiqlangan “Iqtidor” tanlovi Nizomi talablariga "
+        "muvofiq, 1-bosqich masofaviy sinov imtihonlarini (IQ, O'zbekiston tarixi va Chet tili) muvaffaqiyatli "
+        f"topshirib, <font name='EBGaramond-SemiBold'>40 balldan {result.total_score:.1f} ball</font> to'pladi "
+        "hamda yakuniy 2-bosqichga yo'llanma oldi."
+    )
+    body_style = ParagraphStyle("cert-body", fontName="EBGaramond", fontSize=10.6, leading=15,
+                                 textColor=SLATE, alignment=TA_CENTER)
+    para = Paragraph(body_text, body_style)
+    para_w = 165 * mm
+    _, para_h = para.wrap(para_w, 40 * mm)
+    para.drawOn(c, width / 2 - para_w / 2, name_y - 17 * mm - para_h)
+
+    # ---------- Score strip: a single engraved panel, not separate flat cards ----------
+    scores_y = inset + 30 * mm
+    strip_h = 17 * mm
+    strip_w = inner_right - inner_left
+
+    c.setFillColor(colors.HexColor("#FFFDF8"))
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(0.9)
+    c.roundRect(inner_left, scores_y, strip_w, strip_h, 2.2 * mm, fill=1, stroke=1)
+    c.setLineWidth(0.4)
+    c.roundRect(inner_left + 1 * mm, scores_y + 1 * mm, strip_w - 2 * mm, strip_h - 2 * mm, 1.6 * mm, fill=0, stroke=1)
+
+    cols = [
+        ("IQ DARAJASI", f"{result.iq_score:.1f}", "20", False),
+        ("O'ZBEKISTON TARIXI", f"{result.history_score:.1f}", "10", False),
+        ("CHET TILI", f"{result.lang_score:.1f}", "10", False),
+        ("JAMI SINOV BALI", f"{result.total_score:.1f}", "40", True),
+    ]
+    col_w = strip_w / 4
+    for i, (label, val, maxv, is_total) in enumerate(cols):
+        cx = inner_left + col_w * i + col_w / 2
+        if i > 0:
+            c.setStrokeColor(GOLD)
+            c.setLineWidth(0.5)
+            dx = inner_left + col_w * i
+            c.line(dx, scores_y + 3.2 * mm, dx, scores_y + strip_h - 3.2 * mm)
+        c.setFillColor(GOLD if is_total else MUTED)
+        c.setFont("Cinzel-SemiBold", 6.8)
+        c.drawCentredString(cx, scores_y + strip_h - 6.3 * mm, label)
+        c.setFillColor(NAVY)
+        c.setFont("EBGaramond-SemiBold", 16 if is_total else 14.5)
+        c.drawCentredString(cx, scores_y + 4.6 * mm, f"{val} / {maxv}")
+
+    # ---------- Footer: signature, seal, QR ----------
+    footer_y = inset + 9 * mm
+    c.setStrokeColor(GOLD)
+    c.setDash(1, 2)
+    c.setLineWidth(0.7)
+    c.line(inner_left, footer_y + 11 * mm, inner_right, footer_y + 11 * mm)
+    c.setDash()
+
+    c.setFillColor(MUTED)
+    c.setFont("EBGaramond", 7.6)
+    c.drawString(inner_left, footer_y + 5 * mm, "Filial direktori")
+    c.setFillColor(NAVY)
+    c.setFont("Cinzel-SemiBold", 9.6)
+    c.drawString(inner_left, footer_y - 0.3 * mm, "prof. O.X. Turakulov")
+    c.setFillColor(colors.HexColor("#9C9375"))
+    c.setFont("EBGaramond", 7.2)
+    issue_date = result.created_at.strftime('%d.%m.%Y') if result.created_at else ""
+    c.drawString(inner_left, footer_y - 5.3 * mm, f"Sana: {issue_date}")
+
+    # Seal medal
+    seal_cx = width / 2
+    seal_r = 8 * mm
+    seal_cy = footer_y + 5 * mm
+    rib_w = 4.2 * mm
+    for dx, rot in ((-1, 15), (1, -15)):
+        c.saveState()
+        c.translate(seal_cx + dx * 3.2 * mm, seal_cy - 4 * mm)
+        c.rotate(rot)
+        c.setFillColor(GOLD_LIGHT)
+        p = c.beginPath()
+        p.moveTo(-rib_w / 2, 0)
+        p.lineTo(rib_w / 2, 0)
+        p.lineTo(rib_w / 2, -4 * mm)
+        p.lineTo(0, -2.6 * mm)
+        p.lineTo(-rib_w / 2, -4 * mm)
+        p.close()
+        c.drawPath(p, fill=1, stroke=0)
+        c.restoreState()
+
+    c.setFillColor(GOLD)
+    c.circle(seal_cx, seal_cy, seal_r, fill=1, stroke=0)
+    c.setFillColor(colors.white)
+    c.circle(seal_cx, seal_cy, seal_r - 1.5 * mm, fill=1, stroke=0)
+    c.setStrokeColor(GOLD)
+    c.setLineWidth(0.6)
+    c.circle(seal_cx, seal_cy, seal_r - 2.6 * mm, fill=0, stroke=1)
+    c.setFillColor(NAVY)
+    c.setFont("CinzelDeco-Bold", 7.3)
+    c.drawCentredString(seal_cx, seal_cy + 1 * mm, "O'zMU")
+    c.setFont("Cinzel-SemiBold", 4.4)
+    c.setFillColor(GOLD)
+    c.drawCentredString(seal_cx, seal_cy - 3.1 * mm, "1918")
+
+    c.setFillColor(GREEN)
+    c.setFont("Cinzel-SemiBold", 6.4)
+    c.drawCentredString(seal_cx, footer_y - 7 * mm, "ELEKTRON TASDIQLANGAN")
+
+    qr_data = (
+        f"IQTIDOR SERTIFIKATI\nRaqam: {result.certificate_number}\n"
+        f"F.I.Sh: {result.student_name}\nHEMIS: {result.hemis_id}\n"
+        f"Ball: {result.total_score:.1f}/40 ({result.percentage:.1f}%)\nSana: {issue_date}"
+    )
+    qr_widget = qr.QrCodeWidget(qr_data)
+    qb = qr_widget.getBounds()
+    qr_size = 20 * mm
+    qd = Drawing(qr_size, qr_size, transform=[qr_size / (qb[2] - qb[0]), 0, 0, qr_size / (qb[3] - qb[1]), 0, 0])
+    qd.add(qr_widget)
+    renderPDF.draw(qd, c, inner_right - qr_size, footer_y - 2 * mm)
+    c.setFillColor(MUTED)
+    c.setFont("EBGaramond", 6.6)
+    c.drawRightString(inner_right, footer_y - 5.3 * mm, "Tasdiqlash QR-kodi")
+
+    c.showPage()
+    c.save()
+    buf.seek(0)
+    return buf.read()
+
+
+@router.get("/certificate/pdf")
+async def download_certificate_pdf(db: AsyncSession = Depends(get_db), student: User = Depends(get_current_student)):
+    res = await db.execute(
+        select(StudentExamResult)
+        .where(StudentExamResult.user_id == student.id)
+        .order_by(desc(StudentExamResult.id))
+        .limit(1)
+    )
+    result = res.scalars().first()
+    if not result or result.status != "passed":
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sertifikat topilmagan. Avval 1-bosqich sinov imtihonidan muvaffaqiyatli o'ting."
+        )
+
+    pdf_bytes = _build_certificate_pdf(result)
+    filename = f"sertifikat_{result.certificate_number or result.id}.pdf"
+    response = StreamingResponse(io.BytesIO(pdf_bytes), media_type="application/pdf")
+    response.headers["Content-Disposition"] = f'inline; filename="{filename}"'
+    return response
