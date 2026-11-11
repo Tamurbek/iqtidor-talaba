@@ -34,6 +34,9 @@ class AssignStarostaRequest(BaseModel):
     student_id: int
     group_name: str
 
+class RevokeStarostaRequest(BaseModel):
+    group_name: str
+
 class AssignUserRolesRequest(BaseModel):
     user_id: int
     role_ids: List[int]
@@ -236,6 +239,39 @@ async def assign_starosta(
             "group_name": student.group_name,
             "is_starosta": True
         }
+    }
+
+
+@router.post("/starostas/revoke")
+async def revoke_starosta(
+    req: RevokeStarostaRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Removes the current Starosta assignment from a group, leaving it unassigned.
+    """
+    if not (current_user.is_department_head or current_user.has_permission("starostas.manage")):
+        raise HTTPException(status_code=403, detail="Guruhdan starostani bekor qilish huquqingiz yo'q")
+
+    group_students = (await db.execute(select(User).where(User.group_name == req.group_name))).scalars().all()
+    if not group_students:
+        raise HTTPException(status_code=404, detail="Guruh topilmadi")
+
+    revoked = None
+    for s in group_students:
+        if s.is_starosta:
+            s.roles = [r for r in s.roles if r.code != "starosta"]
+            revoked = s
+
+    if not revoked:
+        raise HTTPException(status_code=400, detail="Bu guruhda hozircha tayinlangan sardor yo'q")
+
+    await db.commit()
+
+    return {
+        "message": f"{revoked.full_name} {req.group_name} guruhi sardorligidan chetlashtirildi",
+        "group_name": req.group_name
     }
 
 

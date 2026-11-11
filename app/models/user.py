@@ -3,6 +3,19 @@ from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
 
+ROLE_CODE_TO_NAME = {
+    "student": "Talaba",
+    "admin": "Super Administrator",
+    "super_admin": "Super Administrator",
+    "coordinator": "Fakultet koordinatori",
+    "faculty_coordinator": "Fakultet koordinatori",
+    "starosta": "Guruh sardori",
+    "department_head": "Iqtidorli bo'lim boshlig'i",
+    "jury_expert": "Hakamlar hay'ati / Ekspert",
+    "supervisor": "Ilmiy rahbar",
+    "tutor": "Tyutor",
+}
+
 class User(Base):
     __tablename__ = "users"
 
@@ -69,18 +82,23 @@ class User(Base):
     def role_names(self) -> list:
         names = [r.name for r in self.roles]
         if not names:
-            mapping = {
-                "student": "Talaba",
-                "admin": "Super Administrator",
-                "coordinator": "Fakultet koordinatori",
-                "starosta": "Guruh sardori",
-                "department_head": "Iqtidorli bo'lim boshlig'i",
-                "jury_expert": "Hakamlar hay'ati / Ekspert",
-                "supervisor": "Ilmiy rahbar",
-                "tutor": "Tyutor"
-            }
-            names.append(mapping.get(self.role, self.role.capitalize()))
+            names.append(ROLE_CODE_TO_NAME.get(self.role, self.role.capitalize()))
         return names
+
+    @property
+    def assigned_roles(self) -> list:
+        """
+        Foydalanuvchiga biriktirilgan BARCHA rollar (legacy `role` ustuni + dinamik
+        `roles` M2M). Profil menyusidagi "Rolni almashtirish" ro'yxati shundan to'ldiriladi,
+        shuning uchun kod bo'yicha dublikatsiz va tartib: legacy rol birinchi.
+        """
+        seen: dict = {}
+        if self.role:
+            seen[self.role] = ROLE_CODE_TO_NAME.get(self.role, self.role.capitalize())
+        for r in self.roles:
+            if r.code not in seen:
+                seen[r.code] = r.name
+        return [{"code": code, "name": name} for code, name in seen.items()]
 
     @property
     def is_starosta(self) -> bool:

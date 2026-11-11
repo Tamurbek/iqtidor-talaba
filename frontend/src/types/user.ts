@@ -1,8 +1,14 @@
+export interface RoleAssignment {
+  code: string
+  name: string
+}
+
 export interface User {
   id: number
   hemis_id: string
   full_name: string
   role: string
+  assigned_roles?: RoleAssignment[]
   faculty?: string | null
   direction?: string | null
   group_name?: string | null

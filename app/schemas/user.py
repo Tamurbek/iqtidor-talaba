@@ -1,6 +1,10 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
+
+class RoleAssignmentOut(BaseModel):
+    code: str
+    name: str
 
 class UserBase(BaseModel):
     hemis_id: str
@@ -44,6 +48,7 @@ class UserResponse(UserBase):
     is_active: bool
     created_at: datetime
     eimzo_serial: Optional[str] = None
+    assigned_roles: List[RoleAssignmentOut] = []
 
     class Config:
         from_attributes = True

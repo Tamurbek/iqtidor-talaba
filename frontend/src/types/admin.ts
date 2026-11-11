@@ -148,6 +148,7 @@ export interface AdminUser {
   full_name: string
   role: string
   role_names: string[]
+  assigned_roles: { code: string; name: string }[]
   faculty: string | null
   direction: string | null
   group_name: string | null

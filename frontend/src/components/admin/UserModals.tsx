@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
 import client from '../../api/client'
-import type { AdminUser, MessageResponse } from '../../types/admin'
+import type { AdminUser, MessageResponse, RoleItem } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 
 const overlayStyle: React.CSSProperties = { position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(4px)' }
-const boxStyle = (maxWidth: number): React.CSSProperties => ({ background: '#ffffff', borderRadius: 16, width: '100%', maxWidth, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden', animation: 'popIn 0.25s ease' })
-const headerStyle: React.CSSProperties = { padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }
-const titleStyle: React.CSSProperties = { margin: 0, fontSize: 17, fontWeight: 700, color: '#0b3b70' }
-const closeBtnStyle: React.CSSProperties = { background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#94a3b8' }
-const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 5 }
+const boxStyle = (maxWidth: number): React.CSSProperties => ({ background: 'var(--bg-white)', borderRadius: 16, width: '100%', maxWidth, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden', animation: 'popIn 0.25s ease' })
+const headerStyle: React.CSSProperties = { padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }
+const titleStyle: React.CSSProperties = { margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-heading)' }
+const closeBtnStyle: React.CSSProperties = { background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--text-light)' }
+const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 5 }
 const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5 }
-const cancelBtnStyle: React.CSSProperties = { padding: '10px 16px', border: '1px solid #cbd5e1', background: '#f8fafc', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+const cancelBtnStyle: React.CSSProperties = { padding: '10px 16px', border: '1px solid #cbd5e1', background: 'var(--bg-light)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
 const errorBoxStyle: React.CSSProperties = { padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: '#fef2f2', color: '#dc2626' }
 
 const ROLE_OPTIONS_ADD: { value: string; label: string }[] = [
@@ -54,7 +54,7 @@ function PasswordInput({ id, value, onChange, placeholder, padding, fontSize, bt
   return (
     <div style={{ position: 'relative' }}>
       <input type={visible ? 'text' : 'password'} id={id} required minLength={6} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} style={{ ...inputStyle, padding, fontSize }} />
-      <button type="button" onClick={() => setVisible((v) => !v)} title={visible ? 'Parolni yashirish' : "Parolni ko'rish"} aria-label={visible ? 'Parolni yashirish' : "Parolni ko'rish"} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: btnPadding, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <button type="button" onClick={() => setVisible((v) => !v)} title={visible ? 'Parolni yashirish' : "Parolni ko'rish"} aria-label={visible ? 'Parolni yashirish' : "Parolni ko'rish"} style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: btnPadding, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {visible ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
@@ -136,7 +136,7 @@ export function AddUserModal({ onClose, onSaved }: BaseModalProps) {
           </div>
           <div style={{ marginBottom: 14 }}>
             <label htmlFor="newRole" style={labelStyle}>Tizimdagi lavozimi / roli *</label>
-            <select id="newRole" value={role} onChange={(e) => setRole(e.target.value)} style={{ ...inputStyle, background: '#ffffff' }}>
+            <select id="newRole" value={role} onChange={(e) => setRole(e.target.value)} style={{ ...inputStyle, background: 'var(--bg-white)' }}>
               {ROLE_OPTIONS_ADD.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
@@ -148,7 +148,7 @@ export function AddUserModal({ onClose, onSaved }: BaseModalProps) {
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose} style={cancelBtnStyle}>Bekor qilish</button>
-            <button type="submit" id="btnSubmitAddUser" disabled={submitting} style={{ padding: '10px 18px', border: 'none', background: '#0b3b70', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+            <button type="submit" id="btnSubmitAddUser" disabled={submitting} style={{ padding: '10px 18px', border: 'none', background: 'var(--primary-color)', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
               {submitting ? 'Yaratilmoqda...' : 'Yaratish'}
             </button>
           </div>
@@ -158,15 +158,28 @@ export function AddUserModal({ onClose, onSaved }: BaseModalProps) {
   )
 }
 
-export function EditUserModal({ user, onClose, onSaved }: BaseModalProps & { user: AdminUser }) {
+export function EditUserModal({ user, roles, onClose, onSaved }: BaseModalProps & { user: AdminUser; roles?: RoleItem[] | null }) {
   const [fullName, setFullName] = useState(user.full_name || '')
   const [login, setLogin] = useState(user.login || '')
   const [role, setRole] = useState(user.role)
   const [faculty, setFaculty] = useState(user.faculty || '')
   const [isActive, setIsActive] = useState(user.is_active)
+  const [extraRoleIds, setExtraRoleIds] = useState<Set<number>>(() => {
+    const assignedCodes = new Set((user.assigned_roles || []).map((r) => r.code))
+    return new Set((roles || []).filter((r) => assignedCodes.has(r.code)).map((r) => r.id))
+  })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   useEscape(onClose)
+
+  const toggleExtraRole = (id: number) => {
+    setExtraRoleIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   const submitEditUser = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -180,6 +193,11 @@ export function EditUserModal({ user, onClose, onSaved }: BaseModalProps & { use
         faculty: faculty.trim() || null,
         is_active: isActive,
       })
+      if (roles && roles.length > 0) {
+        await client.put(`/users/${encodeURIComponent(user.id)}/roles`, {
+          role_ids: Array.from(extraRoleIds),
+        })
+      }
       onSaved(data.message || 'Muvaffaqiyatli saqlandi!')
     } catch (err) {
       setError(extractErrorMessage(err, 'Tahrirlashda xatolik yuz berdi'))
@@ -206,7 +224,7 @@ export function EditUserModal({ user, onClose, onSaved }: BaseModalProps & { use
           </div>
           <div style={{ marginBottom: 14 }}>
             <label htmlFor="editRole" style={labelStyle}>Tizimdagi roli *</label>
-            <select id="editRole" value={role} onChange={(e) => setRole(e.target.value)} style={{ ...inputStyle, background: '#ffffff' }}>
+            <select id="editRole" value={role} onChange={(e) => setRole(e.target.value)} style={{ ...inputStyle, background: 'var(--bg-white)' }}>
               {ROLE_OPTIONS_EDIT.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
@@ -216,16 +234,29 @@ export function EditUserModal({ user, onClose, onSaved }: BaseModalProps & { use
             <label htmlFor="editFaculty" style={labelStyle}>Fakultet / Bo'lim</label>
             <input type="text" id="editFaculty" value={faculty} onChange={(e) => setFaculty(e.target.value)} style={inputStyle} />
           </div>
+          {roles && roles.length > 0 && (
+            <div style={{ marginBottom: 18 }}>
+              <label style={labelStyle}>Qo'shimcha rollar (Rolni almashtirish menyusi uchun)</label>
+              <div style={{ border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {roles.map((r) => (
+                  <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                    <input type="checkbox" checked={extraRoleIds.has(r.id)} onChange={() => toggleExtraRole(r.id)} />
+                    {r.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
           <div style={{ marginBottom: 18 }}>
             <label htmlFor="editStatus" style={labelStyle}>Akkaunt holati</label>
-            <select id="editStatus" value={isActive ? 'true' : 'false'} onChange={(e) => setIsActive(e.target.value === 'true')} style={{ ...inputStyle, background: '#ffffff' }}>
+            <select id="editStatus" value={isActive ? 'true' : 'false'} onChange={(e) => setIsActive(e.target.value === 'true')} style={{ ...inputStyle, background: 'var(--bg-white)' }}>
               <option value="true">Faol</option>
               <option value="false">Nofaol (bloklangan)</option>
             </select>
           </div>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
             <button type="button" onClick={onClose} style={cancelBtnStyle}>Bekor qilish</button>
-            <button type="submit" id="btnSubmitEditUser" disabled={submitting} style={{ padding: '10px 18px', border: 'none', background: '#0b3b70', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+            <button type="submit" id="btnSubmitEditUser" disabled={submitting} style={{ padding: '10px 18px', border: 'none', background: 'var(--primary-color)', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
               {submitting ? 'Saqlanmoqda...' : 'Saqlash'}
             </button>
           </div>
@@ -266,8 +297,8 @@ export function ResetPasswordModal({ user, onClose, onSaved }: BaseModalProps & 
           <button type="button" aria-label="Yopish" onClick={onClose} style={closeBtnStyle}>&times;</button>
         </div>
         <form onSubmit={submitResetPassword} style={{ padding: 24 }}>
-          <p style={{ fontSize: 13.5, color: '#475569', margin: '0 0 16px' }}>
-            Foydalanuvchi: <strong style={{ color: '#0b3b70' }}>{user.full_name}</strong> (<code>{user.login}</code>)
+          <p style={{ fontSize: 13.5, color: 'var(--text-table-header)', margin: '0 0 16px' }}>
+            Foydalanuvchi: <strong style={{ color: 'var(--text-heading)' }}>{user.full_name}</strong> (<code>{user.login}</code>)
           </p>
           {error && <div role="alert" style={errorBoxStyle}>{error}</div>}
           <div style={{ marginBottom: 18 }}>

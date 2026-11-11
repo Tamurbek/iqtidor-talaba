@@ -73,10 +73,10 @@ function tabFromHash(): AdminTabKey | null {
 }
 
 export default function AdminDashboardPage() {
-  const { currentUser, isLoading, logout, updateCurrentUser, loginWithToken } = useAuth()
+  const { currentUser, isLoading, logout, updateCurrentUser, loginWithToken, activeRole, setActiveRole } = useAuth()
   const navigate = useNavigate()
 
-  const caps = getAdminCapabilities(currentUser?.role)
+  const caps = getAdminCapabilities(activeRole ?? currentUser?.role)
   const visibleTabs = new Set<AdminTabKey>(['profile-security'])
   if (caps.canVerifyAchievements) visibleTabs.add('moderation')
   if (caps.canReviewContests) visibleTabs.add('contests-monitoring')
@@ -106,7 +106,7 @@ export default function AdminDashboardPage() {
       setActiveTab(visibleTabs.values().next().value ?? 'profile-security')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentUser?.role])
+  }, [currentUser?.role, activeRole])
 
   const achievements = useApiResource(loadAchievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", caps.canVerifyAchievements)
   const ranking = useApiResource(loadRanking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports)
@@ -210,6 +210,10 @@ export default function AdminDashboardPage() {
             title={TAB_TITLES[activeTab]}
             userName={currentUser.full_name}
             userRole="Administrator paneli"
+            userLogin={currentUser.hemis_id}
+            assignedRoles={currentUser.assigned_roles}
+            activeRoleCode={activeRole ?? currentUser.role}
+            onRoleChange={setActiveRole}
             onMenuClick={() => setMobileOpen((v) => !v)}
             onLogout={handleLogout}
           />
@@ -275,6 +279,17 @@ export default function AdminDashboardPage() {
                     : prev
                 )
               }
+              onStarostaRevoked={(groupName) =>
+                starostas.setData((prev) =>
+                  prev
+                    ? prev.map((g) => {
+                        if (g.group_name !== groupName) return g
+                        const students = g.students.map((s) => ({ ...s, is_starosta: false }))
+                        return { ...g, students, starosta: null }
+                      })
+                    : prev
+                )
+              }
               showToast={showToast}
             />
           )}
@@ -312,6 +327,7 @@ export default function AdminDashboardPage() {
           {activeTab === 'users-management' && (
             <UsersTab
               users={users.data}
+              roles={roles.data}
               loading={users.loading}
               error={users.error}
               currentUserId={currentUser.id}

@@ -17,12 +17,12 @@ export default function ProfileTab({ currentUser, me, loading, error }: Props) {
   return (
     <div className="student-tab-pane" id="student-tab-personal" style={{ display: 'block' }}>
       {/* Profile Header Banner */}
-      <div style={{ background: 'linear-gradient(135deg, #0b3b70 0%, #1e5ba3 100%)', borderRadius: 20, padding: 32, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, boxShadow: '0 10px 30px rgba(11, 59, 112, 0.15)' }}>
+      <div style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1e5ba3 100%)', borderRadius: 20, padding: 32, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, boxShadow: '0 10px 30px rgba(11, 59, 112, 0.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {currentUser.image_url ? (
             <img src={currentUser.image_url} alt={fullName} style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(255,255,255,0.8)', boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }} />
           ) : (
-            <div style={{ width: 84, height: 84, borderRadius: '50%', background: '#ffffff', color: '#0b3b70', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(255,255,255,0.4)', fontSize: 32, fontWeight: 800 }}>
+            <div style={{ width: 84, height: 84, borderRadius: '50%', background: 'var(--bg-white)', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(255,255,255,0.4)', fontSize: 32, fontWeight: 800 }}>
               {fullName ? fullName[0] : 'T'}
             </div>
           )}
@@ -67,17 +67,17 @@ export default function ProfileTab({ currentUser, me, loading, error }: Props) {
       )}
 
       {/* Shaxsiy anketasi kartasi */}
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 28, marginTop: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, borderBottom: '1px solid #f1f5f9', paddingBottom: 14 }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 28, marginTop: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, borderBottom: '1px solid var(--border-light)', paddingBottom: 14 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0b3b70', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span>Shaxsiy ma'lumotlar kartasi</span>
             </h3>
-            <p style={{ color: '#64748b', fontSize: 13.5, marginTop: 3 }}>HEMIS axborot tizimi orqali tasdiqlangan talaba shaxsiy hisobi</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginTop: 3 }}>HEMIS axborot tizimi orqali tasdiqlangan talaba shaxsiy hisobi</p>
           </div>
           <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             Shaxsiy profil
@@ -85,31 +85,31 @@ export default function ProfileTab({ currentUser, me, loading, error }: Props) {
         </div>
 
         {loading ? (
-          <p style={{ color: '#94a3b8', fontSize: 13.5 }}>Yuklanmoqda...</p>
+          <p style={{ color: 'var(--text-light)', fontSize: 13.5 }}>Yuklanmoqda...</p>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 18 }}>
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-              <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>To'liq familiyasi, ismi va sharifi</div>
-              <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 15, marginTop: 4 }}>{fullName}</div>
+            <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>To'liq familiyasi, ismi va sharifi</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 15, marginTop: 4 }}>{fullName}</div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-              <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>HEMIS ID raqami</div>
-              <div style={{ fontWeight: 700, color: '#0b3b70', fontSize: 15, marginTop: 4 }}>{hemisId}</div>
+            <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>HEMIS ID raqami</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 15, marginTop: 4 }}>{hemisId}</div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-              <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Talaba elektron pochtasi</div>
-              <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 15, marginTop: 4 }}>{hemisId}@jbnuu.uz</div>
+            <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Talaba elektron pochtasi</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 15, marginTop: 4 }}>{hemisId}@jbnuu.uz</div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-              <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Doimiy yashash manzili</div>
-              <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 15, marginTop: 4 }}>Jizzax viloyati, O'zbekiston</div>
+            <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Doimiy yashash manzili</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 15, marginTop: 4 }}>Jizzax viloyati, O'zbekiston</div>
             </div>
 
-            <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-              <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Tizimdagi roli / Holati</div>
+            <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Tizimdagi roli / Holati</div>
               <div style={{ fontWeight: 700, color: '#059669', fontSize: 15, marginTop: 4 }}>Faol talaba (HEMIS Verified)</div>
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function ProfileTab({ currentUser, me, loading, error }: Props) {
               <div style={{ fontSize: 12, color: '#7e22ce' }}>Talabaning shaxsiy ma'lumotlari OTM ichki HEMIS tizimi xavfsizlik standartlariga muvofiq himoyalangan.</div>
             </div>
           </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#7e22ce', background: '#ffffff', padding: '4px 12px', borderRadius: 8, border: '1px solid #d8b4fe' }}>Himoyalangan</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#7e22ce', background: 'var(--bg-white)', padding: '4px 12px', borderRadius: 8, border: '1px solid #d8b4fe' }}>Himoyalangan</span>
         </div>
       </div>
     </div>

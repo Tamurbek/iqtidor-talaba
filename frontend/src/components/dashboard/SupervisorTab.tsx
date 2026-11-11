@@ -13,8 +13,8 @@ interface Props {
 }
 
 const cardStyle: React.CSSProperties = {
-  background: '#ffffff',
-  border: '1px solid #e2e8f0',
+  background: 'var(--bg-white)',
+  border: '1px solid var(--border-color)',
   borderRadius: 12,
   padding: 18,
 }
@@ -23,7 +23,7 @@ const statusLabel: Record<string, { text: string; color: string; bg: string }> =
   pending: { text: 'Javob kutilmoqda', color: '#b45309', bg: '#fffbeb' },
   accepted: { text: 'Qabul qilindi', color: '#059669', bg: '#ecfdf5' },
   rejected: { text: 'Rad etildi', color: '#dc2626', bg: '#fef2f2' },
-  cancelled: { text: 'Bekor qilindi', color: '#64748b', bg: '#f8fafc' },
+  cancelled: { text: 'Bekor qilindi', color: 'var(--text-muted)', bg: '#f8fafc' },
 }
 
 export default function SupervisorTab({ user, hideSelfRequest = false }: Props) {
@@ -143,15 +143,15 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {incoming.length > 0 && (
         <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 16, color: '#0b3b70' }}>Kiruvchi so'rovlar (ilmiy rahbarlikka)</h3>
+          <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--text-heading)' }}>Kiruvchi so'rovlar (ilmiy rahbarlikka)</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {incoming.map((r) => (
-              <div key={r.id} style={{ border: '1px solid #f1f5f9', borderRadius: 10, padding: '12px 14px' }}>
+              <div key={r.id} style={{ border: '1px solid var(--border-light)', borderRadius: 10, padding: '12px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a' }}>{r.student_name}</div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>{r.faculty} &middot; {r.group_name}</div>
-                    {r.research_topic && <div style={{ fontSize: 12.5, color: '#334155', marginTop: 6 }}>Mavzu: {r.research_topic}</div>}
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.faculty} &middot; {r.group_name}</div>
+                    {r.research_topic && <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 6 }}>Mavzu: {r.research_topic}</div>}
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                     <button
@@ -187,24 +187,24 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
 
       {!hideSelfRequest && (hasSupervisor ? (
         <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 10px', fontSize: 16, color: '#0b3b70' }}>Sizning ilmiy rahbaringiz</h3>
+          <h3 style={{ margin: '0 0 10px', fontSize: 16, color: 'var(--text-heading)' }}>Sizning ilmiy rahbaringiz</h3>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: '#0f172a' }}>{user.supervisor_name}</div>
-          <div style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>{user.supervisor_degree} &middot; {user.supervisor_department}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>{user.supervisor_degree} &middot; {user.supervisor_department}</div>
           {user.research_topic && (
-            <div style={{ fontSize: 13, color: '#334155', marginTop: 10 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10 }}>
               <strong>Tadqiqot mavzusi:</strong> {user.research_topic}
             </div>
           )}
         </div>
       ) : (
         <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 6px', fontSize: 16, color: '#0b3b70' }}>Ilmiy rahbar tanlash</h3>
-          <p style={{ margin: '0 0 14px', fontSize: 13, color: '#64748b' }}>
+          <h3 style={{ margin: '0 0 6px', fontSize: 16, color: 'var(--text-heading)' }}>Ilmiy rahbar tanlash</h3>
+          <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-muted)' }}>
             Nizom 10-moddasiga muvofiq, ro'yxatdan o'zingiz uchun ilmiy rahbarni tanlab, so'rov yuborasiz.
             So'rov professor-o'qituvchi tomonidan qabul qilingandan so'ng biriktirish amalga oshiriladi.
           </p>
           {hasPendingRequest ? (
-            <div style={{ padding: 12, borderRadius: 8, fontSize: 13, background: '#fffbeb', color: '#b45309' }}>
+            <div style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--bg-white)beb', color: '#b45309' }}>
               Sizda hal qilinmagan so'rov mavjud. Javobni kuting yoki avval uni bekor qiling.
             </div>
           ) : (
@@ -243,7 +243,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                         <img
                           src={s.image_url}
                           alt={s.full_name}
-                          style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '1px solid #e2e8f0' }}
+                          style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
                         />
                       ) : (
                         <div
@@ -265,7 +265,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                       )}
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.3 }}>{s.full_name}</div>
                       <div style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>{s.degree || "O'qituvchi"}</div>
-                      {s.department && <div style={{ fontSize: 11.5, color: '#64748b' }}>{s.department}</div>}
+                      {s.department && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{s.department}</div>}
                       <div style={{ fontSize: 11, color: s.is_full ? '#dc2626' : '#94a3b8', marginTop: 2 }}>
                         {s.is_full ? "Kvota to'lgan" : s.capacity ? `${s.current_load}/${s.capacity} talaba` : `${s.current_load} talaba`}
                       </div>
@@ -294,15 +294,15 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
 
       {!hideSelfRequest && myRequests.length > 0 && (
         <div style={cardStyle}>
-          <h3 style={{ margin: '0 0 12px', fontSize: 16, color: '#0b3b70' }}>So'rovlarim tarixi</h3>
+          <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--text-heading)' }}>So'rovlarim tarixi</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {myRequests.map((r) => {
-              const st = statusLabel[r.status] || { text: r.status, color: '#334155', bg: '#f8fafc' }
+              const st = statusLabel[r.status] || { text: r.status, color: 'var(--text-secondary)', bg: '#f8fafc' }
               return (
-                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #f1f5f9', borderRadius: 10, padding: '10px 14px' }}>
+                <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-light)', borderRadius: 10, padding: '10px 14px' }}>
                   <div>
                     <div style={{ fontSize: 13.5, fontWeight: 600, color: '#0f172a' }}>{r.supervisor_name}</div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>{new Date(r.requested_at).toLocaleDateString('uz-UZ')}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(r.requested_at).toLocaleDateString('uz-UZ')}</div>
                     {r.status === 'rejected' && r.rejection_reason && (
                       <div style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>Sabab: {r.rejection_reason}</div>
                     )}

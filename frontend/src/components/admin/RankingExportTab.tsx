@@ -13,7 +13,7 @@ interface Props {
   showToast: ShowToast
 }
 
-const selectStyle: React.CSSProperties = { padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, background: '#ffffff' }
+const selectStyle: React.CSSProperties = { padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }
 const thStyle: React.CSSProperties = { padding: '12px 14px' }
 const tdStyle: React.CSSProperties = { padding: '12px 14px' }
 
@@ -95,11 +95,11 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
 
   return (
     <div id="tab-content-ranking" className="tab-pane" style={{ display: 'block', marginTop: 0 }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', padding: 24 }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', padding: 24 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0b3b70' }}>Filial iqtidorli talabalari umumiy reytingi</h3>
-            <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Nizomning 13-14-moddalari: GPA (20b) + 1-bosqich sinov imtihoni (40b) + Ilmiy-ijodiy yutuqlar, 8 indikator bo'yicha (40b) = Jami 100 ball</p>
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-heading)' }}>Filial iqtidorli talabalari umumiy reytingi</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Nizomning 13-14-moddalari: GPA (20b) + 1-bosqich sinov imtihoni (40b) + Ilmiy-ijodiy yutuqlar, 8 indikator bo'yicha (40b) = Jami 100 ball</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <select id="rankingFacultyFilter" aria-label="Fakultet bo'yicha filtr" value={faculty} onChange={(e) => setFaculty(e.target.value)} style={selectStyle}>
@@ -120,7 +120,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                 <option key={c} value={String(c)}>{c}-kurs</option>
               ))}
             </select>
-            <button type="button" disabled={exporting !== null} onClick={() => downloadRankingExport('excel')} style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(11, 59, 112, 0.2)', cursor: 'pointer' }}>
+            <button type="button" disabled={exporting !== null} onClick={() => downloadRankingExport('excel')} style={{ background: 'var(--primary-color)', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: 8, fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(11, 59, 112, 0.2)', cursor: 'pointer' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -142,7 +142,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', minWidth: 1400, borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
+              <tr style={{ background: 'var(--bg-light)', borderBottom: '2px solid var(--border-color)', color: 'var(--text-table-header)', fontWeight: 700 }}>
                 <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>O'rni</th>
                 <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Talaba F.I.SH.</th>
                 <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Fakultet va yo'nalish</th>
@@ -158,7 +158,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
+                  <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               )}
               {!loading && error && (
@@ -168,11 +168,11 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
               )}
               {!loading && !error && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Reyting ma'lumotlari mavjud emas.</td>
+                  <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Reyting ma'lumotlari mavjud emas.</td>
                 </tr>
               )}
               {!loading && !error && filtered.map((r) => (
-                <tr key={r.id} className="ranking-row" data-faculty={r.faculty} data-direction={r.direction} data-course={r.course_num} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <tr key={r.id} className="ranking-row" data-faculty={r.faculty} data-direction={r.direction} data-course={r.course_num} style={{ borderBottom: '1px solid var(--border-light)' }}>
                   <td style={tdStyle}>
                     {r.rank === 1 ? (
                       <span style={rankBadge('#fef3c7', '#b45309', '#fde68a')}>1</span>
@@ -181,23 +181,23 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                     ) : r.rank === 3 ? (
                       <span style={rankBadge('#ffedd5', '#c2410c', '#fed7aa')}>3</span>
                     ) : (
-                      <span style={{ fontWeight: 700, color: '#64748b', fontSize: 13, paddingLeft: 8 }}>{r.rank}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--text-muted)', fontSize: 13, paddingLeft: 8 }}>{r.rank}</span>
                     )}
                   </td>
                   <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
-                    <div style={{ fontWeight: 600, color: '#1e293b' }}>{r.full_name}</div>
-                    <div style={{ fontSize: 12, color: '#94a3b8' }}>HEMIS: {r.hemis_id} | {r.course}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{r.full_name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-light)' }}>HEMIS: {r.hemis_id} | {r.course}</div>
                   </td>
-                  <td style={{ ...tdStyle, color: '#64748b', fontSize: 12.5, whiteSpace: 'nowrap' }}>
+                  <td style={{ ...tdStyle, color: 'var(--text-muted)', fontSize: 12.5, whiteSpace: 'nowrap' }}>
                     {r.faculty}
                     <br />
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>{r.direction}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{r.direction}</span>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
                       {r.gpa_points} ball
                     </span>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>GPA: {r.gpa}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>GPA: {r.gpa}</div>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {r.exam_status === 'passed' ? (
@@ -221,10 +221,10 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                       </>
                     ) : (
                       <>
-                        <span style={{ background: '#f1f5f9', color: '#94a3b8', padding: '4px 10px', borderRadius: 6, fontWeight: 600, fontSize: 12 }}>
+                        <span style={{ background: 'var(--border-light)', color: 'var(--text-light)', padding: '4px 10px', borderRadius: 6, fontWeight: 600, fontSize: 12 }}>
                           0.0 ball
                         </span>
-                        <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 2 }}>Topshirmagan</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--text-light)', marginTop: 2 }}>Topshirmagan</div>
                       </>
                     )}
                   </td>
@@ -232,13 +232,13 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                     <span style={{ background: '#fdf4ff', color: '#a21caf', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
                       {r.ach_points} ball
                     </span>
-                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{r.approved_count} ta tasdiqlangan</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>{r.approved_count} ta tasdiqlangan</div>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }} id={`sup-cell-${r.id}`}>
                     {r.supervisor_name ? (
                       <>
-                        <div style={{ fontWeight: 700, color: '#0b3b70', fontSize: 13 }}>{r.supervisor_name}</div>
-                        <div style={{ fontSize: 11, color: '#64748b' }} title={r.research_topic || ''}>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 13 }}>{r.supervisor_name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }} title={r.research_topic || ''}>
                           {r.research_topic && r.research_topic.length > 26 ? r.research_topic.slice(0, 26) + '...' : r.research_topic || 'Mavzu belgilanmagan'}
                         </div>
                         <button type="button" onClick={() => setSupervisorTarget(r)} style={{ marginTop: 4, background: '#eff6ff', color: '#0284c7', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
@@ -252,7 +252,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                       </button>
                     )}
                   </td>
-                  <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 800, color: '#0b3b70', fontSize: 16, whiteSpace: 'nowrap' }}>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 800, color: 'var(--text-heading)', fontSize: 16, whiteSpace: 'nowrap' }}>
                     {r.total_score} ball
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
@@ -266,7 +266,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {r.exam_certificate ? (
-                      <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: '#0b3b70', background: '#f8fafc', border: '1px solid #cbd5e1', padding: '3px 8px', borderRadius: 4 }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: 'var(--text-heading)', background: 'var(--bg-light)', border: '1px solid #cbd5e1', padding: '3px 8px', borderRadius: 4 }}>
                         {r.exam_certificate}
                       </span>
                     ) : (

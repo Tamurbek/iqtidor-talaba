@@ -134,7 +134,7 @@ export default function AdminSidebar({ activeTab, counts, visibleTabs, mobileOpe
                 </svg>
               </span>
               <span>Yangiliklar boshqaruvi</span>
-              <span className="cabinet-menu-badge" style={{ background: '#f1f5f9', color: '#475569' }} id="sideNewsBadge">{fmt(counts.news)}</span>
+              <span className="cabinet-menu-badge" style={{ background: 'var(--border-light)', color: 'var(--text-table-header)' }} id="sideNewsBadge">{fmt(counts.news)}</span>
             </button>
           </li>
           )}
@@ -148,7 +148,7 @@ export default function AdminSidebar({ activeTab, counts, visibleTabs, mobileOpe
                 </svg>
               </span>
               <span>Me'yoriy hujjatlar</span>
-              <span className="cabinet-menu-badge" style={{ background: '#f1f5f9', color: '#475569' }} id="sideDocsBadge">{fmt(counts.documents)}</span>
+              <span className="cabinet-menu-badge" style={{ background: 'var(--border-light)', color: 'var(--text-table-header)' }} id="sideDocsBadge">{fmt(counts.documents)}</span>
             </button>
           </li>
           )}

@@ -9,17 +9,17 @@ export default function AcademicTab({ user }: Props) {
 
   return (
     <div className="student-tab-pane" id="student-tab-academic" style={{ display: 'block' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 28, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, borderBottom: '1px solid #f1f5f9', paddingBottom: 14 }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 28, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22, borderBottom: '1px solid var(--border-light)', paddingBottom: 14 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0b3b70', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
                 <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
               </svg>
               <span>Akademik va ta'lim jarayoni ma'lumotlari</span>
             </h3>
-            <p style={{ color: '#64748b', fontSize: 13.5, marginTop: 3 }}>Talabaning fakultet, yo'nalish, guruh va ta'lim shakli ko'rsatkichlari</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginTop: 3 }}>Talabaning fakultet, yo'nalish, guruh va ta'lim shakli ko'rsatkichlari</p>
           </div>
           <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             O'quv bo'limi
@@ -27,45 +27,45 @@ export default function AcademicTab({ user }: Props) {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18 }}>
-          <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Fakultet</div>
-            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginTop: 4 }}>{user.faculty}</div>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>O'zMU Jizzax filiali asosiy tarkibiy bo'linmasi</p>
+          <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Fakultet</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>{user.faculty}</div>
+            <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>O'zMU Jizzax filiali asosiy tarkibiy bo'linmasi</p>
           </div>
 
-          <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Ta'lim yo'nalishi / Mutaxassislik</div>
-            <div style={{ fontWeight: 700, color: '#0b3b70', fontSize: 16, marginTop: 4 }}>{user.direction}</div>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Davlat ta'lim standarti bo'yicha</p>
+          <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Ta'lim yo'nalishi / Mutaxassislik</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 16, marginTop: 4 }}>{user.direction}</div>
+            <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>Davlat ta'lim standarti bo'yicha</p>
           </div>
 
-          <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Bosqich va Guruh</div>
-            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginTop: 4 }}>{user.course}-kurs ({user.group_name})</div>
+          <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Bosqich va Guruh</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>{user.course}-kurs ({user.group_name})</div>
             <p style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
               <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#059669' }}></span>
               <span>Kunduzgi ta'lim shakli</span>
             </p>
           </div>
 
-          <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Ta'lim turi / Moliyalashtirish shakli</div>
-            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginTop: 4 }}>
+          <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Ta'lim turi / Moliyalashtirish shakli</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>
               {user.education_type || 'Bakalavr'} <span style={{ opacity: 0.35, margin: '0 4px' }}>|</span> <span style={{ color: '#059669' }}>{user.payment_form || 'Davlat granti'}</span>
             </div>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Byudjet mablag'lari hisobidan</p>
+            <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>Byudjet mablag'lari hisobidan</p>
           </div>
 
-          <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Joriy o'quv yili &amp; Semestr</div>
-            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginTop: 4 }}>2024–2025 o'quv yili (Bahorgi semestr)</div>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>O'quv rejasiga muvofiq</p>
+          <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Joriy o'quv yili &amp; Semestr</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>2024–2025 o'quv yili (Bahorgi semestr)</div>
+            <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>O'quv rejasiga muvofiq</p>
           </div>
 
-          <div style={{ background: '#f8fafc', padding: 18, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-            <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Ta'lim tili</div>
-            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginTop: 4 }}>O'zbek tili</div>
-            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>Davlat tilidagi o'quv guruhi</p>
+          <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Ta'lim tili</div>
+            <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>O'zbek tili</div>
+            <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>Davlat tilidagi o'quv guruhi</p>
           </div>
         </div>
 
@@ -74,17 +74,17 @@ export default function AcademicTab({ user }: Props) {
             <div style={{ fontSize: 14, fontWeight: 700, color: '#166534' }}>Akademik qarzdorlik mavjud emas</div>
             <div style={{ fontSize: 12.5, color: '#15803d', marginTop: 2 }}>Barcha o'quv modullari va kredit-modul (ECTS) talablari muvaffaqiyatli bajarilgan. "Iqtidor" tanloviga to'liq tavsiya etiladi.</div>
           </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#15803d', background: '#ffffff', padding: '6px 14px', borderRadius: 20, border: '1px solid #86efac', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#15803d', background: 'var(--bg-white)', padding: '6px 14px', borderRadius: 20, border: '1px solid #86efac', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>ECTS 100%</span>
           </span>
         </div>
 
         {/* Ilmiy rahbar va tadqiqot mavzusi bloki */}
-        <div style={{ marginTop: 24, background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, borderBottom: '1px solid #f1f5f9', paddingBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ marginTop: 24, background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 24, boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, borderBottom: '1px solid var(--border-light)', paddingBottom: 14, flexWrap: 'wrap', gap: 10 }}>
             <div>
-              <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0b3b70', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
@@ -93,7 +93,7 @@ export default function AcademicTab({ user }: Props) {
                 </svg>
                 <span>Ilmiy rahbar va tadqiqot mavzusi</span>
               </h3>
-              <p style={{ color: '#64748b', fontSize: 13, marginTop: 3 }}>Talabaning ilmiy-tadqiqot faoliyatini muvofiqlashtiruvchi mas'ul professor-o'qituvchi</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 3 }}>Talabaning ilmiy-tadqiqot faoliyatini muvofiqlashtiruvchi mas'ul professor-o'qituvchi</p>
             </div>
             {hasSupervisor ? (
               <span style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
@@ -101,7 +101,7 @@ export default function AcademicTab({ user }: Props) {
                 <span>Biriktirilgan</span>
               </span>
             ) : (
-              <span style={{ background: '#fffbeb', color: '#d97706', border: '1px solid #fde68a', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ background: 'var(--bg-white)beb', color: '#d97706', border: '1px solid #fde68a', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
                 Biriktirilmagan
               </span>
             )}
@@ -110,16 +110,16 @@ export default function AcademicTab({ user }: Props) {
           {hasSupervisor ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-                <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                  <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Ilmiy rahbar (F.I.O.)</div>
-                  <div style={{ fontWeight: 700, color: '#0b3b70', fontSize: 16, marginTop: 4 }}>{user.supervisor_name}</div>
+                <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Ilmiy rahbar (F.I.O.)</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 16, marginTop: 4 }}>{user.supervisor_name}</div>
                   <p style={{ fontSize: 12, color: '#0284c7', fontWeight: 600, marginTop: 2 }}>{user.supervisor_degree || "Professor-o'qituvchi"}</p>
                 </div>
 
-                <div style={{ background: '#f8fafc', padding: 16, borderRadius: 12, border: '1px solid #e2e8f0' }}>
-                  <div style={{ color: '#64748b', fontSize: 12, fontWeight: 600 }}>Kafedra / Tarkibiy bo'linma</div>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 15, marginTop: 4 }}>{user.supervisor_department || user.faculty}</div>
-                  <p style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>Aloqa: {user.supervisor_phone || 'Filial orqali'}</p>
+                <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                  <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Kafedra / Tarkibiy bo'linma</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 15, marginTop: 4 }}>{user.supervisor_department || user.faculty}</div>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Aloqa: {user.supervisor_phone || 'Filial orqali'}</p>
                 </div>
               </div>
 
@@ -131,15 +131,15 @@ export default function AcademicTab({ user }: Props) {
               </div>
             </>
           ) : (
-            <div style={{ background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+            <div style={{ background: 'var(--bg-light)', border: '1px dashed #cbd5e1', borderRadius: 12, padding: 24, textAlign: 'center' }}>
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="8.5" cy="7" r="4"></circle>
                 <line x1="20" y1="8" x2="20" y2="14"></line>
                 <line x1="23" y1="11" x2="17" y2="11"></line>
               </svg>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#475569' }}>Sizga hali ilmiy rahbar biriktirilmagan</div>
-              <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 4, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-table-header)' }}>Sizga hali ilmiy rahbar biriktirilmagan</div>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 4, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
                 Iqtidorli talabalar bo'limi yoki fakultetingiz mas'ullari tomonidan ilmiy rahbar tayinlanganidan so'ng, uning ma'lumotlari va ilmiy tadqiqot mavzusi ushbu oynada aks etadi.
               </p>
             </div>

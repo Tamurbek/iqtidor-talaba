@@ -51,6 +51,9 @@ class UpdateMyProfileRequest(BaseModel):
     full_name: Optional[str] = None
     login: Optional[str] = None
 
+class AssignRolesRequest(BaseModel):
+    role_ids: List[int] = []
+
 
 # ==============================================================================
 # 1. CURRENT USER PROFILE & PASSWORD (For Admin and all logged-in users)
@@ -213,6 +216,7 @@ async def list_users(
             "full_name": u.full_name,
             "role": u.role,
             "role_names": u.role_names,
+            "assigned_roles": u.assigned_roles,
             "faculty": u.faculty,
             "direction": u.direction,
             "group_name": u.group_name,
@@ -351,6 +355,38 @@ async def reset_user_password(
     return {
         "success": True,
         "message": f"'{user.full_name}' ({user.hemis_id}) paroli muvaffaqiyatli yangilandi"
+    }
+
+
+@router.put("/{user_id}/roles")
+async def assign_additional_roles(
+    user_id: int,
+    req: AssignRolesRequest,
+    current_admin: User = Depends(get_current_superadmin),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Foydalanuvchiga bir nechta qo'shimcha dinamik rol biriktirish (asosiy `role` ustunidan
+    tashqari). Natijada foydalanuvchi kabinetda "Rolni almashtirish" menyusi orqali
+    biriktirilgan rollar o'rtasida almashtirishi mumkin bo'ladi.
+    """
+    user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")
+
+    if req.role_ids:
+        role_res = await db.execute(select(Role).where(Role.id.in_(req.role_ids)))
+        user.roles = list(role_res.scalars().all())
+    else:
+        user.roles = []
+
+    await db.commit()
+    await db.refresh(user)
+
+    return {
+        "success": True,
+        "message": f"'{user.full_name}' uchun qo'shimcha rollar muvaffaqiyatli yangilandi",
+        "assigned_roles": user.assigned_roles
     }
 
 

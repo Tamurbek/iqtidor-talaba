@@ -23,6 +23,7 @@ router = APIRouter(prefix="/exam", tags=["Stage-1 Online Exam"])
 
 STATIC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "static")
 LOGO_PATH = os.path.join(STATIC_DIR, "images", "logo.png")
+UNIV_LOGO_PATH = os.path.join(STATIC_DIR, "images", "ozmu-emblem.png")
 FONT_DIR = os.path.join(STATIC_DIR, "fonts")
 
 # Certificate typography (Google Fonts, OFL-licensed): classic engraved serif for
@@ -633,11 +634,11 @@ def _build_certificate_pdf(result: StudentExamResult) -> bytes:
 
     # ---------- Header ----------
     text_x = inner_left
-    if os.path.isfile(LOGO_PATH):
+    if os.path.isfile(UNIV_LOGO_PATH):
         try:
-            logo = ImageReader(LOGO_PATH)
-            logo_h = 15 * mm
-            c.drawImage(logo, inner_left, cursor_y - logo_h + 4.5 * mm, width=logo_h, height=logo_h,
+            univ_logo = ImageReader(UNIV_LOGO_PATH)
+            logo_h = 16 * mm
+            c.drawImage(univ_logo, inner_left, cursor_y - logo_h + 4.5 * mm, width=logo_h, height=logo_h,
                         preserveAspectRatio=True, mask='auto')
             text_x = inner_left + logo_h + 5 * mm
         except Exception:
@@ -650,12 +651,31 @@ def _build_certificate_pdf(result: StudentExamResult) -> bytes:
     c.setFont("Cinzel-SemiBold", 11.5)
     c.drawString(text_x, cursor_y - 6.3 * mm, "Mirzo Ulug'bek nomidagi O'zMU Jizzax filiali")
 
+    platform_logo_w = 0
+    if os.path.isfile(LOGO_PATH):
+        try:
+            platform_logo = ImageReader(LOGO_PATH)
+            plat_h = 11 * mm
+            plat_w = plat_h * 1.29
+            pad = 1.6 * mm
+            card_x = inner_right - plat_w - pad
+            card_y = cursor_y - plat_h + 3.5 * mm - pad
+            c.setFillColor(colors.white)
+            c.setStrokeColor(GOLD)
+            c.setLineWidth(0.5)
+            c.roundRect(card_x, card_y, plat_w + 2 * pad, plat_h + 2 * pad, 1.2 * mm, fill=1, stroke=1)
+            c.drawImage(platform_logo, inner_right - plat_w, cursor_y - plat_h + 3.5 * mm, width=plat_w, height=plat_h,
+                        preserveAspectRatio=True, mask='auto')
+            platform_logo_w = plat_w + 2 * pad + 4 * mm
+        except Exception:
+            pass
+
     c.setFillColor(MUTED)
     c.setFont("EBGaramond", 8.3)
-    c.drawRightString(inner_right, cursor_y, "Guvohnoma raqami")
+    c.drawRightString(inner_right - platform_logo_w, cursor_y, "Guvohnoma raqami")
     c.setFillColor(NAVY)
     c.setFont("EBGaramond-SemiBold", 11.5)
-    c.drawRightString(inner_right, cursor_y - 6.3 * mm, result.certificate_number or "")
+    c.drawRightString(inner_right - platform_logo_w, cursor_y - 6.3 * mm, result.certificate_number or "")
 
     rule_y = cursor_y - 11.5 * mm
     c.setStrokeColor(GOLD)
@@ -749,11 +769,11 @@ def _build_certificate_pdf(result: StudentExamResult) -> bytes:
             dx = inner_left + col_w * i
             c.line(dx, scores_y + 3.2 * mm, dx, scores_y + strip_h - 3.2 * mm)
         c.setFillColor(GOLD if is_total else MUTED)
-        c.setFont("Cinzel-SemiBold", 6.8)
-        c.drawCentredString(cx, scores_y + strip_h - 6.3 * mm, label)
+        c.setFont("Cinzel-SemiBold", 7.6)
+        c.drawCentredString(cx, scores_y + strip_h - 6.6 * mm, label)
         c.setFillColor(NAVY)
-        c.setFont("EBGaramond-SemiBold", 16 if is_total else 14.5)
-        c.drawCentredString(cx, scores_y + 4.6 * mm, f"{val} / {maxv}")
+        c.setFont("EBGaramond-SemiBold", 18 if is_total else 16.5)
+        c.drawCentredString(cx, scores_y + 4.4 * mm, f"{val} / {maxv}")
 
     # ---------- Footer: signature, seal, QR ----------
     footer_y = inset + 9 * mm
@@ -764,53 +784,39 @@ def _build_certificate_pdf(result: StudentExamResult) -> bytes:
     c.setDash()
 
     c.setFillColor(MUTED)
-    c.setFont("EBGaramond", 7.6)
+    c.setFont("EBGaramond", 8.8)
     c.drawString(inner_left, footer_y + 5 * mm, "Filial direktori")
     c.setFillColor(NAVY)
-    c.setFont("Cinzel-SemiBold", 9.6)
-    c.drawString(inner_left, footer_y - 0.3 * mm, "prof. O.X. Turakulov")
+    c.setFont("Cinzel-SemiBold", 11)
+    c.drawString(inner_left, footer_y - 0.5 * mm, "prof. O.X. Turakulov")
     c.setFillColor(colors.HexColor("#9C9375"))
-    c.setFont("EBGaramond", 7.2)
+    c.setFont("EBGaramond", 8.2)
     issue_date = result.created_at.strftime('%d.%m.%Y') if result.created_at else ""
-    c.drawString(inner_left, footer_y - 5.3 * mm, f"Sana: {issue_date}")
+    c.drawString(inner_left, footer_y - 5.6 * mm, f"Sana: {issue_date}")
 
-    # Seal medal
+    # Stamp placement guide — a barely-visible dashed circle where the official
+    # physical muhr (seal) is pressed on the printed certificate, not a printed badge.
     seal_cx = width / 2
-    seal_r = 8 * mm
+    seal_r = 9 * mm
     seal_cy = footer_y + 5 * mm
-    rib_w = 4.2 * mm
-    for dx, rot in ((-1, 15), (1, -15)):
-        c.saveState()
-        c.translate(seal_cx + dx * 3.2 * mm, seal_cy - 4 * mm)
-        c.rotate(rot)
-        c.setFillColor(GOLD_LIGHT)
-        p = c.beginPath()
-        p.moveTo(-rib_w / 2, 0)
-        p.lineTo(rib_w / 2, 0)
-        p.lineTo(rib_w / 2, -4 * mm)
-        p.lineTo(0, -2.6 * mm)
-        p.lineTo(-rib_w / 2, -4 * mm)
-        p.close()
-        c.drawPath(p, fill=1, stroke=0)
-        c.restoreState()
-
-    c.setFillColor(GOLD)
-    c.circle(seal_cx, seal_cy, seal_r, fill=1, stroke=0)
-    c.setFillColor(colors.white)
-    c.circle(seal_cx, seal_cy, seal_r - 1.5 * mm, fill=1, stroke=0)
+    c.saveState()
+    c.setStrokeAlpha(0.35)
+    c.setFillAlpha(0.35)
     c.setStrokeColor(GOLD)
-    c.setLineWidth(0.6)
-    c.circle(seal_cx, seal_cy, seal_r - 2.6 * mm, fill=0, stroke=1)
-    c.setFillColor(NAVY)
-    c.setFont("CinzelDeco-Bold", 7.3)
-    c.drawCentredString(seal_cx, seal_cy + 1 * mm, "O'zMU")
-    c.setFont("Cinzel-SemiBold", 4.4)
-    c.setFillColor(GOLD)
-    c.drawCentredString(seal_cx, seal_cy - 3.1 * mm, "1918")
+    c.setLineWidth(0.5)
+    c.setDash(1.4, 1.6)
+    c.circle(seal_cx, seal_cy, seal_r, fill=0, stroke=1)
+    c.setDash()
+    c.setFillColor(MUTED)
+    c.setFont("Cinzel-SemiBold", 5.6)
+    c.drawCentredString(seal_cx, seal_cy + 0.6 * mm, "M.O'.")
+    c.setFont("EBGaramond", 5.2)
+    c.drawCentredString(seal_cx, seal_cy - 3.2 * mm, "(muhr o'rni)")
+    c.restoreState()
 
     c.setFillColor(GREEN)
-    c.setFont("Cinzel-SemiBold", 6.4)
-    c.drawCentredString(seal_cx, footer_y - 7 * mm, "ELEKTRON TASDIQLANGAN")
+    c.setFont("Cinzel-SemiBold", 7.4)
+    c.drawCentredString(seal_cx, footer_y - 7.2 * mm, "ELEKTRON TASDIQLANGAN")
 
     qr_data = (
         f"IQTIDOR SERTIFIKATI\nRaqam: {result.certificate_number}\n"

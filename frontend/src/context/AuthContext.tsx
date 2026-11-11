@@ -6,6 +6,8 @@ interface AuthContextValue {
   currentUser: User | null
   isLoading: boolean
   isAdmin: boolean
+  activeRole: string | null
+  setActiveRole: (roleCode: string) => void
   login: (hemisId: string, password: string, rememberMe?: boolean) => Promise<User>
   loginWithToken: (accessToken: string, user: User) => void
   logout: () => Promise<void>
@@ -14,16 +16,23 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+const ACTIVE_ROLE_KEY = 'active_role'
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [activeRole, setActiveRoleState] = useState<string | null>(null)
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
     const storedUser = localStorage.getItem('current_user')
     if (token && storedUser) {
       try {
-        setCurrentUser(JSON.parse(storedUser))
+        const user = JSON.parse(storedUser) as User
+        setCurrentUser(user)
+        const storedRole = localStorage.getItem(ACTIVE_ROLE_KEY)
+        const validRole = user.assigned_roles?.some((r) => r.code === storedRole)
+        setActiveRoleState(validRole ? storedRole : user.role)
       } catch {
         localStorage.removeItem('current_user')
       }
@@ -31,10 +40,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
+  const setActiveRole = useCallback((roleCode: string) => {
+    localStorage.setItem(ACTIVE_ROLE_KEY, roleCode)
+    setActiveRoleState(roleCode)
+  }, [])
+
   const loginWithToken = useCallback((accessToken: string, user: User) => {
     localStorage.setItem('access_token', accessToken)
     localStorage.setItem('current_user', JSON.stringify(user))
+    localStorage.setItem(ACTIVE_ROLE_KEY, user.role)
     setCurrentUser(user)
+    setActiveRoleState(user.role)
   }, [])
 
   const login = useCallback(async (hemisId: string, password: string, rememberMe = false) => {
@@ -64,13 +80,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     localStorage.removeItem('access_token')
     localStorage.removeItem('current_user')
+    localStorage.removeItem(ACTIVE_ROLE_KEY)
     setCurrentUser(null)
+    setActiveRoleState(null)
   }, [])
 
   const isAdmin = currentUser?.role === 'admin'
 
   return (
-    <AuthContext.Provider value={{ currentUser, isLoading, isAdmin, login, loginWithToken, logout, updateCurrentUser }}>
+    <AuthContext.Provider
+      value={{ currentUser, isLoading, isAdmin, activeRole, setActiveRole, login, loginWithToken, logout, updateCurrentUser }}
+    >
       {children}
     </AuthContext.Provider>
   )

@@ -9,7 +9,7 @@ interface Props {
   onSaved: (message: string) => void
 }
 
-const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, color: '#334155', marginBottom: 4 }
+const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }
 const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5 }
 
 export default function AssignSupervisorModal({ student, onClose, onSaved }: Props) {
@@ -70,8 +70,8 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
 
   return (
     <div id="assignSupervisorModal" role="dialog" aria-modal="true" aria-labelledby="assignSupervisorTitle" style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, backdropFilter: 'blur(4px)' }}>
-      <div style={{ background: '#ffffff', borderRadius: 16, width: '100%', maxWidth: 540, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden', animation: 'popIn 0.25s ease' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: 'var(--bg-white)', borderRadius: 16, width: '100%', maxWidth: 540, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden', animation: 'popIn 0.25s ease' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 8, background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -82,16 +82,16 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
               </svg>
             </div>
             <div>
-              <h3 id="assignSupervisorTitle" style={{ margin: 0, fontSize: 17, fontWeight: 700, color: '#0b3b70' }}>Ilmiy rahbar biriktirish</h3>
-              <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748b' }}>Talabaga ustoz va tadqiqot mavzusini belgilash</p>
+              <h3 id="assignSupervisorTitle" style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-heading)' }}>Ilmiy rahbar biriktirish</h3>
+              <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>Talabaga ustoz va tadqiqot mavzusini belgilash</p>
             </div>
           </div>
-          <button type="button" aria-label="Yopish" onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: '#94a3b8' }}>&times;</button>
+          <button type="button" aria-label="Yopish" onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--text-light)' }}>&times;</button>
         </div>
         <form onSubmit={handleSubmit} style={{ padding: 24 }}>
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 10, padding: '12px 14px', marginBottom: 18 }}>
-            <span style={{ fontSize: 11.5, color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>Talaba:</span>
-            <div style={{ fontSize: 14.5, fontWeight: 700, color: '#0b3b70', marginTop: 2 }}>{student.full_name}</div>
+          <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '12px 14px', marginBottom: 18 }}>
+            <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>Talaba:</span>
+            <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--text-heading)', marginTop: 2 }}>{student.full_name}</div>
           </div>
 
           {error && (
@@ -100,7 +100,7 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
 
           <div style={{ marginBottom: 14 }} id="supSelectWrapper">
             <label htmlFor="supSelectDropdown" style={labelStyle}>Kafedra o'qituvchilari ro'yxatidan tanlash</label>
-            <select id="supSelectDropdown" value={supervisorId} onChange={(e) => handleSupervisorSelectChange(e.target.value)} style={{ ...inputStyle, padding: '9px 12px', background: '#ffffff' }}>
+            <select id="supSelectDropdown" value={supervisorId} onChange={(e) => handleSupervisorSelectChange(e.target.value)} style={{ ...inputStyle, padding: '9px 12px', background: 'var(--bg-white)' }}>
               <option value="">-- Ro'yxatdan tanlash (ixtiyoriy) --</option>
               {supervisors.map((s) => (
                 <option key={s.id} value={String(s.id)}>
@@ -135,8 +135,8 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
             <textarea id="supInputTopic" rows={3} required value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Masalan: Sun'iy intellekt algoritmlari asosida tibbiy tasvirlarni qayta ishlash..." style={{ ...inputStyle, lineHeight: 1.5, resize: 'vertical' }}></textarea>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
-            <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid #cbd5e1', background: '#f8fafc', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Bekor qilish</button>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', borderTop: '1px solid var(--border-light)', paddingTop: 16 }}>
+            <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid #cbd5e1', background: 'var(--bg-light)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Bekor qilish</button>
             <button type="submit" id="btnSubmitAssignSup" disabled={submitting} style={{ padding: '10px 22px', border: 'none', background: '#059669', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               {submitting ? (
                 'Saqlanmoqda...'

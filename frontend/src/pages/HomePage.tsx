@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import client from '../api/client'
 import type { NewsItem, Announcement, DocumentItem } from '../types/content'
 
 export default function HomePage() {
+  const location = useLocation()
   const [newsItems, setNewsItems] = useState<NewsItem[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [documents, setDocuments] = useState<DocumentItem[]>([])
@@ -24,6 +25,12 @@ export default function HomePage() {
       .then((res) => setDocuments(res.data.slice(0, 5)))
       .catch(() => setDocuments([]))
   }, [])
+
+  useEffect(() => {
+    if (location.pathname !== '/tanlovlar') return
+    const section = document.getElementById('elonlar')
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [location.pathname, announcements])
 
   return (
     <>

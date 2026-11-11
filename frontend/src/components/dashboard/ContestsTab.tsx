@@ -97,7 +97,7 @@ export default function ContestsTab({ onApplied }: Props) {
 
   return (
     <div className="student-tab-pane" id="student-tab-contests" style={{ display: 'block' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -107,7 +107,7 @@ export default function ContestsTab({ onApplied }: Props) {
                 <span>Har 200 nafar talabaga 1 ta kvota</span>
               </span>
             </div>
-            <h3 style={{ fontSize: 22, fontWeight: 800, color: '#0b3b70', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <circle cx="12" cy="6" r="2"></circle>
@@ -116,11 +116,11 @@ export default function ContestsTab({ onApplied }: Props) {
               </svg>
               <span>"Iqtidor" tanlovi 6 ta rasmiy nominatsiyasi (Nizom 1-ilovasi)</span>
             </h3>
-            <p style={{ color: '#64748b', fontSize: 14, marginTop: 4 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 4 }}>
               Ta'lim yo'nalishingiz mutaxassislik klassifikatoriga mos nominatsiyani tanlang va shaxsiy portfelingiz bilan ariza yuboring.
             </p>
           </div>
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '10px 16px', borderRadius: 12, fontSize: 12.5, color: '#475569', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', padding: '10px 16px', borderRadius: 12, fontSize: 12.5, color: 'var(--text-table-header)', display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               <span>Hujjatlar qabuli: <strong>1-martgacha</strong></span>
@@ -149,7 +149,7 @@ export default function ContestsTab({ onApplied }: Props) {
               style={
                 n.recommended
                   ? { border: '2px solid #0070f3', borderRadius: 16, padding: 22, background: '#f0f7ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }
-                  : { border: '1px solid #e2e8f0', borderRadius: 16, padding: 22, background: '#fafcff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }
+                  : { border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, background: '#fafcff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }
               }
             >
               {n.recommended && (
@@ -163,9 +163,9 @@ export default function ContestsTab({ onApplied }: Props) {
                   <span style={{ background: `${n.tagColor}1a`, color: n.tagColor, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{n.tagLabel}</span>
                   <span style={{ fontSize: 11, color: n.recommended ? '#0070f3' : '#64748b', fontWeight: n.recommended ? 700 : 600 }}>{n.recommended ? 'Tavsiya etilgan' : 'Kvota mavjud'}</span>
                 </div>
-                <h4 style={{ fontSize: 17, fontWeight: 800, color: '#0b3b70', marginTop: 10 }}>{n.title}</h4>
-                <p style={{ fontSize: 13, color: '#64748b', marginTop: 6 }}>Biriktirilgan mutaxassisliklar:</p>
-                <ul style={{ fontSize: 12.5, color: '#334155', marginTop: 4, paddingLeft: 18, lineHeight: 1.5 }}>
+                <h4 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-heading)', marginTop: 10 }}>{n.title}</h4>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 6 }}>Biriktirilgan mutaxassisliklar:</p>
+                <ul style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 4, paddingLeft: 18, lineHeight: 1.5 }}>
                   {n.specialties.map((s) => (
                     <li key={s}>{s}</li>
                   ))}
@@ -182,7 +182,7 @@ export default function ContestsTab({ onApplied }: Props) {
                   style={
                     n.recommended
                       ? { background: '#0070f3', color: '#ffffff', border: 'none', padding: '9px 20px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: pendingId === n.id ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(0,112,243,0.3)', display: 'inline-flex', alignItems: 'center', gap: 6, opacity: pendingId === n.id ? 0.7 : 1 }
-                      : { background: '#0b3b70', color: '#ffffff', border: 'none', padding: '8px 18px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: pendingId === n.id ? 'not-allowed' : 'pointer', opacity: pendingId === n.id ? 0.7 : 1 }
+                      : { background: 'var(--primary-color)', color: '#ffffff', border: 'none', padding: '8px 18px', borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: pendingId === n.id ? 'not-allowed' : 'pointer', opacity: pendingId === n.id ? 0.7 : 1 }
                   }
                 >
                   <span>{pendingId === n.id ? 'Yuborilmoqda...' : 'Ariza topshirish'}</span>

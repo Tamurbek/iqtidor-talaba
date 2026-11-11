@@ -45,6 +45,6 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
     canManageRoles: deptHead,
     canManageUsers: deptHead,
     canManageContent: deptHead,
-    canManageSupervisorRequests: role === 'supervisor',
+    canManageSupervisorRequests: deptHead || role === 'supervisor',
   }
 }

@@ -25,7 +25,7 @@ function StatusBadge({ status }: { status: string }) {
     )
   }
   return (
-    <span style={{ background: '#fff7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+    <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
       <span>Ko'rib chiqilmoqda</span>
     </span>
@@ -35,20 +35,20 @@ function StatusBadge({ status }: { status: string }) {
 export default function ApplicationsTab({ applications, loading, error, onGoToContests }: Props) {
   return (
     <div className="student-tab-pane" id="student-tab-my-applications" style={{ display: 'block' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
           <div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0b3b70', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="7"></circle>
                 <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
               </svg>
               <span>Mening topshirgan tanlov va stipendiya arizalarim</span>
             </h3>
-            <p style={{ color: '#64748b', fontSize: 13.5, marginTop: 3 }}>Arizalaringizning ekspert komissiyasi tomonidan ko'rib chiqilish holati</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginTop: 3 }}>Arizalaringizning ekspert komissiyasi tomonidan ko'rib chiqilish holati</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#0b3b70', background: '#eff6ff', padding: '6px 14px', borderRadius: 20 }}>Jami {applications.length} ta ariza</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', background: '#eff6ff', padding: '6px 14px', borderRadius: 20 }}>Jami {applications.length} ta ariza</span>
             <button onClick={onGoToContests} style={{ background: '#f2721c', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -66,7 +66,7 @@ export default function ApplicationsTab({ applications, loading, error, onGoToCo
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', minWidth: 900, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+              <tr style={{ background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-table-header)', fontWeight: 600 }}>
                 <th style={{ padding: '14px 18px' }}>Nominatsiya / Tanlov nomi</th>
                 <th style={{ padding: '14px 18px' }}>Topshirilgan sana</th>
                 <th style={{ padding: '14px 18px' }}>Portfel bali</th>
@@ -77,17 +77,17 @@ export default function ApplicationsTab({ applications, loading, error, onGoToCo
             <tbody id="myApplicationsTbody">
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 28, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
+                  <td colSpan={5} style={{ padding: 28, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               ) : applications.length > 0 ? (
                 applications.map((app) => (
-                  <tr key={app.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '14px 18px', fontWeight: 600, color: '#0b3b70' }}>{app.contest_name}</td>
-                    <td style={{ padding: '14px 18px', color: '#64748b', fontSize: 13 }}>
+                  <tr key={app.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td style={{ padding: '14px 18px', fontWeight: 600, color: 'var(--text-heading)' }}>{app.contest_name}</td>
+                    <td style={{ padding: '14px 18px', color: 'var(--text-muted)', fontSize: 13 }}>
                       {app.created_at ? new Date(app.created_at).toLocaleDateString('uz-UZ') : ''}
                     </td>
                     <td style={{ padding: '14px 18px', fontWeight: 700, color: '#059669' }}>{app.portfolio_score} ball</td>
-                    <td style={{ padding: '14px 18px', color: '#475569', fontSize: 13 }}>
+                    <td style={{ padding: '14px 18px', color: 'var(--text-table-header)', fontSize: 13 }}>
                       {app.decision_note || "1-bosqich saralashida ko'rib chiqilmoqda"}
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'right' }}>
@@ -97,7 +97,7 @@ export default function ApplicationsTab({ applications, loading, error, onGoToCo
                 ))
               ) : (
                 <tr id="noAppsRow">
-                  <td colSpan={5} style={{ padding: 28, textAlign: 'center', color: '#94a3b8' }}>
+                  <td colSpan={5} style={{ padding: 28, textAlign: 'center', color: 'var(--text-light)' }}>
                     Hozircha hech qanday tanlovga ariza yuborilmagan. Chap menyudagi "Nominatsiyalarga ariza" bo'limidan ariza yuborishingiz mumkin.
                   </td>
                 </tr>

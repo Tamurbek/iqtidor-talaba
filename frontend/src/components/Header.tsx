@@ -34,7 +34,7 @@ export default function Header() {
           <ul className={`nav-menu ${menuOpen ? 'is-open' : ''}`}>
             <li><a href="/#haqida" id="nav-about" className={`nav-link ${activePage === 'about' ? 'active' : ''}`} onClick={closeMenu}>Iqtidorli talabalar</a></li>
             <li><Link to="/talabalar-akademiyasi" id="nav-academy" className={`nav-link ${activePage === 'academy' ? 'active' : ''}`} onClick={closeMenu}>Talabalar akademiyasi</Link></li>
-            <li><a href="/#elonlar" id="nav-contests" className={`nav-link ${activePage === 'contests' ? 'active' : ''}`} onClick={closeMenu}>Tanlovlar</a></li>
+            <li><Link to="/tanlovlar" id="nav-contests" className={`nav-link ${activePage === 'contests' ? 'active' : ''}`} onClick={closeMenu}>Tanlovlar</Link></li>
             <li><Link to="/matbuot-xizmati" id="nav-press" className={`nav-link ${activePage === 'press' ? 'active' : ''}`} onClick={closeMenu}>Matbuot xizmati</Link></li>
             <li className="nav-menu-mobile-actions">
               {currentUser ? (

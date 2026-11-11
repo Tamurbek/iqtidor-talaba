@@ -75,7 +75,7 @@ export default function AchievementsApprovalTab({
 
   return (
     <div id="tab-content-moderation" className="tab-pane" style={{ display: 'block' }}>
-      <div style={{ background: 'linear-gradient(135deg, #072950 0%, #0b3b70 100%)', borderRadius: 16, padding: '18px 24px', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, boxShadow: '0 4px 20px rgba(7, 41, 80, 0.12)', marginBottom: 20 }}>
+      <div style={{ background: 'linear-gradient(135deg, #072950 0%, var(--primary-color) 100%)', borderRadius: 16, padding: '18px 24px', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, boxShadow: '0 4px 20px rgba(7, 41, 80, 0.12)', marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,7 +88,7 @@ export default function AchievementsApprovalTab({
               <span style={{ background: '#f2721c', padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>
                 Administrator
               </span>
-              <span style={{ background: 'rgba(255,255,255,0.18)', padding: '2px 10px', borderRadius: 20, fontSize: 11, color: '#e2e8f0', fontWeight: 600 }}>
+              <span style={{ background: 'rgba(255,255,255,0.18)', padding: '2px 10px', borderRadius: 20, fontSize: 11, color: 'var(--border-color)', fontWeight: 600 }}>
                 Bo'lim boshlig'i
               </span>
             </div>
@@ -107,9 +107,9 @@ export default function AchievementsApprovalTab({
       </div>
 
       <div className="admin-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24, width: '100%', boxSizing: 'border-box' }}>
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
+        <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>Jami iqtidorli talabalar</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12.5, fontWeight: 600 }}>Jami iqtidorli talabalar</span>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff6ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -119,14 +119,14 @@ export default function AchievementsApprovalTab({
               </svg>
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: '#0b3b70', marginTop: 6 }}>{rankingCount ?? '—'} nafar</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-heading)', marginTop: 6 }}>{rankingCount ?? '—'} nafar</div>
           <p style={{ fontSize: 11.5, color: '#059669', marginTop: 2, fontWeight: 600 }}>Ro'yxatga olingan talabalar</p>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
+        <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>Kutilayotgan arizalar</span>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fff7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12.5, fontWeight: 600 }}>Kutilayotgan arizalar</span>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--bg-white)7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
@@ -137,9 +137,9 @@ export default function AchievementsApprovalTab({
           <p style={{ fontSize: 11.5, color: '#ea580c', fontWeight: 600, marginTop: 2 }}>Moderatsiya kutilmoqda</p>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
+        <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>Tasdiqlangan ishlar</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12.5, fontWeight: 600 }}>Tasdiqlangan ishlar</span>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -148,12 +148,12 @@ export default function AchievementsApprovalTab({
             </div>
           </div>
           <div style={{ fontSize: 26, fontWeight: 800, color: '#059669', marginTop: 6 }} id="kpiApprovedCount">{approvedCount ?? '—'} ta</div>
-          <p style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>Maqola, patent va diplomlar</p>
+          <p style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>Maqola, patent va diplomlar</p>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
+        <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '18px 20px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', minWidth: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: '#64748b', fontSize: 12.5, fontWeight: 600 }}>Faol tanlovlar</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 12.5, fontWeight: 600 }}>Faol tanlovlar</span>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fdf2f8', color: '#db2777', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="7"></circle>
@@ -161,20 +161,20 @@ export default function AchievementsApprovalTab({
               </svg>
             </div>
           </div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: '#0b3b70', marginTop: 6 }}>5 ta</div>
-          <p style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }}>Stipendiya va ko'rik-tanlov</p>
+          <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-heading)', marginTop: 6 }}>5 ta</div>
+          <p style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }}>Stipendiya va ko'rik-tanlov</p>
         </div>
       </div>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-          <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0b3b70' }}>Talabalar tomonidan yuborilgan ilmiy ishlar va sertifikatlar</h3>
-          <span style={{ fontSize: 13, color: '#64748b' }}>Tasdiqlash orqali talabaga iqtidor reyting bali beriladi</span>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+          <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading)' }}>Talabalar tomonidan yuborilgan ilmiy ishlar va sertifikatlar</h3>
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Tasdiqlash orqali talabaga iqtidor reyting bali beriladi</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', minWidth: 1280, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+              <tr style={{ background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-table-header)', fontWeight: 600 }}>
                 <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Talaba</th>
                 <th style={{ ...thStyle, whiteSpace: 'nowrap' }}>Fakultet</th>
                 <th style={thStyle}>Yutuq turi</th>
@@ -187,7 +187,7 @@ export default function AchievementsApprovalTab({
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
+                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               )}
               {!loading && error && (
@@ -197,33 +197,33 @@ export default function AchievementsApprovalTab({
               )}
               {!loading && !error && achievements && achievements.length === 0 && (
                 <tr>
-                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Hozircha yuborilgan ilmiy ishlar mavjud emas.</td>
+                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Hozircha yuborilgan ilmiy ishlar mavjud emas.</td>
                 </tr>
               )}
               {!loading && !error && achievements?.map((item) => (
-                <tr key={item.id} id={`row-ach-${item.id}`} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s', background: rowHighlight[item.id] }}>
+                <tr key={item.id} id={`row-ach-${item.id}`} style={{ borderBottom: '1px solid var(--border-light)', transition: 'background 0.15s', background: rowHighlight[item.id] }}>
                   <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
-                    <div style={{ fontWeight: 600, color: '#1e293b' }}>{item.student_name}</div>
-                    <div style={{ fontSize: 12, color: '#64748b' }}>HEMIS ID: {item.hemis_id}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{item.student_name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>HEMIS ID: {item.hemis_id}</div>
                   </td>
-                  <td style={{ ...tdStyle, color: '#475569', fontSize: 13, whiteSpace: 'nowrap' }}>{item.faculty}</td>
+                  <td style={{ ...tdStyle, color: 'var(--text-table-header)', fontSize: 13, whiteSpace: 'nowrap' }}>{item.faculty}</td>
                   <td style={tdStyle}>
                     <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
                       {getAchievementCategoryLabel(item.achievement_type)}
                     </span>
                     {item.scope && ACHIEVEMENT_SCOPES[item.scope] && (
-                      <div style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>{ACHIEVEMENT_SCOPES[item.scope].label}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{ACHIEVEMENT_SCOPES[item.scope].label}</div>
                     )}
                   </td>
                   <td style={{ ...tdStyle, maxWidth: 360 }}>
-                    <div style={{ fontWeight: 600, color: '#0b3b70' }}>{item.title}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{item.title}</div>
                     {item.description && (
-                      <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{item.description}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{item.description}</div>
                     )}
                   </td>
                   <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     {item.file_url ? (
-                      <a href={item.file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#0b3b70', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
+                      <a href={item.file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--text-heading)', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                           <polyline points="14 2 14 8 20 8"></polyline>
@@ -231,7 +231,7 @@ export default function AchievementsApprovalTab({
                         <span>Ko'rish</span>
                       </a>
                     ) : (
-                      <span style={{ color: '#94a3b8', fontSize: 12 }}>Mavjud emas</span>
+                      <span style={{ color: 'var(--text-light)', fontSize: 12 }}>Mavjud emas</span>
                     )}
                   </td>
                   <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
@@ -256,7 +256,7 @@ export default function AchievementsApprovalTab({
                         )}
                       </div>
                     ) : (
-                      <span style={{ background: '#fff7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="12" cy="12" r="10"></circle>
                           <polyline points="12 6 12 12 16 14"></polyline>
@@ -276,7 +276,7 @@ export default function AchievementsApprovalTab({
                         </button>
                       </div>
                     ) : (
-                      <span style={{ color: '#94a3b8', fontSize: 12 }}>Ko'rib chiqilgan</span>
+                      <span style={{ color: 'var(--text-light)', fontSize: 12 }}>Ko'rib chiqilgan</span>
                     )}
                   </td>
                 </tr>

@@ -93,12 +93,12 @@ export default function CalculatorTab({ user }: Props) {
 
   return (
     <div className="student-tab-pane" id="student-tab-calculator" style={{ display: 'block' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
-        <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0b3b70', marginBottom: 6 }}>Nizom baholash mezonlari aqlli kalkulyatori (13-14-modda)</h3>
-        <p style={{ color: '#64748b', fontSize: 13.5, marginBottom: 22 }}>Ko'rsatkichlarni kiritib, yig'ma 100 ballik natijangizni jonli hisoblang.</p>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 28, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+        <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-heading)', marginBottom: 6 }}>Nizom baholash mezonlari aqlli kalkulyatori (13-14-modda)</h3>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginBottom: 22 }}>Ko'rsatkichlarni kiritib, yig'ma 100 ballik natijangizni jonli hisoblang.</p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: 28 }}>
-          <div style={{ color: '#334155' }}>
+          <div style={{ color: 'var(--text-secondary)' }}>
             <label>Sinov imtihoni bali (maks. 40)
               <input type="number" value={exam} min={0} max={40} step={1} onChange={(e) => setExam(parseFloat(e.target.value) || 0)} style={numberFieldStyle} />
             </label>
@@ -134,7 +134,7 @@ export default function CalculatorTab({ user }: Props) {
             </label>
           </div>
 
-          <div style={{ background: 'linear-gradient(135deg, #0b3b70 0%, #072950 100%)', borderRadius: 16, padding: 26, color: '#ffffff', textAlign: 'center', alignSelf: 'start' }}>
+          <div style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #072950 100%)', borderRadius: 16, padding: 26, color: '#ffffff', textAlign: 'center', alignSelf: 'start' }}>
             <div style={{ fontSize: 13, color: '#cbd5e1' }}>Umumiy natija</div>
             <div style={{ fontSize: 46, fontWeight: 800, margin: '8px 0', color: '#10b981' }}>{result.total.toFixed(1)}</div>
             <div style={{ background: tier.background, color: tier.color, border: '1px solid rgba(52, 211, 153, 0.4)', borderRadius: 20, padding: '6px 14px', display: 'inline-block', fontSize: 13, fontWeight: 700, marginBottom: 12 }}>

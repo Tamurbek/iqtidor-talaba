@@ -74,9 +74,9 @@ export default function UploadTab({ onUploaded }: Props) {
 
   return (
     <div className="student-tab-pane" id="student-tab-upload" style={{ display: 'block' }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 32, maxWidth: 820, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 32, maxWidth: 820, boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
         <div style={{ marginBottom: 22 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0b3b70', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17 8 12 3 7 8"></polyline>
@@ -84,7 +84,7 @@ export default function UploadTab({ onUploaded }: Props) {
             </svg>
             <span>Yutuq yoki ilmiy ish hujjatini yuklash</span>
           </h3>
-          <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-muted)', marginTop: 4 }}>
             Nizomning 13-moddasidagi 10 ta baholash indikatoriga muvofiq tegishli toifani tanlang va tasdiqlovchi faylni biriktiring.
           </p>
         </div>
@@ -110,7 +110,7 @@ export default function UploadTab({ onUploaded }: Props) {
 
         <form id="achievementUploadForm" ref={formRef} onSubmit={handleSubmit}>
           <div style={{ marginBottom: 18 }}>
-            <label htmlFor="achType" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>
+            <label htmlFor="achType" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
               Nizom bo'yicha yutuq toifasi (Indikator)
             </label>
             <select
@@ -119,18 +119,18 @@ export default function UploadTab({ onUploaded }: Props) {
               required
               value={achType}
               onChange={(e) => setAchType(e.target.value)}
-              style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', background: '#ffffff' }}
+              style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', background: 'var(--bg-white)' }}
             >
               {ACHIEVEMENT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
-            <p style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>* Hammualliflikdagi ishlar mualliflar soniga nisbatan proporsional hisoblanadi.</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>* Hammualliflikdagi ishlar mualliflar soniga nisbatan proporsional hisoblanadi.</p>
           </div>
 
           {achType === INNOVATION_TYPE_CODE && (
             <div style={{ marginBottom: 18 }}>
-              <label htmlFor="achScope" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>
+              <label htmlFor="achScope" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>
                 Tanlov/loyiha miqyosi
               </label>
               <select
@@ -139,7 +139,7 @@ export default function UploadTab({ onUploaded }: Props) {
                 required
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
-                style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', background: '#ffffff' }}
+                style={{ width: '100%', padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14, outline: 'none', background: 'var(--bg-white)' }}
               >
                 <option value="" disabled>Miqyosni tanlang...</option>
                 {Object.entries(ACHIEVEMENT_SCOPES).map(([code, meta]) => (
@@ -150,7 +150,7 @@ export default function UploadTab({ onUploaded }: Props) {
           )}
 
           <div style={{ marginBottom: 18 }}>
-            <label htmlFor="achTitle" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>Hujjat nomi / Maqola sarlavhasi</label>
+            <label htmlFor="achTitle" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Hujjat nomi / Maqola sarlavhasi</label>
             <input
               type="text"
               id="achTitle"
@@ -164,7 +164,7 @@ export default function UploadTab({ onUploaded }: Props) {
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <label htmlFor="achDesc" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>Mualliflar soni, DOI havolasi yoki jurnal ma'lumoti (ixtiyoriy)</label>
+            <label htmlFor="achDesc" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Mualliflar soni, DOI havolasi yoki jurnal ma'lumoti (ixtiyoriy)</label>
             <input
               type="text"
               id="achDesc"
@@ -177,7 +177,7 @@ export default function UploadTab({ onUploaded }: Props) {
           </div>
 
           <div style={{ marginBottom: 24 }}>
-            <label htmlFor="achFile" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: '#334155' }}>Tasdiqlovchi fayl (PDF, PNG, JPG - max 15MB)</label>
+            <label htmlFor="achFile" style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>Tasdiqlovchi fayl (PDF, PNG, JPG - max 15MB)</label>
             <input
               type="file"
               id="achFile"
@@ -185,7 +185,7 @@ export default function UploadTab({ onUploaded }: Props) {
               accept=".pdf,.png,.jpg,.jpeg"
               required
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              style={{ width: '100%', fontSize: 14, padding: 8, border: '1px dashed #94a3b8', borderRadius: 8, background: '#f8fafc', color: '#0f172a' }}
+              style={{ width: '100%', fontSize: 14, padding: 8, border: '1px dashed var(--text-light)', borderRadius: 8, background: 'var(--bg-light)', color: '#0f172a' }}
             />
           </div>
 
@@ -193,7 +193,7 @@ export default function UploadTab({ onUploaded }: Props) {
             type="submit"
             id="btnUpload"
             disabled={submitting}
-            style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '13px 32px', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 12px rgba(11, 59, 112, 0.25)', opacity: submitting ? 0.7 : 1 }}
+            style={{ background: 'var(--primary-color)', color: '#ffffff', border: 'none', padding: '13px 32px', borderRadius: 8, fontWeight: 700, fontSize: 14, cursor: submitting ? 'not-allowed' : 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 4px 12px rgba(11, 59, 112, 0.25)', opacity: submitting ? 0.7 : 1 }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>

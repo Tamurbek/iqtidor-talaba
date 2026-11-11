@@ -58,11 +58,11 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
 
   return (
     <div id="tab-content-contests-monitoring" className="tab-pane" style={{ display: 'block', marginTop: 0 }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <div>
-            <h3 style={{ fontSize: 17, fontWeight: 700, color: '#0b3b70' }}>Stipendiya va tanlovlarga kelib tushgan arizalar</h3>
-            <p style={{ fontSize: 13, color: '#64748b', marginTop: 2 }}>Prezident, nomdor davlat stipendiyalari va respublika ko'rik-tanlovlari nomzodlari</p>
+            <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading)' }}>Stipendiya va tanlovlarga kelib tushgan arizalar</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>Prezident, nomdor davlat stipendiyalari va respublika ko'rik-tanlovlari nomzodlari</p>
           </div>
           <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600 }}>
             Jami {list.length} ta ariza
@@ -72,7 +72,7 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', minWidth: 1050, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', fontWeight: 600 }}>
+              <tr style={{ background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', color: 'var(--text-table-header)', fontWeight: 600 }}>
                 <th style={thStyle}>Talaba</th>
                 <th style={thStyle}>Fakultet va kurs</th>
                 <th style={thStyle}>Tanlov / Stipendiya</th>
@@ -85,7 +85,7 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
+                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               ) : error ? (
                 <tr>
@@ -93,17 +93,17 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
                 </tr>
               ) : list.length > 0 ? (
                 list.map((app) => (
-                  <tr key={app.id} id={`row-app-${app.id}`} style={{ borderBottom: '1px solid #f1f5f9', background: rowHighlight[app.id] }}>
+                  <tr key={app.id} id={`row-app-${app.id}`} style={{ borderBottom: '1px solid var(--border-light)', background: rowHighlight[app.id] }}>
                     <td style={tdStyle}>
-                      <div style={{ fontWeight: 600, color: '#1e293b' }}>{app.student_name}</div>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>HEMIS ID: {app.hemis_id}</div>
+                      <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{app.student_name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>HEMIS ID: {app.hemis_id}</div>
                     </td>
-                    <td style={{ ...tdStyle, color: '#475569', fontSize: 13 }}>
+                    <td style={{ ...tdStyle, color: 'var(--text-table-header)', fontSize: 13 }}>
                       {app.faculty} / {app.course}-kurs
                     </td>
                     <td style={tdStyle}>
-                      <span style={{ fontWeight: 600, color: '#0b3b70' }}>{app.contest_name}</span>
-                      <div style={{ fontSize: 11, color: '#64748b' }}>{formatDate(app.created_at)}</div>
+                      <span style={{ fontWeight: 600, color: 'var(--text-heading)' }}>{app.contest_name}</span>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatDate(app.created_at)}</div>
                     </td>
                     <td style={tdStyle}>
                       <span style={{ background: '#eff6ff', color: '#0284c7', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>GPA: {app.gpa}</span>
@@ -129,7 +129,7 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
                           <span>Rad etilgan</span>
                         </span>
                       ) : (
-                        <span style={{ background: '#fff7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <polyline points="12 6 12 12 16 14"></polyline>
@@ -149,14 +149,14 @@ export default function ApplicationsReviewTab({ applications, loading, error, on
                           </button>
                         </div>
                       ) : (
-                        <span style={{ color: '#94a3b8', fontSize: 12 }}>Ko'rib chiqilgan</span>
+                        <span style={{ color: 'var(--text-light)', fontSize: 12 }}>Ko'rib chiqilgan</span>
                       )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>
+                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>
                     Hozircha tanlov va stipendiyalarga kelib tushgan arizalar mavjud emas.
                   </td>
                 </tr>

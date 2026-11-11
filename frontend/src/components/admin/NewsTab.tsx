@@ -22,7 +22,7 @@ const PRESETS = [
   { url: '/static/images/news-3.png', name: 'Stipendiya & Yutuq', label: '3. Stipendiya' },
 ]
 
-const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 6 }
+const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }
 const thStyle: React.CSSProperties = { padding: '12px 18px' }
 const tdStyle: React.CSSProperties = { padding: '12px 18px' }
 
@@ -200,10 +200,10 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
 
   return (
     <div id="tab-content-add-news" className="tab-pane" style={{ display: 'block', marginTop: 0 }}>
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: '18px 24px', marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '18px 24px', marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
         <div>
-          <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0b3b70', margin: 0 }}>Yangiliklar va Matbuot xizmati boshqaruvi</h3>
-          <p style={{ color: '#64748b', fontSize: 13, margin: '3px 0 0' }}>Maqolalarni tahrirlash, rasm biriktirish, qoralama (draft) holatida saqlash yoki saytda darhol chop etish</p>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>Yangiliklar va Matbuot xizmati boshqaruvi</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '3px 0 0' }}>Maqolalarni tahrirlash, rasm biriktirish, qoralama (draft) holatida saqlash yoki saytda darhol chop etish</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ background: '#eff6ff', color: '#0284c7', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
@@ -212,14 +212,14 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
           <span style={{ background: '#ecfdf5', color: '#059669', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             Chop etilgan: {publishedCount} ta
           </span>
-          <span style={{ background: '#fff7ed', color: '#ea580c', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+          <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             Qoralamalar: {draftCount} ta
           </span>
         </div>
       </div>
 
       <div className="admin-form-split" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24, alignItems: 'flex-start' }}>
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, padding: 26, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+        <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 26, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 36, height: 36, borderRadius: 8, background: '#eff6ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -229,16 +229,16 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                 </svg>
               </div>
               <div>
-                <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0b3b70', margin: 0 }} id="newsFormModeTitle">
+                <h3 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-heading)', margin: 0 }} id="newsFormModeTitle">
                   {isEditing ? `Yangilikni tahrirlash (#${editingId})` : 'Yangi yangilik chop etish'}
                 </h3>
-                <p style={{ color: '#64748b', fontSize: 12.5, margin: '2px 0 0' }} id="newsFormModeDesc">
+                <p style={{ color: 'var(--text-muted)', fontSize: 12.5, margin: '2px 0 0' }} id="newsFormModeDesc">
                   {isEditing ? "Maqola matni, toifasi yoki rasmini o'zgartiring va saqlang" : "Bosh sahifa va Matbuot xizmati sahifasida e'lon qilish uchun maqola tayyorlash"}
                 </p>
               </div>
             </div>
             {isEditing && (
-              <button type="button" id="btnCancelNewsEdit" onClick={resetNewsFormToCreate} style={{ display: 'inline-block', background: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              <button type="button" id="btnCancelNewsEdit" onClick={resetNewsFormToCreate} style={{ display: 'inline-block', background: 'var(--border-light)', color: 'var(--text-table-header)', border: '1px solid #cbd5e1', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                 Tahrirlashni bekor qilish
               </button>
             )}
@@ -253,7 +253,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
               <div>
                 <label htmlFor="newsCategory" style={labelStyle}>Toifasi *</label>
-                <select id="newsCategory" value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: '100%', padding: '11px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5, fontWeight: 600, background: '#ffffff' }}>
+                <select id="newsCategory" value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: '100%', padding: '11px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5, fontWeight: 600, background: 'var(--bg-white)' }}>
                   <option value="Ilm-fan va tadqiqot">Ilm-fan va tadqiqot</option>
                   <option value="Iqtidorli talabalar">Iqtidorli talabalar yutuqlari</option>
                   <option value="Tanlovlar va grantlar">Tanlovlar va grantlar</option>
@@ -263,7 +263,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
               </div>
               <div>
                 <label htmlFor="newsDate" style={labelStyle}>E'lon qilinuvchi sana</label>
-                <input type="text" id="newsDate" value="Bugun, 05-oktabr 2026" readOnly style={{ width: '100%', padding: '11px 14px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 13.5, background: '#f8fafc', color: '#64748b' }} />
+                <input type="text" id="newsDate" value="Bugun, 05-oktabr 2026" readOnly style={{ width: '100%', padding: '11px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, background: 'var(--bg-light)', color: 'var(--text-muted)' }} />
               </div>
             </div>
 
@@ -271,24 +271,24 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
               <label htmlFor="newsImageFileInput" style={labelStyle}>Yangilik muqova rasmi *</label>
               <input type="file" id="newsImageFileInput" ref={fileInputRef} accept="image/png, image/jpeg, image/webp" onChange={handleNewsImageFileSelect} style={{ display: 'none' }} />
 
-              <div style={{ border: '2px dashed #cbd5e1', borderRadius: 12, padding: '12px 16px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ border: '2px dashed #cbd5e1', borderRadius: 12, padding: '12px 16px', background: 'var(--bg-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 56, height: 42, borderRadius: 8, overflow: 'hidden', background: '#e2e8f0', border: '1px solid #cbd5e1', flexShrink: 0 }}>
+                  <div style={{ width: 56, height: 42, borderRadius: 8, overflow: 'hidden', background: 'var(--border-color)', border: '1px solid #cbd5e1', flexShrink: 0 }}>
                     <img id="newsThumbPreview" src={currentImageSrc} alt="Rasm" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0b3b70' }} id="newsImageNameLabel">{imageLabel}</div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>JPG, PNG, WEBP (maks. 5MB)</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-heading)' }} id="newsImageNameLabel">{imageLabel}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>JPG, PNG, WEBP (maks. 5MB)</div>
                   </div>
                 </div>
-                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: '#ffffff', border: '1px solid #0b3b70', color: '#0b3b70', padding: '7px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: 'var(--bg-white)', border: '1px solid var(--primary-color)', color: 'var(--text-heading)', padding: '7px 14px', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                   <span>Fayl tanlash</span>
                 </button>
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 11.5, color: '#64748b', fontWeight: 600 }}>Tayyor namunalar:</span>
+                <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600 }}>Tayyor namunalar:</span>
                 {PRESETS.map((p) => {
                   const active = activePreset === p.url
                   return (
@@ -312,14 +312,14 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
               <textarea id="newsContent" rows={6} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Tadbir tafsilotlari, erishilgan ilmiy natijalar va iqtidorli talabalar haqida to'liq matn..." required style={{ width: '100%', padding: '12px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, resize: 'vertical' }}></textarea>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: 18, flexWrap: 'wrap', gap: 12 }}>
-              <span style={{ fontSize: 12, color: '#64748b' }} id="newsActionHint">Saytda darhol e'lon qilish yoki qoralama qilishni tanlang</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: 18, flexWrap: 'wrap', gap: 12 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }} id="newsActionHint">Saytda darhol e'lon qilish yoki qoralama qilishni tanlang</span>
               <div style={{ display: 'inline-flex', gap: 10 }}>
-                <button type="button" id="btnNewsDraft" disabled={submitting} onClick={() => submitNewsWithStatus('draft')} style={{ background: '#ffffff', color: '#ea580c', border: '1px solid #fdba74', padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
+                <button type="button" id="btnNewsDraft" disabled={submitting} onClick={() => submitNewsWithStatus('draft')} style={{ background: 'var(--bg-white)', color: '#ea580c', border: '1px solid #fdba74', padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                   <span>Qoralama (Draft)</span>
                 </button>
-                <button type="button" id="btnNewsPublish" disabled={submitting} onClick={() => submitNewsWithStatus('published')} style={{ background: '#0b3b70', color: '#ffffff', border: 'none', padding: '10px 22px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(11, 59, 112, 0.25)', transition: 'all 0.2s' }}>
+                <button type="button" id="btnNewsPublish" disabled={submitting} onClick={() => submitNewsWithStatus('published')} style={{ background: 'var(--primary-color)', color: '#ffffff', border: 'none', padding: '10px 22px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 12px rgba(11, 59, 112, 0.25)', transition: 'all 0.2s' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                   <span id="btnPublishText">{isEditing ? "O'zgarishlarni saqlash" : 'Saytda chop etish'}</span>
                 </button>
@@ -329,9 +329,9 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-            <div style={{ padding: '14px 18px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5 }}>Saytdagi jonli ko'rinishi</span>
+          <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+            <div style={{ padding: '14px 18px', background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-table-header)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Saytdagi jonli ko'rinishi</span>
               <span style={{ background: '#ecfdf5', color: '#059669', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>Jonli preview</span>
             </div>
             <div style={{ height: 160, position: 'relative', background: '#072950', overflow: 'hidden' }}>
@@ -342,22 +342,22 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
               </span>
             </div>
             <div style={{ padding: 18 }}>
-              <div style={{ fontSize: 11.5, color: '#94a3b8', marginBottom: 6 }}>05-oktabr 2026 | Matbuot xizmati</div>
-              <h4 style={{ fontSize: 15, fontWeight: 800, color: '#0b3b70', lineHeight: 1.4, margin: '0 0 8px' }} id="previewNewsTitle">
+              <div style={{ fontSize: 11.5, color: 'var(--text-light)', marginBottom: 6 }}>05-oktabr 2026 | Matbuot xizmati</div>
+              <h4 style={{ fontSize: 15, fontWeight: 800, color: 'var(--text-heading)', lineHeight: 1.4, margin: '0 0 8px' }} id="previewNewsTitle">
                 {previewTitle}
               </h4>
-              <p style={{ fontSize: 12.5, color: '#64748b', lineHeight: 1.5, margin: 0 }} id="previewNewsText">
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }} id="previewNewsText">
                 {previewText}
               </p>
             </div>
           </div>
 
-          <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: 18 }}>
-            <h4 style={{ fontSize: 13.5, fontWeight: 800, color: '#0b3b70', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 18 }}>
+            <h4 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-heading)', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f2721c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
               <span>Chop etish va Qoralama tartibi</span>
             </h4>
-            <ul style={{ fontSize: 12, color: '#475569', lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
+            <ul style={{ fontSize: 12, color: 'var(--text-table-header)', lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
               <li><strong>Qoralama (Draft):</strong> Saytda ko'rinmaydi. Keyinroq tahrirlab, to'ldirib chop etish uchun saqlanadi.</li>
               <li><strong>Saytda chop etish:</strong> Bir zumda saytning Bosh sahifasi va Matbuot xizmatida barcha tashrif buyuruvchilarga ko'rinadi.</li>
               <li><strong>Muqova rasmi:</strong> Maqola mazmuniga mos sifatli rasm (kamida 800x500px) yuklash tavsiya etiladi.</li>
@@ -366,15 +366,15 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
         </div>
       </div>
 
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: 16, marginTop: 24, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, marginTop: 24, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <h3 style={{ fontSize: 16.5, fontWeight: 800, color: '#0b3b70', margin: 0 }}>Mavjud maqolalar va qoralamalar ro'yxati</h3>
+            <h3 style={{ fontSize: 16.5, fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>Mavjud maqolalar va qoralamalar ro'yxati</h3>
             <span style={{ background: '#eff6ff', color: '#0284c7', padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700 }}>{list.length} ta</span>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
             <input type="text" id="adminNewsSearchInput" aria-label="Yangilik nomi bo'yicha qidiruv" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Yangilik nomi bo'yicha..." style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, width: 200 }} />
-            <select id="adminNewsStatusFilter" aria-label="Holat bo'yicha filtr" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, background: '#ffffff' }}>
+            <select id="adminNewsStatusFilter" aria-label="Holat bo'yicha filtr" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }}>
               <option value="all">Barcha holatlar</option>
               <option value="published">Faqat chop etilganlar</option>
               <option value="draft">Faqat qoralamalar (Draft)</option>
@@ -385,7 +385,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', minWidth: 980, borderCollapse: 'collapse', textAlign: 'left', fontSize: 13.5 }} id="adminNewsTable">
             <thead>
-              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569', fontWeight: 700 }}>
+              <tr style={{ background: 'var(--bg-light)', borderBottom: '2px solid var(--border-color)', color: 'var(--text-table-header)', fontWeight: 700 }}>
                 <th style={thStyle}>Muqova</th>
                 <th style={thStyle}>Sarlavha va Toifa</th>
                 <th style={thStyle}>Sana</th>
@@ -397,7 +397,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 30, textAlign: 'center', color: '#94a3b8' }}>Yuklanmoqda...</td>
+                  <td colSpan={6} style={{ padding: 30, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               ) : error ? (
                 <tr>
@@ -405,7 +405,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                 </tr>
               ) : list.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 30, textAlign: 'center', color: '#94a3b8' }}>
+                  <td colSpan={6} style={{ padding: 30, textAlign: 'center', color: 'var(--text-light)' }}>
                     Hozircha hech qanday yangilik kiritilmagan.
                   </td>
                 </tr>
@@ -413,18 +413,18 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                 filteredList.map((n) => {
                   const isDraft = n.status === 'draft'
                   return (
-                    <tr key={n.id} id={`news-row-${n.id}`} data-status={n.status || 'published'} style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s' }}>
+                    <tr key={n.id} id={`news-row-${n.id}`} data-status={n.status || 'published'} style={{ borderBottom: '1px solid var(--border-light)', transition: 'background 0.15s' }}>
                       <td style={tdStyle}>
-                        <img src={n.image_url || DEFAULT_IMAGE} alt={n.title} id={`news-row-img-${n.id}`} style={{ width: 52, height: 38, objectFit: 'cover', borderRadius: 6, border: '1px solid #e2e8f0' }} />
+                        <img src={n.image_url || DEFAULT_IMAGE} alt={n.title} id={`news-row-img-${n.id}`} style={{ width: 52, height: 38, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-color)' }} />
                       </td>
                       <td style={{ ...tdStyle, maxWidth: 320 }}>
-                        <div style={{ fontWeight: 700, color: '#0b3b70', lineHeight: 1.3 }} className="news-item-title" id={`news-row-title-${n.id}`}>{n.title}</div>
-                        <div style={{ fontSize: 11.5, color: '#64748b', marginTop: 2 }} id={`news-row-cat-${n.id}`}>{n.category}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-heading)', lineHeight: 1.3 }} className="news-item-title" id={`news-row-title-${n.id}`}>{n.title}</div>
+                        <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 2 }} id={`news-row-cat-${n.id}`}>{n.category}</div>
                       </td>
-                      <td style={{ ...tdStyle, color: '#64748b', fontSize: 12.5 }}>{n.published_date}</td>
+                      <td style={{ ...tdStyle, color: 'var(--text-muted)', fontSize: 12.5 }}>{n.published_date}</td>
                       <td style={{ ...tdStyle, textAlign: 'center' }} id={`news-status-cell-${n.id}`}>
                         {isDraft ? (
-                          <span style={{ background: '#fff7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                             <span>Qoralama (Draft)</span>
                           </span>
@@ -435,12 +435,12 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                           </span>
                         )}
                       </td>
-                      <td style={{ ...tdStyle, textAlign: 'center', color: '#334155', fontWeight: 600 }}>
+                      <td style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 600 }}>
                         {n.views}
                       </td>
                       <td style={{ ...tdStyle, textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 6 }}>
-                          <button type="button" onClick={() => startEditNews(n)} title="Tahrirlash" style={{ background: '#f1f5f9', color: '#0b3b70', border: 'none', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <button type="button" onClick={() => startEditNews(n)} title="Tahrirlash" style={{ background: 'var(--border-light)', color: 'var(--text-heading)', border: 'none', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             <span>Tahrirlash</span>
                           </button>

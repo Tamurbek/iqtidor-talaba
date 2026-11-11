@@ -15,6 +15,10 @@
   --bg-light: #f8fafc;
   --bg-white: #ffffff;
   --border-color: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text-heading: #0b3b70;
+  --text-secondary: #334155;
+  --text-table-header: #475569;
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
@@ -1742,6 +1746,150 @@ select {
   transition: all 0.2s;
 }
 
+.role-switcher {
+  position: relative;
+}
+
+.role-switcher-trigger {
+  border: none;
+  background: transparent;
+  padding: 4px 6px;
+  border-radius: 10px;
+  cursor: default;
+}
+
+.role-switcher-trigger.is-clickable {
+  cursor: pointer;
+}
+
+.role-switcher-trigger.is-clickable:hover {
+  background: #f1f5f9;
+}
+
+.role-switcher-chevron {
+  margin-left: 2px;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.role-switcher-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+  padding: 14px;
+  z-index: 60;
+}
+
+.role-switcher-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.role-switcher-panel-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.role-switcher-panel-login {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.role-switcher-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  padding: 0 2px;
+}
+
+.role-switcher-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.role-switcher-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.role-switcher-item:hover {
+  background: #f1f5f9;
+}
+
+.role-switcher-item.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.role-switcher-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #16a34a;
+  background: #dcfce7;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+:root[data-theme='dark'] .role-switcher-trigger.is-clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme='dark'] .role-switcher-panel {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
+:root[data-theme='dark'] .role-switcher-panel-header {
+  border-bottom-color: #1e293b;
+}
+
+:root[data-theme='dark'] .role-switcher-panel-name {
+  color: #e2e8f0;
+}
+
+:root[data-theme='dark'] .role-switcher-item {
+  color: #cbd5e1;
+}
+
+:root[data-theme='dark'] .role-switcher-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+:root[data-theme='dark'] .role-switcher-item.active {
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+}
+
 .cabinet-topbar-logout:hover {
   background: #fef2f2;
   color: #dc2626;
@@ -1944,6 +2092,10 @@ select {
   --bg-light: #1e293b;
   --bg-white: #0f172a;
   --border-color: #2d3a4f;
+  --border-light: #1e293b;
+  --text-heading: #93c5fd;
+  --text-secondary: #cbd5e1;
+  --text-table-header: #94a3b8;
 }
 
 :root[data-theme='dark'] body {
@@ -1993,6 +2145,10 @@ select {
 
 :root[data-theme='dark'] .cabinet-topbar-user-role {
   color: #94a3b8;
+}
+
+:root[data-theme='dark'] .page-title {
+  color: var(--text-heading);
 }
 
 :root[data-theme='dark'] .cabinet-topbar-menu-btn {
