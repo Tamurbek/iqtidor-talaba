@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from './pagination'
+
 export interface NewsItem {
   id: number
   title: string
@@ -33,3 +35,6 @@ export interface DocumentItem {
   published_date?: string | null
   download_count: number
 }
+
+export interface NewsListResponse extends PaginatedResponse<NewsItem> {}
+export interface DocumentListResponse extends PaginatedResponse<DocumentItem> {}

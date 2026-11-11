@@ -10,7 +10,7 @@ interface Props {
 }
 
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4 }
-const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5 }
+const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, background: 'var(--bg-white)', color: 'var(--text-dark)' }
 
 export default function AssignSupervisorModal({ student, onClose, onSaved }: Props) {
   const [supervisors, setSupervisors] = useState<SupervisorOption[]>([])
@@ -73,7 +73,7 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
       <div style={{ background: 'var(--bg-white)', borderRadius: 16, width: '100%', maxWidth: 540, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', overflow: 'hidden', animation: 'popIn 0.25s ease' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
@@ -95,7 +95,7 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
           </div>
 
           {error && (
-            <div role="alert" style={{ padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: '#fef2f2', color: '#dc2626' }}>{error}</div>
+            <div role="alert" style={{ padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }}>{error}</div>
           )}
 
           <div style={{ marginBottom: 14 }} id="supSelectWrapper">
@@ -136,7 +136,7 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
           </div>
 
           <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', borderTop: '1px solid var(--border-light)', paddingTop: 16 }}>
-            <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid #cbd5e1', background: 'var(--bg-light)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Bekor qilish</button>
+            <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-table-header)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Bekor qilish</button>
             <button type="submit" id="btnSubmitAssignSup" disabled={submitting} style={{ padding: '10px 22px', border: 'none', background: '#059669', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               {submitting ? (
                 'Saqlanmoqda...'

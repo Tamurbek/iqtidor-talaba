@@ -4,6 +4,7 @@ import type { AdminUser, MessageResponse, RoleItem } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 import { AddUserModal, EditUserModal, ResetPasswordModal } from './UserModals'
+import Pagination from '../common/Pagination'
 
 interface Props {
   users: AdminUser[] | null
@@ -11,29 +12,40 @@ interface Props {
   loading: boolean
   error: string | null
   currentUserId: number
+  page: number
+  totalPages: number
+  total: number
+  pageSize: number
+  onPageChange: (page: number) => void
+  search: string
+  onSearchChange: (value: string) => void
+  roleFilter: string
+  onRoleFilterChange: (value: string) => void
+  statusFilter: string
+  onStatusFilterChange: (value: string) => void
   onReload: () => void
   showToast: ShowToast
 }
 
 const thStyle: React.CSSProperties = { padding: '14px 20px' }
 const tdStyle: React.CSSProperties = { padding: '14px 20px' }
-const filterSelectStyle: React.CSSProperties = { padding: '9px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, color: 'var(--text-secondary)', background: 'var(--bg-white)', outline: 'none', cursor: 'pointer' }
+const filterSelectStyle: React.CSSProperties = { padding: '9px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13, color: 'var(--text-secondary)', background: 'var(--bg-white)', outline: 'none', cursor: 'pointer' }
 const roleBadge = (bg: string, color: string, fontWeight = 700): React.CSSProperties => ({ background: bg, color, padding: '3px 9px', borderRadius: 6, fontSize: 12, fontWeight })
 
 function RoleBadge({ role }: { role: string }) {
   switch (role) {
     case 'admin':
-      return <span style={roleBadge('#f3e8ff', '#7e22ce')}>Super Administrator</span>
+      return <span style={roleBadge('var(--badge-purple-bg)', 'var(--badge-purple-text)')}>Super Administrator</span>
     case 'department_head':
       return <span style={roleBadge('#e0e7ff', '#4338ca')}>Bo'lim boshlig'i</span>
     case 'coordinator':
-      return <span style={roleBadge('#e0f2fe', '#0369a1')}>Fakultet koordinatori</span>
+      return <span style={roleBadge('var(--badge-info-bg)', 'var(--badge-info-text)')}>Fakultet koordinatori</span>
     case 'starosta':
-      return <span style={roleBadge('#fef3c7', '#b45309')}>Guruh sardori</span>
+      return <span style={roleBadge('var(--badge-warning-bg)', 'var(--badge-warning-text)')}>Guruh sardori</span>
     case 'jury_expert':
-      return <span style={roleBadge('#fae8ff', '#a21caf')}>Hakam / Ekspert</span>
+      return <span style={roleBadge('var(--badge-purple-bg)', 'var(--badge-purple-text)')}>Hakam / Ekspert</span>
     default:
-      return <span style={roleBadge('#ecfdf5', '#047857', 600)}>Talaba</span>
+      return <span style={roleBadge('var(--badge-success-bg)', 'var(--badge-success-text)', 600)}>Talaba</span>
   }
 }
 
@@ -43,22 +55,30 @@ type ModalState =
   | { kind: 'reset'; user: AdminUser }
   | null
 
-export default function UsersTab({ users, roles, loading, error, currentUserId, onReload, showToast }: Props) {
-  const [search, setSearch] = useState('')
-  const [roleFilter, setRoleFilter] = useState('all')
-  const [statusFilter, setStatusFilter] = useState('all')
+export default function UsersTab({
+  users,
+  roles,
+  loading,
+  error,
+  currentUserId,
+  page,
+  totalPages,
+  total,
+  pageSize,
+  onPageChange,
+  search,
+  onSearchChange,
+  roleFilter,
+  onRoleFilterChange,
+  statusFilter,
+  onStatusFilterChange,
+  onReload,
+  showToast,
+}: Props) {
   const [modal, setModal] = useState<ModalState>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
 
-  const list = users ?? []
-  const q = search.toLowerCase().trim()
-  const filtered = list.filter((u) => {
-    const matchesSearch = !q || u.full_name.toLowerCase().includes(q) || u.login.toLowerCase().includes(q)
-    const matchesRole = roleFilter === 'all' || u.role === roleFilter
-    const status = u.is_active ? 'active' : 'inactive'
-    const matchesStatus = statusFilter === 'all' || status === statusFilter
-    return matchesSearch && matchesRole && matchesStatus
-  })
+  const filtered = users ?? []
 
   const handleSaved = (message: string, reload = true) => {
     setModal(null)
@@ -118,15 +138,15 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
 
         <div style={{ padding: '16px 26px', background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
-            <input type="text" id="userSearchInput" aria-label="Foydalanuvchilarni qidirish" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="F.I.SH. yoki login (HEMIS ID) bo'yicha qidiruv..." style={{ width: '100%', boxSizing: 'border-box', padding: '9px 14px 9px 36px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, outline: 'none' }} />
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 11, top: 11 }} aria-hidden="true">
+            <input type="text" id="userSearchInput" aria-label="Foydalanuvchilarni qidirish" value={search} onChange={(e) => onSearchChange(e.target.value)} placeholder="F.I.SH. yoki login (HEMIS ID) bo'yicha qidiruv..." style={{ width: '100%', boxSizing: 'border-box', padding: '9px 14px 9px 36px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13, outline: 'none' }} />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 11, top: 11 }} aria-hidden="true">
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-            <select id="userRoleFilter" aria-label="Rol bo'yicha filtr" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} style={filterSelectStyle}>
+            <select id="userRoleFilter" aria-label="Rol bo'yicha filtr" value={roleFilter} onChange={(e) => onRoleFilterChange(e.target.value)} style={filterSelectStyle}>
               <option value="all">Barcha rollar</option>
               <option value="admin">Administrator (Super admin)</option>
               <option value="department_head">Iqtidorli bo'lim boshlig'i</option>
@@ -136,7 +156,7 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
               <option value="student">Talaba</option>
             </select>
 
-            <select id="userStatusFilter" aria-label="Holat bo'yicha filtr" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={filterSelectStyle}>
+            <select id="userStatusFilter" aria-label="Holat bo'yicha filtr" value={statusFilter} onChange={(e) => onStatusFilterChange(e.target.value)} style={filterSelectStyle}>
               <option value="all">Barcha holatlar</option>
               <option value="active">Faol</option>
               <option value="inactive">Nofaol</option>
@@ -164,7 +184,7 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
               )}
               {!loading && error && (
                 <tr>
-                  <td colSpan={6} role="alert" style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={6} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               )}
               {!loading && !error && filtered.length === 0 && (
@@ -177,7 +197,7 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
                   <td style={tdStyle}>
                     <div style={{ fontWeight: 700, color: 'var(--text-heading)' }} className="user-name">{u.full_name}</div>
                     {u.id === currentUserId && (
-                      <span style={{ fontSize: 11, color: '#0284c7', fontWeight: 600 }}>(Sizning profilingiz)</span>
+                      <span style={{ fontSize: 11, color: 'var(--badge-info-text)', fontWeight: 600 }}>(Sizning profilingiz)</span>
                     )}
                   </td>
                   <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 13, color: 'var(--text-table-header)' }} className="user-login">
@@ -194,17 +214,17 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
                   </td>
                   <td style={tdStyle}>
                     {u.is_active ? (
-                      <span style={roleBadge('#ecfdf5', '#059669')}>Faol</span>
+                      <span style={roleBadge('var(--badge-success-bg)', 'var(--badge-success-text)')}>Faol</span>
                     ) : (
-                      <span style={roleBadge('#fef2f2', '#dc2626')}>Nofaol</span>
+                      <span style={roleBadge('var(--badge-danger-bg)', 'var(--badge-danger-text)')}>Nofaol</span>
                     )}
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }}>
-                      <button type="button" className="btn-edit-user" onClick={() => setModal({ kind: 'edit', user: u })} style={{ background: 'var(--border-light)', color: '#0f172a', border: '1px solid #cbd5e1', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Ma'lumotlarni tahrirlash">
+                      <button type="button" className="btn-edit-user" onClick={() => setModal({ kind: 'edit', user: u })} style={{ background: 'var(--border-light)', color: 'var(--text-dark)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Ma'lumotlarni tahrirlash">
                         Tahrirlash
                       </button>
-                      <button type="button" className="btn-reset-user-pass" onClick={() => setModal({ kind: 'reset', user: u })} style={{ background: 'var(--bg-white)7ed', color: '#c2410c', border: '1px solid #fed7aa', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Parolni yangilash">
+                      <button type="button" className="btn-reset-user-pass" onClick={() => setModal({ kind: 'reset', user: u })} style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', border: '1px solid var(--badge-warning-border)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Parolni yangilash">
                         Parol
                       </button>
                       {u.id !== currentUserId && (
@@ -214,12 +234,12 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
                             className="btn-toggle-user-status"
                             disabled={busyId === u.id}
                             onClick={() => toggleUserStatus(u)}
-                            style={{ background: u.is_active ? '#fef2f2' : '#ecfdf5', color: u.is_active ? '#dc2626' : '#059669', border: `1px solid ${u.is_active ? '#fecaca' : '#a7f3d0'}`, padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                            style={{ background: u.is_active ? 'var(--badge-danger-bg)' : 'var(--badge-success-bg)', color: u.is_active ? 'var(--badge-danger-text)' : 'var(--badge-success-text)', border: `1px solid ${u.is_active ? 'var(--badge-danger-border)' : 'var(--border-color)'}`, padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
                             title={u.is_active ? 'Akkauntni bloklash' : 'Akkauntni faollashtirish'}
                           >
                             {u.is_active ? 'Bloklash' : 'Faollashtirish'}
                           </button>
-                          <button type="button" className="btn-delete-user" disabled={busyId === u.id} onClick={() => deleteUserPermanently(u)} style={{ background: 'var(--bg-white)1f2', color: '#e11d48', border: '1px solid #fecdd3', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Tizimdan butunlay o'chirish">
+                          <button type="button" className="btn-delete-user" disabled={busyId === u.id} onClick={() => deleteUserPermanently(u)} style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Tizimdan butunlay o'chirish">
                             O'chirish
                           </button>
                         </>
@@ -231,6 +251,10 @@ export default function UsersTab({ users, roles, loading, error, currentUserId, 
             </tbody>
           </table>
         </div>
+
+        {!loading && !error && (
+          <Pagination page={page} totalPages={totalPages} total={total} pageSize={pageSize} onPageChange={onPageChange} />
+        )}
       </div>
 
       {modal?.kind === 'add' && <AddUserModal onClose={() => setModal(null)} onSaved={(m) => handleSaved(m)} />}

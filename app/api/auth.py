@@ -19,6 +19,7 @@ from app.core.rate_limiter import BruteForceProtector
 from app.models.user import User
 from app.schemas.user import UserLogin, Token, UserResponse, EimzoVerifyRequest, EimzoSignRequest
 from app.services.hemis import hemis_service
+from app.core.role_utils import get_assigned_roles_for_user
 
 logger = logging.getLogger("iqtidorli_auth")
 
@@ -117,10 +118,13 @@ async def login(
             samesite="lax"
         )
 
+    user_response = UserResponse.model_validate(user)
+    user_response.assigned_roles = await get_assigned_roles_for_user(user, db)
+
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(user)
+        user=user_response
     )
 
 @router.post("/logout")
@@ -343,10 +347,13 @@ async def verify_eimzo_login(
     # Success: clear failed counter
     await BruteForceProtector.record_successful_login(request, rate_identifier)
 
+    user_response = UserResponse.model_validate(user)
+    user_response.assigned_roles = await get_assigned_roles_for_user(user, db)
+
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(user)
+        user=user_response
     )
 
 @router.post("/e-imzo/sign-and-verify", response_model=Token)
@@ -519,9 +526,12 @@ async def sign_and_verify_eimzo(
     # Success: clear failed counter
     await BruteForceProtector.record_successful_login(request, rate_identifier)
 
+    user_response = UserResponse.model_validate(user)
+    user_response.assigned_roles = await get_assigned_roles_for_user(user, db)
+
     return Token(
         access_token=access_token,
         token_type="bearer",
-        user=UserResponse.model_validate(user)
+        user=user_response
     )
 

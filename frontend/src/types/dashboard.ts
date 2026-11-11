@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from './pagination'
+
 export interface MeResponse {
   id: number
   login: string
@@ -68,6 +70,8 @@ export interface Application {
   decision_note?: string | null
   created_at: string
 }
+
+export interface ApplicationListResponse extends PaginatedResponse<Application> {}
 
 export interface ExamStatus {
   has_taken: boolean

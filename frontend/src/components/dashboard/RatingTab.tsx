@@ -51,39 +51,39 @@ export default function RatingTab({ user, examStatus, achievements, onGoToCalcul
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 600 }}>1. Sinov imtihonlari</span>
-            <span style={{ background: '#eff6ff', color: '#0284c7', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>Maks. 40</span>
+            <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>Maks. 40</span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#0284c7', marginTop: 8 }}>{examScore.toFixed(1)} <span style={{ fontSize: 15, color: 'var(--text-light)' }}>/ 40</span></div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--badge-info-text)', marginTop: 8 }}>{examScore.toFixed(1)} <span style={{ fontSize: 15, color: 'var(--text-light)' }}>/ 40</span></div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>IQ (20 ball), Tarix (10 ball), Chet tili (10 ball)</p>
         </div>
 
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 600 }}>2. GPA o'zlashtirish (GPA*4)</span>
-            <span style={{ background: '#ecfdf5', color: '#059669', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>Maks. 20</span>
+            <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>Maks. 20</span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#059669', marginTop: 8 }}>{gpaScore.toFixed(1)} <span style={{ fontSize: 15, color: 'var(--text-light)' }}>/ 20</span></div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--badge-success-text)', marginTop: 8 }}>{gpaScore.toFixed(1)} <span style={{ fontSize: 15, color: 'var(--text-light)' }}>/ 20</span></div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>HEMIS GPA: {gpa.toFixed(2)} (proporsional 100%)</p>
         </div>
 
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 600 }}>3. Ilmiy-ijodiy yutuqlar</span>
-            <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>Maks. 40</span>
+            <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>Maks. 40</span>
           </div>
-          <div style={{ fontSize: 28, fontWeight: 800, color: '#f2721c', marginTop: 8 }}>{achScore.toFixed(1)} <span style={{ fontSize: 15, color: 'var(--text-light)' }}>/ 40</span></div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent-orange)', marginTop: 8 }}>{achScore.toFixed(1)} <span style={{ fontSize: 15, color: 'var(--text-light)' }}>/ 40</span></div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Scopus, OAK, Patent, Zakovat, Tanlovlar</p>
         </div>
 
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ color: 'var(--text-muted)', fontSize: 13, fontWeight: 600 }}>G'oliblik maqomi</span>
-            <span style={{ background: '#ecfdf5', color: '#059669', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{totalScore >= 60 ? 'Tasdiqlangan' : 'Kutilmoqda'}</span>
+            <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '3px 8px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{totalScore >= 60 ? 'Tasdiqlangan' : 'Kutilmoqda'}</span>
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-heading)', marginTop: 8, lineHeight: 1.3 }}>
             "Yangi avlod yaratuvchisi" nominatsiyasi
           </div>
-          <p style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <p style={{ fontSize: 12, color: 'var(--badge-success-text)', fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>Ko'krak nishoniga tavsiya etilgan</span>
           </p>
@@ -139,13 +139,13 @@ export default function RatingTab({ user, examStatus, achievements, onGoToCalcul
                   <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--text-heading)' }}>{row[1]}</td>
                   <td style={{ padding: '12px 16px', color: 'var(--text-muted)' }}>{row[2]}</td>
                   <td style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 700 }}>{row[3]}</td>
-                  <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 800, color: '#059669' }}>{row[4]}</td>
+                  <td style={{ padding: '12px 16px', textAlign: 'right', fontWeight: 800, color: 'var(--badge-success-text)' }}>{row[4]}</td>
                 </tr>
               ))}
-              <tr style={{ background: '#f0fdf4', fontWeight: 800, color: 'var(--text-heading)' }}>
+              <tr style={{ background: 'var(--badge-success-bg)', fontWeight: 800, color: 'var(--text-heading)' }}>
                 <td colSpan={3} style={{ padding: '14px 16px', fontSize: 15 }}>JAMI YAKUNIY BALL:</td>
                 <td style={{ padding: '14px 16px', textAlign: 'center', fontSize: 15 }}>100</td>
-                <td style={{ padding: '14px 16px', textAlign: 'right', fontSize: 18, color: '#059669' }}>{totalScore} ball</td>
+                <td style={{ padding: '14px 16px', textAlign: 'right', fontSize: 18, color: 'var(--badge-success-text)' }}>{totalScore} ball</td>
               </tr>
             </tbody>
           </table>

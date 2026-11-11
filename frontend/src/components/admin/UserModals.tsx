@@ -9,9 +9,9 @@ const headerStyle: React.CSSProperties = { padding: '20px 24px', borderBottom: '
 const titleStyle: React.CSSProperties = { margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-heading)' }
 const closeBtnStyle: React.CSSProperties = { background: 'none', border: 'none', fontSize: 22, cursor: 'pointer', color: 'var(--text-light)' }
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 5 }
-const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5 }
-const cancelBtnStyle: React.CSSProperties = { padding: '10px 16px', border: '1px solid #cbd5e1', background: 'var(--bg-light)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
-const errorBoxStyle: React.CSSProperties = { padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: '#fef2f2', color: '#dc2626' }
+const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '9px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, background: 'var(--bg-white)', color: 'var(--text-dark)' }
+const cancelBtnStyle: React.CSSProperties = { padding: '10px 16px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-table-header)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }
+const errorBoxStyle: React.CSSProperties = { padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }
 
 const ROLE_OPTIONS_ADD: { value: string; label: string }[] = [
   { value: 'coordinator', label: 'Fakultet koordinatori' },
@@ -237,7 +237,7 @@ export function EditUserModal({ user, roles, onClose, onSaved }: BaseModalProps 
           {roles && roles.length > 0 && (
             <div style={{ marginBottom: 18 }}>
               <label style={labelStyle}>Qo'shimcha rollar (Rolni almashtirish menyusi uchun)</label>
-              <div style={{ border: '1px solid #cbd5e1', borderRadius: 8, padding: '10px 12px', maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ border: '1px solid var(--border-color)', borderRadius: 8, padding: '10px 12px', maxHeight: 160, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {roles.map((r) => (
                   <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-secondary)', cursor: 'pointer' }}>
                     <input type="checkbox" checked={extraRoleIds.has(r.id)} onChange={() => toggleExtraRole(r.id)} />

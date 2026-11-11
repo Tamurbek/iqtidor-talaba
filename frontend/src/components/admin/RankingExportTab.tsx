@@ -4,16 +4,22 @@ import type { RankingItem } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 import AssignSupervisorModal from './AssignSupervisorModal'
+import Pagination from '../common/Pagination'
 
 interface Props {
   ranking: RankingItem[] | null
   loading: boolean
   error: string | null
+  page: number
+  totalPages: number
+  total: number
+  pageSize: number
+  onPageChange: (page: number) => void
   onReload: () => void
   showToast: ShowToast
 }
 
-const selectStyle: React.CSSProperties = { padding: '9px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }
+const selectStyle: React.CSSProperties = { padding: '9px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }
 const thStyle: React.CSSProperties = { padding: '12px 14px' }
 const tdStyle: React.CSSProperties = { padding: '12px 14px' }
 
@@ -54,7 +60,7 @@ async function blobErrorMessage(err: unknown, fallback: string): Promise<string>
   return extractErrorMessage(err, fallback)
 }
 
-export default function RankingExportTab({ ranking, loading, error, onReload, showToast }: Props) {
+export default function RankingExportTab({ ranking, loading, error, page, totalPages, total, pageSize, onPageChange, onReload, showToast }: Props) {
   const [faculty, setFaculty] = useState('')
   const [direction, setDirection] = useState('')
   const [course, setCourse] = useState('')
@@ -163,7 +169,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
               )}
               {!loading && error && (
                 <tr>
-                  <td colSpan={10} role="alert" style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={10} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               )}
               {!loading && !error && filtered.length === 0 && (
@@ -175,11 +181,11 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                 <tr key={r.id} className="ranking-row" data-faculty={r.faculty} data-direction={r.direction} data-course={r.course_num} style={{ borderBottom: '1px solid var(--border-light)' }}>
                   <td style={tdStyle}>
                     {r.rank === 1 ? (
-                      <span style={rankBadge('#fef3c7', '#b45309', '#fde68a')}>1</span>
+                      <span style={rankBadge('var(--badge-warning-bg)', 'var(--badge-warning-text)', 'var(--badge-warning-border)')}>1</span>
                     ) : r.rank === 2 ? (
-                      <span style={rankBadge('#f1f5f9', '#475569', '#cbd5e1')}>2</span>
+                      <span style={rankBadge('var(--border-light)', 'var(--text-table-header)', 'var(--border-color)')}>2</span>
                     ) : r.rank === 3 ? (
-                      <span style={rankBadge('#ffedd5', '#c2410c', '#fed7aa')}>3</span>
+                      <span style={rankBadge('var(--badge-bronze-bg)', 'var(--badge-bronze-text)', 'var(--badge-bronze-border)')}>3</span>
                     ) : (
                       <span style={{ fontWeight: 700, color: 'var(--text-muted)', fontSize: 13, paddingLeft: 8 }}>{r.rank}</span>
                     )}
@@ -194,7 +200,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                     <span style={{ fontSize: 11, color: 'var(--text-light)' }}>{r.direction}</span>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
-                    <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
+                    <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
                       {r.gpa_points} ball
                     </span>
                     <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>GPA: {r.gpa}</div>
@@ -202,10 +208,10 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {r.exam_status === 'passed' ? (
                       <>
-                        <span style={{ background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
+                        <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
                           {r.exam_score} ball
                         </span>
-                        <div style={{ fontSize: 10.5, color: '#059669', fontWeight: 600, marginTop: 2, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                        <div style={{ fontSize: 10.5, color: 'var(--badge-success-text)', fontWeight: 600, marginTop: 2, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="20 6 9 17 4 12"></polyline>
                           </svg>
@@ -214,10 +220,10 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                       </>
                     ) : r.exam_status === 'failed' ? (
                       <>
-                        <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
+                        <span style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
                           {r.exam_score} ball
                         </span>
-                        <div style={{ fontSize: 10.5, color: '#dc2626', marginTop: 2 }}>O'tolmadi</div>
+                        <div style={{ fontSize: 10.5, color: 'var(--badge-danger-text)', marginTop: 2 }}>O'tolmadi</div>
                       </>
                     ) : (
                       <>
@@ -229,7 +235,7 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                     )}
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
-                    <span style={{ background: '#fdf4ff', color: '#a21caf', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
+                    <span style={{ background: 'var(--badge-purple-bg)', color: 'var(--badge-purple-text)', padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 12.5 }}>
                       {r.ach_points} ball
                     </span>
                     <div style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2 }}>{r.approved_count} ta tasdiqlangan</div>
@@ -241,12 +247,12 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }} title={r.research_topic || ''}>
                           {r.research_topic && r.research_topic.length > 26 ? r.research_topic.slice(0, 26) + '...' : r.research_topic || 'Mavzu belgilanmagan'}
                         </div>
-                        <button type="button" onClick={() => setSupervisorTarget(r)} style={{ marginTop: 4, background: '#eff6ff', color: '#0284c7', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
+                        <button type="button" onClick={() => setSupervisorTarget(r)} style={{ marginTop: 4, background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', border: '1px solid var(--badge-info-text)', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
                           Tahrirlash
                         </button>
                       </>
                     ) : (
-                      <button type="button" onClick={() => setSupervisorTarget(r)} style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <button type="button" onClick={() => setSupervisorTarget(r)} style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', border: '1px solid var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         <span>Biriktirish</span>
                       </button>
@@ -258,19 +264,19 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     <span style={{
                       padding: '4px 10px', borderRadius: 6, fontWeight: 700, fontSize: 11.5,
-                      background: r.tier_code === 'yuqori_salohiyat' ? '#ecfdf5' : r.tier_code === 'istiqbolli' ? '#fff7ed' : '#fef2f2',
-                      color: r.tier_code === 'yuqori_salohiyat' ? '#059669' : r.tier_code === 'istiqbolli' ? '#ea580c' : '#dc2626',
+                      background: r.tier_code === 'yuqori_salohiyat' ? 'var(--badge-success-bg)' : r.tier_code === 'istiqbolli' ? 'var(--badge-warning-bg)' : 'var(--badge-danger-bg)',
+                      color: r.tier_code === 'yuqori_salohiyat' ? 'var(--badge-success-text)' : r.tier_code === 'istiqbolli' ? 'var(--badge-warning-text)' : 'var(--badge-danger-text)',
                     }}>
                       {r.tier_label}
                     </span>
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>
                     {r.exam_certificate ? (
-                      <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: 'var(--text-heading)', background: 'var(--bg-light)', border: '1px solid #cbd5e1', padding: '3px 8px', borderRadius: 4 }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color: 'var(--text-heading)', background: 'var(--bg-light)', border: '1px solid var(--border-color)', padding: '3px 8px', borderRadius: 4 }}>
                         {r.exam_certificate}
                       </span>
                     ) : (
-                      <span style={{ color: '#cbd5e1', fontSize: 12 }}>—</span>
+                      <span style={{ color: 'var(--text-light)', fontSize: 12 }}>—</span>
                     )}
                   </td>
                 </tr>
@@ -278,6 +284,10 @@ export default function RankingExportTab({ ranking, loading, error, onReload, sh
             </tbody>
           </table>
         </div>
+
+        {!loading && !error && (
+          <Pagination page={page} totalPages={totalPages} total={total} pageSize={pageSize} onPageChange={onPageChange} />
+        )}
       </div>
 
       {supervisorTarget && (

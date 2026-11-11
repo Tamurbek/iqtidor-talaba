@@ -49,9 +49,9 @@ const TAB_TITLES: Record<StudentTabKey, string> = {
 }
 
 export default function DashboardPage() {
-  const { currentUser, logout } = useAuth()
+  const { currentUser, logout, activeRole, setActiveRole } = useAuth()
   const navigate = useNavigate()
-  const isStaff = isStaffRole(currentUser?.role)
+  const isStaff = isStaffRole(activeRole ?? currentUser?.role)
 
   const [activeTab, setActiveTab] = useState<StudentTabKey>('personal')
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -157,6 +157,10 @@ export default function DashboardPage() {
 
   if (!currentUser) return null
 
+  // Admin/super_admin "Starosta" rolini tanlab ko'rib chiqsa ham (haqiqiy DB
+  // bayrog'idan qat'iy nazar) starosta ko'rinishi (guruh boshqaruvi tabi) ochilsin.
+  const isStarostaView = activeRole === 'starosta' || (me?.is_starosta ?? false)
+
   return (
     <div className="cabinet-wrapper">
       <div
@@ -167,7 +171,7 @@ export default function DashboardPage() {
 
       <CabinetSidebar
         user={currentUser}
-        isStarosta={me?.is_starosta ?? false}
+        isStarosta={isStarostaView}
         activeTab={activeTab}
         achievementsCount={achievements.length}
         applicationsCount={applications.length}
@@ -184,6 +188,9 @@ export default function DashboardPage() {
           userName={currentUser.full_name}
           userRole={`HEMIS: ${currentUser.hemis_id}`}
           avatarUrl={currentUser.image_url}
+          assignedRoles={currentUser.assigned_roles}
+          activeRoleCode={activeRole ?? currentUser.role}
+          onRoleChange={setActiveRole}
           onMenuClick={() => setMobileOpen((v) => !v)}
           onLogout={handleLogout}
         />
@@ -244,7 +251,7 @@ export default function DashboardPage() {
             }
           />
         )}
-        {activeTab === 'my-group' && me?.is_starosta && <GroupInfoTab user={currentUser} />}
+        {activeTab === 'my-group' && isStarostaView && <GroupInfoTab user={currentUser} />}
         </main>
       </div>
     </div>

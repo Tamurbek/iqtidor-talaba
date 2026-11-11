@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import client from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
-import type { IncomingSupervisorRequest, SupervisorOption, SupervisorRequestItem } from '../../types/admin'
+import type { IncomingSupervisorRequest, IncomingSupervisorRequestListResponse, SupervisorOption, SupervisorRequestItem } from '../../types/admin'
 import type { User } from '../../types/user'
 import { extractErrorMessage } from '../../types/dashboard'
+import Pagination from '../common/Pagination'
+
+const INCOMING_PAGE_SIZE = 10
 
 interface Props {
   user: User
@@ -20,10 +23,10 @@ const cardStyle: React.CSSProperties = {
 }
 
 const statusLabel: Record<string, { text: string; color: string; bg: string }> = {
-  pending: { text: 'Javob kutilmoqda', color: '#b45309', bg: '#fffbeb' },
-  accepted: { text: 'Qabul qilindi', color: '#059669', bg: '#ecfdf5' },
-  rejected: { text: 'Rad etildi', color: '#dc2626', bg: '#fef2f2' },
-  cancelled: { text: 'Bekor qilindi', color: 'var(--text-muted)', bg: '#f8fafc' },
+  pending: { text: 'Javob kutilmoqda', color: 'var(--badge-warning-text)', bg: 'var(--badge-warning-bg)' },
+  accepted: { text: 'Qabul qilindi', color: 'var(--badge-success-text)', bg: 'var(--badge-success-bg)' },
+  rejected: { text: 'Rad etildi', color: 'var(--badge-danger-text)', bg: 'var(--badge-danger-bg)' },
+  cancelled: { text: 'Bekor qilindi', color: 'var(--text-muted)', bg: 'var(--bg-light)' },
 }
 
 export default function SupervisorTab({ user, hideSelfRequest = false }: Props) {
@@ -31,6 +34,9 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
   const [supervisors, setSupervisors] = useState<SupervisorOption[]>([])
   const [myRequests, setMyRequests] = useState<SupervisorRequestItem[]>([])
   const [incoming, setIncoming] = useState<IncomingSupervisorRequest[]>([])
+  const [incomingPage, setIncomingPage] = useState(1)
+  const [incomingTotal, setIncomingTotal] = useState(0)
+  const [incomingTotalPages, setIncomingTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -48,15 +54,20 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     try {
       // /supervisor-requests/mine faqat talaba/starosta uchun ochiq (get_current_student),
       // shu sababli professor-o'qituvchi (hideSelfRequest) uni chaqirmaydi.
+      const emptyIncoming: IncomingSupervisorRequestListResponse = { items: [], total: 0, page: 1, page_size: INCOMING_PAGE_SIZE, total_pages: 1 }
       const [supRes, reqRes, incRes] = await Promise.all([
         hideSelfRequest ? Promise.resolve({ data: [] as SupervisorOption[] }) : client.get<SupervisorOption[]>('/users/supervisors/list'),
         hideSelfRequest ? Promise.resolve({ data: [] as SupervisorRequestItem[] }) : client.get<SupervisorRequestItem[]>('/supervisor-requests/mine'),
-        client.get<IncomingSupervisorRequest[]>('/supervisor-requests/incoming').catch(() => ({ data: [] })),
+        client
+          .get<IncomingSupervisorRequestListResponse>('/supervisor-requests/incoming', { params: { page: incomingPage, page_size: INCOMING_PAGE_SIZE } })
+          .catch(() => ({ data: emptyIncoming })),
       ])
       const requests = Array.isArray(reqRes.data) ? reqRes.data : []
       setSupervisors(Array.isArray(supRes.data) ? supRes.data : [])
       setMyRequests(requests)
-      setIncoming(Array.isArray(incRes.data) ? incRes.data : [])
+      setIncoming(incRes.data.items)
+      setIncomingTotal(incRes.data.total)
+      setIncomingTotalPages(incRes.data.total_pages)
 
       // Talabaning so'rovi tasdiqlangan bo'lsa-yu, lekin keshlangan currentUser
       // hali eski (supervisor_id bo'sh) bo'lsa — qayta login talab qilmasdan
@@ -76,7 +87,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     } finally {
       setLoading(false)
     }
-  }, [user.supervisor_id, updateCurrentUser, hideSelfRequest])
+  }, [user.supervisor_id, updateCurrentUser, hideSelfRequest, incomingPage])
 
   useEffect(() => {
     load()
@@ -149,7 +160,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
               <div key={r.id} style={{ border: '1px solid var(--border-light)', borderRadius: 10, padding: '12px 14px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a' }}>{r.student_name}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-dark)' }}>{r.student_name}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{r.faculty} &middot; {r.group_name}</div>
                     {r.research_topic && <div style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 6 }}>Mavzu: {r.research_topic}</div>}
                   </div>
@@ -166,7 +177,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                       type="button"
                       disabled={decidingId === r.id}
                       onClick={() => handleReject(r.id)}
-                      style={{ padding: '8px 14px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#dc2626', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+                      style={{ padding: '8px 14px', border: '1px solid var(--badge-danger-border)', background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
                     >
                       Rad etish
                     </button>
@@ -175,20 +186,21 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
               </div>
             ))}
           </div>
+          <Pagination page={incomingPage} totalPages={incomingTotalPages} total={incomingTotal} pageSize={INCOMING_PAGE_SIZE} onPageChange={setIncomingPage} />
         </div>
       )}
 
       {error && (
-        <div role="alert" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: '#fef2f2', color: '#dc2626' }}>{error}</div>
+        <div role="alert" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }}>{error}</div>
       )}
       {message && (
-        <div role="status" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: '#ecfdf5', color: '#059669' }}>{message}</div>
+        <div role="status" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)' }}>{message}</div>
       )}
 
       {!hideSelfRequest && (hasSupervisor ? (
         <div style={cardStyle}>
           <h3 style={{ margin: '0 0 10px', fontSize: 16, color: 'var(--text-heading)' }}>Sizning ilmiy rahbaringiz</h3>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: '#0f172a' }}>{user.supervisor_name}</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: 'var(--text-dark)' }}>{user.supervisor_name}</div>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>{user.supervisor_degree} &middot; {user.supervisor_department}</div>
           {user.research_topic && (
             <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10 }}>
@@ -204,7 +216,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
             So'rov professor-o'qituvchi tomonidan qabul qilingandan so'ng biriktirish amalga oshiriladi.
           </p>
           {hasPendingRequest ? (
-            <div style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--bg-white)beb', color: '#b45309' }}>
+            <div style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)' }}>
               Sizda hal qilinmagan so'rov mavjud. Javobni kuting yoki avval uni bekor qiling.
             </div>
           ) : (
@@ -231,8 +243,8 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                         textAlign: 'center',
                         gap: 6,
                         padding: '16px 12px',
-                        border: isSelected ? '2px solid #059669' : '1px solid #e2e8f0',
-                        background: isSelected ? '#ecfdf5' : s.is_full ? '#f8fafc' : '#ffffff',
+                        border: isSelected ? '2px solid var(--badge-success-text)' : '1px solid var(--border-color)',
+                        background: isSelected ? 'var(--badge-success-bg)' : s.is_full ? 'var(--bg-light)' : 'var(--bg-white)',
                         borderRadius: 12,
                         cursor: s.is_full ? 'not-allowed' : 'pointer',
                         opacity: s.is_full ? 0.6 : 1,
@@ -251,8 +263,8 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                             width: 64,
                             height: 64,
                             borderRadius: '50%',
-                            background: '#e0f2fe',
-                            color: '#0369a1',
+                            background: 'var(--badge-info-bg)',
+                            color: 'var(--badge-info-text)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -263,10 +275,10 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                           {s.full_name ? s.full_name[0] : '?'}
                         </div>
                       )}
-                      <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0f172a', lineHeight: 1.3 }}>{s.full_name}</div>
-                      <div style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>{s.degree || "O'qituvchi"}</div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-dark)', lineHeight: 1.3 }}>{s.full_name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--badge-success-text)', fontWeight: 600 }}>{s.degree || "O'qituvchi"}</div>
                       {s.department && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{s.department}</div>}
-                      <div style={{ fontSize: 11, color: s.is_full ? '#dc2626' : '#94a3b8', marginTop: 2 }}>
+                      <div style={{ fontSize: 11, color: s.is_full ? 'var(--badge-danger-text)' : 'var(--text-light)', marginTop: 2 }}>
                         {s.is_full ? "Kvota to'lgan" : s.capacity ? `${s.current_load}/${s.capacity} talaba` : `${s.current_load} talaba`}
                       </div>
                     </button>
@@ -278,7 +290,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                 onChange={(e) => setTopic(e.target.value)}
                 rows={3}
                 placeholder="Taklif etilayotgan ilmiy-tadqiqot mavzusi (ixtiyoriy)"
-                style={{ padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5, resize: 'vertical' }}
+                style={{ padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, resize: 'vertical' }}
               />
               <button
                 type="submit"
@@ -297,14 +309,14 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
           <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--text-heading)' }}>So'rovlarim tarixi</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {myRequests.map((r) => {
-              const st = statusLabel[r.status] || { text: r.status, color: 'var(--text-secondary)', bg: '#f8fafc' }
+              const st = statusLabel[r.status] || { text: r.status, color: 'var(--text-secondary)', bg: 'var(--bg-light)' }
               return (
                 <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border-light)', borderRadius: 10, padding: '10px 14px' }}>
                   <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 600, color: '#0f172a' }}>{r.supervisor_name}</div>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text-dark)' }}>{r.supervisor_name}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(r.requested_at).toLocaleDateString('uz-UZ')}</div>
                     {r.status === 'rejected' && r.rejection_reason && (
-                      <div style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>Sabab: {r.rejection_reason}</div>
+                      <div style={{ fontSize: 12, color: 'var(--badge-danger-text)', marginTop: 2 }}>Sabab: {r.rejection_reason}</div>
                     )}
                   </div>
                   <span style={{ fontSize: 12, fontWeight: 700, color: st.color, background: st.bg, padding: '4px 10px', borderRadius: 999 }}>{st.text}</span>

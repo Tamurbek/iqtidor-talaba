@@ -101,9 +101,9 @@ export default function ContestsTab({ onApplied }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <span style={{ background: '#eff6ff', color: '#0284c7', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Filial Kengashi qarori</span>
-              <span style={{ color: '#059669', fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#059669' }}></span>
+              <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Filial Kengashi qarori</span>
+              <span style={{ color: 'var(--badge-success-text)', fontSize: 12, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--badge-success-text)' }}></span>
                 <span>Har 200 nafar talabaga 1 ta kvota</span>
               </span>
             </div>
@@ -122,22 +122,22 @@ export default function ContestsTab({ onApplied }: Props) {
           </div>
           <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', padding: '10px 16px', borderRadius: 12, fontSize: 12.5, color: 'var(--text-table-header)', display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
               <span>Hujjatlar qabuli: <strong>1-martgacha</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--badge-info-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               <span>1-bosqich (masofaviy test): <strong>15&ndash;30-mart</strong></span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--badge-warning-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
               <span>2-yakuniy bosqich: <strong>15-maygacha</strong></span>
             </div>
           </div>
         </div>
 
         {feedback && (
-          <div style={{ padding: 14, borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500, background: feedback.type === 'success' ? '#ecfdf5' : '#fef2f2', color: feedback.type === 'success' ? '#059669' : '#dc2626', border: `1px solid ${feedback.type === 'success' ? '#a7f3d0' : '#fecaca'}` }}>
+          <div style={{ padding: 14, borderRadius: 10, marginBottom: 20, fontSize: 14, fontWeight: 500, background: feedback.type === 'success' ? 'var(--badge-success-bg)' : 'var(--badge-danger-bg)', color: feedback.type === 'success' ? 'var(--badge-success-text)' : 'var(--badge-danger-text)', border: `1px solid ${feedback.type === 'success' ? 'var(--badge-success-text)' : 'var(--badge-danger-border)'}` }}>
             {feedback.message}
           </div>
         )}
@@ -149,7 +149,7 @@ export default function ContestsTab({ onApplied }: Props) {
               style={
                 n.recommended
                   ? { border: '2px solid #0070f3', borderRadius: 16, padding: 22, background: '#f0f7ff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }
-                  : { border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, background: '#fafcff', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }
+                  : { border: '1px solid var(--border-color)', borderRadius: 16, padding: 22, background: 'var(--bg-light)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }
               }
             >
               {n.recommended && (
@@ -161,7 +161,7 @@ export default function ContestsTab({ onApplied }: Props) {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ background: `${n.tagColor}1a`, color: n.tagColor, padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>{n.tagLabel}</span>
-                  <span style={{ fontSize: 11, color: n.recommended ? '#0070f3' : '#64748b', fontWeight: n.recommended ? 700 : 600 }}>{n.recommended ? 'Tavsiya etilgan' : 'Kvota mavjud'}</span>
+                  <span style={{ fontSize: 11, color: n.recommended ? '#0070f3' : 'var(--text-muted)', fontWeight: n.recommended ? 700 : 600 }}>{n.recommended ? 'Tavsiya etilgan' : 'Kvota mavjud'}</span>
                 </div>
                 <h4 style={{ fontSize: 17, fontWeight: 800, color: 'var(--text-heading)', marginTop: 10 }}>{n.title}</h4>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 6 }}>Biriktirilgan mutaxassisliklar:</p>
@@ -171,9 +171,9 @@ export default function ContestsTab({ onApplied }: Props) {
                   ))}
                 </ul>
               </div>
-              <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${n.recommended ? '#bfdbfe' : '#e2e8f0'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: n.recommended ? '#0070f3' : '#059669', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: n.recommended ? '#0070f3' : '#059669' }}></span>
+              <div style={{ marginTop: 18, paddingTop: 14, borderTop: `1px solid ${n.recommended ? '#bfdbfe' : 'var(--border-color)'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: n.recommended ? '#0070f3' : 'var(--badge-success-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: n.recommended ? '#0070f3' : 'var(--badge-success-text)' }}></span>
                   <span>Qabul ochiq</span>
                 </span>
                 <button

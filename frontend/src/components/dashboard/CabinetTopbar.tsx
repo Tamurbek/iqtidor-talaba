@@ -28,7 +28,8 @@ export default function CabinetTopbar({
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const canSwitchRole = !!onRoleChange && (assignedRoles?.length ?? 0) > 1
+  const hasMultipleRoles = (assignedRoles?.length ?? 0) > 1
+  const canSwitchRole = !!onRoleChange && hasMultipleRoles
 
   useEffect(() => {
     if (!menuOpen) return
@@ -65,9 +66,8 @@ export default function CabinetTopbar({
         <div className="role-switcher" ref={wrapperRef}>
           <button
             type="button"
-            className={`cabinet-topbar-user role-switcher-trigger${canSwitchRole ? ' is-clickable' : ''}`}
-            onClick={() => canSwitchRole && setMenuOpen((v) => !v)}
-            disabled={!canSwitchRole}
+            className="cabinet-topbar-user role-switcher-trigger"
+            onClick={() => setMenuOpen((v) => !v)}
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt={userName} className="cabinet-topbar-avatar" />
@@ -80,14 +80,12 @@ export default function CabinetTopbar({
                 <span className="cabinet-topbar-user-role">{activeRole?.name ?? userRole}</span>
               )}
             </div>
-            {canSwitchRole && (
-              <svg className="role-switcher-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            )}
+            <svg className="role-switcher-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
           </button>
 
-          {canSwitchRole && menuOpen && (
+          {menuOpen && (
             <div className="role-switcher-panel">
               <div className="role-switcher-panel-header">
                 {avatarUrl ? (
@@ -101,24 +99,54 @@ export default function CabinetTopbar({
                 </div>
               </div>
 
-              <div className="role-switcher-section-title">Rolni almashtirish</div>
-              <ul className="role-switcher-list">
-                {assignedRoles!.map((r) => (
-                  <li key={r.code}>
-                    <button
-                      type="button"
-                      className={`role-switcher-item${r.code === activeRoleCode ? ' active' : ''}`}
-                      onClick={() => {
-                        onRoleChange!(r.code)
-                        setMenuOpen(false)
-                      }}
-                    >
-                      <span>{r.name}</span>
-                      {r.code === activeRoleCode && <span className="role-switcher-badge">Faol</span>}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+              <div className="role-switcher-section-title">Joriy rol</div>
+              <div className="role-switcher-item active role-switcher-current">
+                <span className="role-switcher-item-icon" aria-hidden="true">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </span>
+                <span className="role-switcher-item-text">
+                  <span className="role-switcher-item-name">{activeRole?.name ?? userRole ?? 'Foydalanuvchi'}</span>
+                  <span className="role-switcher-item-status">Faol</span>
+                </span>
+              </div>
+
+              {canSwitchRole && (
+                <>
+                  <div className="role-switcher-section-title role-switcher-section-title-spaced">Rolni almashtirish</div>
+                  <ul className="role-switcher-list">
+                    {assignedRoles!.map((r) => {
+                  const isActive = r.code === activeRoleCode
+                  return (
+                    <li key={r.code}>
+                      <button
+                        type="button"
+                        className={`role-switcher-item${isActive ? ' active' : ''}`}
+                        onClick={() => {
+                          onRoleChange!(r.code)
+                          setMenuOpen(false)
+                        }}
+                      >
+                        <span className="role-switcher-item-icon" aria-hidden="true">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                          </svg>
+                        </span>
+                        <span className="role-switcher-item-text">
+                          <span className="role-switcher-item-name">{r.name}</span>
+                          {isActive && <span className="role-switcher-item-status">Faol</span>}
+                        </span>
+                        {isActive && <span className="role-switcher-item-dot" aria-hidden="true" />}
+                      </button>
+                    </li>
+                  )
+                    })}
+                  </ul>
+                </>
+              )}
             </div>
           )}
         </div>

@@ -7,18 +7,18 @@ export default function AcademyPage() {
         <span style={{ color: 'var(--accent-orange)', fontWeight: 700, fontSize: '14px', letterSpacing: '0.5px' }}>
           Ilm-fan va innovatsiyalar
         </span>
-        <h1 style={{ fontSize: '34px', fontWeight: 800, color: '#0b3b70', marginTop: '8px' }}>
+        <h1 style={{ fontSize: '34px', fontWeight: 800, color: 'var(--text-heading)', marginTop: '8px' }}>
           Talabalar ilmiy akademiyasi
         </h1>
-        <p style={{ color: '#64748b', fontSize: '16px', marginTop: '12px', lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '16px', marginTop: '12px', lineHeight: 1.6 }}>
           O'zbekiston Milliy universiteti Jizzax filialida iqtidorli talabalarning ilmiy, texnik va ijodiy
           izlanishlarini birlashtiruvchi hamda ularni qo'llab-quvvatlovchi muhit.
         </p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '30px', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-          <div style={{ width: '54px', height: '54px', borderRadius: '12px', background: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+        <div style={{ background: 'var(--bg-white)', borderRadius: '16px', padding: '30px', border: '1px solid var(--border-color)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+          <div style={{ width: '54px', height: '54px', borderRadius: '12px', background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 18h8"></path>
               <path d="M3 22h18"></path>
@@ -28,15 +28,15 @@ export default function AcademyPage() {
               <path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"></path>
             </svg>
           </div>
-          <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0b3b70', marginBottom: '10px' }}>Ilmiy to'garaklar</h3>
-          <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.6 }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '10px' }}>Ilmiy to'garaklar</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6 }}>
             Filial kafedralari qoshida tashkil etilgan ilmiy to'garaklar va laboratoriyalarda zamonaviy ilmiy
             mavzularda tadqiqotlar olib borish imkoniyati.
           </p>
         </div>
 
-        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '30px', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-          <div style={{ width: '54px', height: '54px', borderRadius: '12px', background: '#fef3c7', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+        <div style={{ background: 'var(--bg-white)', borderRadius: '16px', padding: '30px', border: '1px solid var(--border-color)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+          <div style={{ width: '54px', height: '54px', borderRadius: '12px', background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="2" x2="12" y2="6"></line>
               <line x1="12" y1="18" x2="12" y2="22"></line>
@@ -49,15 +49,15 @@ export default function AcademyPage() {
               <circle cx="12" cy="12" r="5"></circle>
             </svg>
           </div>
-          <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0b3b70', marginBottom: '10px' }}>Startap va Akseleratsiya</h3>
-          <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.6 }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '10px' }}>Startap va Akseleratsiya</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6 }}>
             Talabalar o'z innovatsion g'oyalarini prototip va biznes model darajasiga yetkazishlari uchun
             mentorlik va texnik ko'mak tizimi.
           </p>
         </div>
 
-        <div style={{ background: '#ffffff', borderRadius: '16px', padding: '30px', border: '1px solid #e2e8f0', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
-          <div style={{ width: '54px', height: '54px', borderRadius: '12px', background: '#ecfdf5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+        <div style={{ background: 'var(--bg-white)', borderRadius: '16px', padding: '30px', border: '1px solid var(--border-color)', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+          <div style={{ width: '54px', height: '54px', borderRadius: '12px', background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
               <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
@@ -67,17 +67,17 @@ export default function AcademyPage() {
               <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
             </svg>
           </div>
-          <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#0b3b70', marginBottom: '10px' }}>Olimpiada va Grantlar</h3>
-          <p style={{ color: '#64748b', fontSize: '14px', lineHeight: 1.6 }}>
+          <h3 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '10px' }}>Olimpiada va Grantlar</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6 }}>
             Respublika va xalqaro fan olimpiadalariga tayyorgarlik ko'rish, xalqaro ta'lim grantlari va
             stipendiyalar tanlovlarida ishtirok etish.
           </p>
         </div>
       </div>
 
-      <div style={{ marginTop: '60px', background: '#f0f7ff', borderRadius: '20px', padding: '40px', textAlign: 'center', border: '1px dashed #93c5fd' }}>
-        <h3 style={{ fontSize: '22px', fontWeight: 700, color: '#0b3b70' }}>Akademiyaga a'zo bo'lishni xohlaysizmi?</h3>
-        <p style={{ color: '#475569', fontSize: '15px', margin: '10px 0 20px' }}>
+      <div style={{ marginTop: '60px', background: 'var(--badge-info-bg)', borderRadius: '20px', padding: '40px', textAlign: 'center', border: '1px dashed var(--primary-light)' }}>
+        <h3 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-heading)' }}>Akademiyaga a'zo bo'lishni xohlaysizmi?</h3>
+        <p style={{ color: 'var(--text-table-header)', fontSize: '15px', margin: '10px 0 20px' }}>
           Tizimga HEMIS profilingiz orqali kiring va a'zolik anketasini to'ldiring.
         </p>
         <Link to="/login" className="btn-hero-login" style={{ display: 'inline-block' }}>

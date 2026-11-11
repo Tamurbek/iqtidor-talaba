@@ -91,6 +91,11 @@ class User(Base):
         Foydalanuvchiga biriktirilgan BARCHA rollar (legacy `role` ustuni + dinamik
         `roles` M2M). Profil menyusidagi "Rolni almashtirish" ro'yxati shundan to'ldiriladi,
         shuning uchun kod bo'yicha dublikatsiz va tartib: legacy rol birinchi.
+
+        Eslatma: super administrator uchun BARCHA tizim rollari (shu jumladan Rollar
+        boshqaruvida yaratilgan maxsus rollar) bilan to'ldirish kerak bo'lsa,
+        app.core.role_utils.get_assigned_roles_for_user() dan foydalaning — bu yerda
+        DB session yo'qligi sababli faqat statik/M2M ma'lumotlar bilan cheklanadi.
         """
         seen: dict = {}
         if self.role:

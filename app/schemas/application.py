@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
+from app.schemas.pagination import PaginatedResponse
+
 class ApplicationCreate(BaseModel):
     contest_id: Optional[int] = None
     contest_name: str
@@ -30,3 +32,7 @@ class ApplicationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class ApplicationListResponse(PaginatedResponse[ApplicationResponse]):
+    pass

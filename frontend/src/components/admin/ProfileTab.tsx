@@ -17,7 +17,7 @@ const loadMyProfile = () => client.get<MyProfile>('/users/me').then(({ data }) =
 
 const cardStyle: React.CSSProperties = { background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 26, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }
-const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 14 }
+const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 14, background: 'var(--bg-white)', color: 'var(--text-dark)' }
 const passInputStyle: React.CSSProperties = { ...inputStyle, padding: '10px 44px 10px 14px' }
 const eyeBtnStyle: React.CSSProperties = { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }
 
@@ -160,7 +160,7 @@ export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged
           {profile.loading ? (
             <p style={{ fontSize: 13, color: 'var(--text-light)', margin: 0 }}>Yuklanmoqda...</p>
           ) : profile.error ? (
-            <p role="alert" style={{ fontSize: 13, color: '#dc2626', margin: 0 }}>{profile.error}</p>
+            <p role="alert" style={{ fontSize: 13, color: 'var(--badge-danger-text)', margin: 0 }}>{profile.error}</p>
           ) : data ? (
             <ProfileInfoForm
               profile={data}
@@ -176,7 +176,7 @@ export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged
 
         <div style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--bg-white)7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>

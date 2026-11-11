@@ -27,6 +27,7 @@ from app.schemas.achievement import (
 )
 from app.api.deps import get_current_student, require_permission
 from app.services.ranking import compute_ranking
+from app.core.pagination import PageParams, paginate_query, paginate_sequence, total_pages
 
 logger = logging.getLogger("iqtidorli_achievements")
 
@@ -213,6 +214,7 @@ async def get_my_achievements(
 @router.get("/all", response_model=AdminAchievementListResponse)
 async def get_all_achievements(
     status_filter: Optional[Literal["pending", "approved", "rejected"]] = Query(None, alias="status"),
+    page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
     current_admin: User = Depends(require_permission("achievements.verify"))
 ):
@@ -228,7 +230,8 @@ async def get_all_achievements(
     )
     if status_filter:
         query = query.where(StudentAchievement.status == status_filter)
-    result = await db.execute(query)
+
+    result, filtered_total = await paginate_query(db, query, page_params.page, page_params.page_size)
 
     achievements = [
         AdminAchievementResponse.model_validate(a).model_copy(update={"group_name": group_name})
@@ -236,11 +239,14 @@ async def get_all_achievements(
     ]
 
     return AdminAchievementListResponse(
-        total=sum(counts.values()),
+        total=filtered_total,
         pending_count=counts.get("pending", 0),
         approved_count=counts.get("approved", 0),
         rejected_count=counts.get("rejected", 0),
         achievements=achievements,
+        page=page_params.page,
+        page_size=page_params.page_size,
+        total_pages=total_pages(filtered_total, page_params.page_size),
     )
 
 
@@ -306,12 +312,21 @@ async def get_students_ranking(
     faculty: Optional[str] = None,
     direction: Optional[str] = None,
     course: Optional[int] = None,
+    page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
     # Nizom 13-14-moddalari baholash shkalasi (jami 100 ball):
     # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40)
-    ranking = await compute_ranking(db, faculty=faculty, direction=direction, course=course)
-    return {"success": True, "ranking": ranking}
+    full_ranking = await compute_ranking(db, faculty=faculty, direction=direction, course=course)
+    ranking, total = paginate_sequence(full_ranking, page_params.page, page_params.page_size)
+    return {
+        "success": True,
+        "ranking": ranking,
+        "total": total,
+        "page": page_params.page,
+        "page_size": page_params.page_size,
+        "total_pages": total_pages(total, page_params.page_size),
+    }
 
 
 RANKING_EXPORT_HEADERS = [

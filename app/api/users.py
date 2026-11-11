@@ -13,6 +13,8 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.models.user import User
 from app.models.role import Role
 from app.api.deps import get_current_user, get_current_admin, get_current_superadmin
+from app.core.role_utils import get_assigned_roles_for_user
+from app.core.pagination import PageParams, paginate_query, total_pages
 
 logger = logging.getLogger("iqtidorli_users")
 
@@ -60,7 +62,7 @@ class AssignRolesRequest(BaseModel):
 # ==============================================================================
 
 @router.get("/me")
-async def get_my_profile(current_user: User = Depends(get_current_user)):
+async def get_my_profile(db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     """Return profile details for current logged-in user."""
     return {
         "id": current_user.id,
@@ -68,6 +70,7 @@ async def get_my_profile(current_user: User = Depends(get_current_user)):
         "full_name": current_user.full_name,
         "role": current_user.role,
         "role_names": current_user.role_names,
+        "assigned_roles": await get_assigned_roles_for_user(current_user, db),
         "faculty": current_user.faculty,
         "direction": current_user.direction,
         "group_name": current_user.group_name,
@@ -180,10 +183,10 @@ async def change_my_password(
 
 @router.get("")
 async def list_users(
-    skip: int = 0,
-    limit: int = 100,
     role: Optional[str] = None,
     q: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    page_params: PageParams = Depends(),
     current_admin: User = Depends(get_current_superadmin),
     db: AsyncSession = Depends(get_db)
 ):
@@ -192,6 +195,9 @@ async def list_users(
 
     if role:
         query = query.where(User.role == role)
+
+    if is_active is not None:
+        query = query.where(User.is_active == is_active)
 
     if q and q.strip():
         term = f"%{q.strip()}%"
@@ -204,8 +210,7 @@ async def list_users(
             )
         )
 
-    query = query.offset(skip).limit(limit)
-    res = await db.execute(query)
+    res, total = await paginate_query(db, query, page_params.page, page_params.page_size)
     users = res.scalars().all()
 
     result = []
@@ -228,7 +233,10 @@ async def list_users(
 
     return {
         "success": True,
-        "total": len(result),
+        "total": total,
+        "page": page_params.page,
+        "page_size": page_params.page_size,
+        "total_pages": total_pages(total, page_params.page_size),
         "users": result
     }
 

@@ -133,7 +133,7 @@ export default function CabinetSidebar({
                   </svg>
                 </span>
                 <span>Guruhim talabalari</span>
-                <span className="cabinet-menu-badge" style={{ background: '#fef3c7', color: '#b45309', fontWeight: 700 }}>Guruh sardori</span>
+                <span className="cabinet-menu-badge" style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', fontWeight: 700 }}>Guruh sardori</span>
               </button>
             </li>
           )}

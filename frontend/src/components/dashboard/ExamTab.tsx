@@ -203,8 +203,8 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14, marginBottom: 24, borderBottom: '1px solid var(--border-light)', paddingBottom: 18 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Nizom 1-bosqichi</span>
-              <span style={{ background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Maksimal: 40 ball</span>
+              <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Nizom 1-bosqichi</span>
+              <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>Maksimal: 40 ball</span>
             </div>
             <h3 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-heading)', display: 'flex', alignItems: 'center', gap: 10 }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -221,7 +221,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Muddat: <strong>15&ndash;30-mart</strong></div>
-            <div style={{ fontSize: 12, color: '#059669', fontWeight: 700, marginTop: 2 }}>O'tish chegarasi: 24 ball (60%)</div>
+            <div style={{ fontSize: 12, color: 'var(--badge-success-text)', fontWeight: 700, marginTop: 2 }}>O'tish chegarasi: 24 ball (60%)</div>
           </div>
         </div>
 
@@ -230,14 +230,14 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
         ) : (
           <div id="examContainer">
             {loadError && (
-              <div style={{ padding: 14, borderRadius: 10, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontSize: 13.5, marginBottom: 20 }}>{loadError}</div>
+              <div style={{ padding: 14, borderRadius: 10, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', fontSize: 13.5, marginBottom: 20 }}>{loadError}</div>
             )}
 
             {view === 'result' && (
               <div id="examResultView">
-                <div style={{ background: examPassed ? '#f0fdf4' : '#fef2f2', border: `1px solid ${examPassed ? '#bbf7d0' : '#fecaca'}`, borderRadius: 16, padding: 24, marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                <div style={{ background: examPassed ? 'var(--badge-success-bg)' : 'var(--badge-danger-bg)', border: `1px solid ${examPassed ? 'var(--badge-success-text)' : 'var(--badge-danger-border)'}`, borderRadius: 16, padding: 24, marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: examPassed ? '#059669' : '#dc2626', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${examPassed ? 'rgba(5, 150, 105, 0.3)' : 'rgba(220, 38, 38, 0.3)'}`, flexShrink: 0 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: examPassed ? 'var(--badge-success-text)' : 'var(--badge-danger-text)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${examPassed ? 'rgba(5, 150, 105, 0.3)' : 'rgba(220, 38, 38, 0.3)'}`, flexShrink: 0 }}>
                       {examPassed ? (
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       ) : (
@@ -245,10 +245,10 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                       )}
                     </div>
                     <div>
-                      <h4 style={{ fontSize: 18, fontWeight: 800, color: examPassed ? '#166534' : '#991b1b' }}>
+                      <h4 style={{ fontSize: 18, fontWeight: 800, color: examPassed ? 'var(--badge-success-text)' : 'var(--badge-danger-text)' }}>
                         {examPassed ? '1-bosqich imtihoni muvaffaqiyatli topshirilgan!' : 'Imtihon natijasi o\'tish balidan past'}
                       </h4>
-                      <p style={{ fontSize: 13.5, color: examPassed ? '#15803d' : '#b91c1c', marginTop: 2 }}>
+                      <p style={{ fontSize: 13.5, color: examPassed ? 'var(--badge-success-text)' : 'var(--badge-danger-text)', marginTop: 2 }}>
                         {examPassed
                           ? "Siz saralashdan o'tdingiz va rasmiy elektron sertifikat bilan 2-yakuniy bosqichga tavsiya etildingiz."
                           : `Siz ${totalScore.toFixed(1)} ball to'pladingiz, o'tish uchun kamida 24 ball (60%) talab etiladi. Qaytadan urinib ko'rishingiz mumkin.`}
@@ -264,17 +264,17 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 30 }}>
                   <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 18, textAlign: 'center' }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>IQ darajasi testi</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: '#0284c7', marginTop: 6 }}>{iqScore.toFixed(1)} <span style={{ fontSize: 14, color: 'var(--text-light)' }}>/ 20</span></div>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--badge-info-text)', marginTop: 6 }}>{iqScore.toFixed(1)} <span style={{ fontSize: 14, color: 'var(--text-light)' }}>/ 20</span></div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>10 ta savol (2 balldan)</div>
                   </div>
                   <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 18, textAlign: 'center' }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>O'zbekiston tarixi</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: '#059669', marginTop: 6 }}>{historyScore.toFixed(1)} <span style={{ fontSize: 14, color: 'var(--text-light)' }}>/ 10</span></div>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--badge-success-text)', marginTop: 6 }}>{historyScore.toFixed(1)} <span style={{ fontSize: 14, color: 'var(--text-light)' }}>/ 10</span></div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>10 ta savol (1 balldan)</div>
                   </div>
                   <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 18, textAlign: 'center' }}>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Chet tili (Ingliz tili)</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: '#7e22ce', marginTop: 6 }}>{langScore.toFixed(1)} <span style={{ fontSize: 14, color: 'var(--text-light)' }}>/ 10</span></div>
+                    <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--badge-purple-text)', marginTop: 6 }}>{langScore.toFixed(1)} <span style={{ fontSize: 14, color: 'var(--text-light)' }}>/ 10</span></div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>10 ta savol (1 balldan)</div>
                   </div>
                   <div style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1e5ba3 100%)', color: '#ffffff', borderRadius: 12, padding: 18, textAlign: 'center' }}>
@@ -364,7 +364,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                       </p>
                     </div>
 
-                    <div style={{ display: 'flex', margin: '26px 0 22px', border: `1px solid ${CERT_GOLD}`, borderRadius: 10, background: 'var(--bg-white)DF8', overflow: 'hidden' }}>
+                    <div style={{ display: 'flex', margin: '26px 0 22px', border: `1px solid ${CERT_GOLD}`, borderRadius: 10, background: '#FFFDF8', overflow: 'hidden' }}>
                       {[
                         { label: 'IQ DARAJASI', val: iqScore.toFixed(1), max: 20, highlight: false },
                         { label: "O'ZBEKISTON TARIXI", val: historyScore.toFixed(1), max: 10, highlight: false },
@@ -416,7 +416,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                           <span>{certDownloading ? 'Tayyorlanmoqda...' : 'Rasmiy sertifikatni yuklab olish (PDF)'}</span>
                         </button>
                         {certError && (
-                          <div className="cert-no-print" style={{ marginTop: 8, fontSize: 12, color: '#dc2626' }}>{certError}</div>
+                          <div className="cert-no-print" style={{ marginTop: 8, fontSize: 12, color: 'var(--badge-danger-text)' }}>{certError}</div>
                         )}
                       </div>
                     </div>
@@ -462,24 +462,24 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
 
                     <div style={{ marginBottom: 14, background: 'var(--bg-white)', padding: 12, borderRadius: 10, border: '1px solid var(--border-color)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, fontSize: 13 }}>
-                        <span style={{ color: '#0284c7' }}>1-blok: IQ darajasi</span>
-                        <span style={{ color: '#0284c7' }}>20 ball</span>
+                        <span style={{ color: 'var(--badge-info-text)' }}>1-blok: IQ darajasi</span>
+                        <span style={{ color: 'var(--badge-info-text)' }}>20 ball</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Mantiq, sonlar qonuniyati va fazoviy tafakkur</div>
                     </div>
 
                     <div style={{ marginBottom: 14, background: 'var(--bg-white)', padding: 12, borderRadius: 10, border: '1px solid var(--border-color)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, fontSize: 13 }}>
-                        <span style={{ color: '#059669' }}>2-blok: O'zbekiston tarixi</span>
-                        <span style={{ color: '#059669' }}>10 ball</span>
+                        <span style={{ color: 'var(--badge-success-text)' }}>2-blok: O'zbekiston tarixi</span>
+                        <span style={{ color: 'var(--badge-success-text)' }}>10 ball</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Mirzo Ulug'bek, Amir Temur va Yangi O'zbekiston</div>
                     </div>
 
                     <div style={{ background: 'var(--bg-white)', padding: 12, borderRadius: 10, border: '1px solid var(--border-color)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, fontSize: 13 }}>
-                        <span style={{ color: '#7e22ce' }}>3-blok: Chet tili (Ingliz tili)</span>
-                        <span style={{ color: '#7e22ce' }}>10 ball</span>
+                        <span style={{ color: 'var(--badge-purple-text)' }}>3-blok: Chet tili (Ingliz tili)</span>
+                        <span style={{ color: 'var(--badge-purple-text)' }}>10 ball</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Akademik grammatika, leksika va til bilish</div>
                     </div>
@@ -519,9 +519,9 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                           width: 32,
                           height: 32,
                           borderRadius: 6,
-                          border: `1px solid ${isCurrent ? '#0b3b70' : isAnswered ? '#a7f3d0' : '#cbd5e1'}`,
-                          background: isCurrent ? '#0b3b70' : isAnswered ? '#ecfdf5' : '#ffffff',
-                          color: isCurrent ? '#ffffff' : isAnswered ? '#059669' : '#334155',
+                          border: `1px solid ${isCurrent ? 'var(--primary-color)' : isAnswered ? 'var(--badge-success-text)' : '#cbd5e1'}`,
+                          background: isCurrent ? 'var(--primary-color)' : isAnswered ? 'var(--badge-success-bg)' : 'var(--bg-white)',
+                          color: isCurrent ? '#ffffff' : isAnswered ? 'var(--badge-success-text)' : 'var(--text-secondary)',
                           fontSize: 12,
                           fontWeight: 700,
                           cursor: 'pointer',
@@ -554,14 +554,14 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                             gap: 12,
                             padding: '14px 18px',
                             borderRadius: 10,
-                            border: `1.5px solid ${isSelected ? '#0070f3' : '#e2e8f0'}`,
-                            background: isSelected ? '#eff6ff' : '#ffffff',
+                            border: `1.5px solid ${isSelected ? '#0070f3' : 'var(--border-color)'}`,
+                            background: isSelected ? 'var(--badge-info-bg)' : 'var(--bg-white)',
                             cursor: 'pointer',
                           }}
                           onClick={() => setAnswers((prev) => ({ ...prev, [currentQuestion.id]: opt }))}
                         >
                           <input type="radio" name={`opt_${currentQuestion.id}`} checked={isSelected} readOnly style={{ width: 18, height: 18, accentColor: '#0070f3' }} />
-                          <span style={{ fontSize: 14.5, color: isSelected ? '#0b3b70' : '#1e293b', fontWeight: isSelected ? 700 : 500 }}>{opt}</span>
+                          <span style={{ fontSize: 14.5, color: isSelected ? 'var(--primary-color)' : 'var(--text-dark)', fontWeight: isSelected ? 700 : 500 }}>{opt}</span>
                         </label>
                       )
                     })}

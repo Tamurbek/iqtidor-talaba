@@ -3,11 +3,17 @@ import client from '../../api/client'
 import type { NewsItem } from '../../types/content'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
+import Pagination from '../common/Pagination'
 
 interface Props {
   news: NewsItem[] | null
   loading: boolean
   error: string | null
+  page: number
+  totalPages: number
+  total: number
+  pageSize: number
+  onPageChange: (page: number) => void
   onReload: () => void
   onNewsDeleted: (id: number) => void
   showToast: ShowToast
@@ -26,7 +32,7 @@ const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWe
 const thStyle: React.CSSProperties = { padding: '12px 18px' }
 const tdStyle: React.CSSProperties = { padding: '12px 18px' }
 
-export default function NewsTab({ news, loading, error, onReload, onNewsDeleted, showToast }: Props) {
+export default function NewsTab({ news, loading, error, page, totalPages, total, pageSize, onPageChange, onReload, onNewsDeleted, showToast }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editingStatus, setEditingStatus] = useState<string>('published')
   const [title, setTitle] = useState('')
@@ -206,13 +212,13 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '3px 0 0' }}>Maqolalarni tahrirlash, rasm biriktirish, qoralama (draft) holatida saqlash yoki saytda darhol chop etish</p>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span style={{ background: '#eff6ff', color: '#0284c7', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+          <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             Jami: <span id="newsTotalCount">{list.length}</span> ta
           </span>
-          <span style={{ background: '#ecfdf5', color: '#059669', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+          <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             Chop etilgan: {publishedCount} ta
           </span>
-          <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+          <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             Qoralamalar: {draftCount} ta
           </span>
         </div>
@@ -222,7 +228,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 26, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: '#eff6ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
                   <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -238,7 +244,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
               </div>
             </div>
             {isEditing && (
-              <button type="button" id="btnCancelNewsEdit" onClick={resetNewsFormToCreate} style={{ display: 'inline-block', background: 'var(--border-light)', color: 'var(--text-table-header)', border: '1px solid #cbd5e1', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              <button type="button" id="btnCancelNewsEdit" onClick={resetNewsFormToCreate} style={{ display: 'inline-block', background: 'var(--border-light)', color: 'var(--text-table-header)', border: '1px solid var(--border-color)', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                 Tahrirlashni bekor qilish
               </button>
             )}
@@ -247,13 +253,13 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
           <form id="adminNewsForm" ref={formRef} onSubmit={(e) => e.preventDefault()} style={{ marginTop: 18 }}>
             <div style={{ marginBottom: 16 }}>
               <label htmlFor="newsTitle" style={labelStyle}>Yangilik sarlavhasi *</label>
-              <input type="text" id="newsTitle" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Masalan: Filial iqtidorli talabalari xalqaro IT olimpiadasida g'olib bo'ldi" required style={{ width: '100%', padding: '11px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 14, fontWeight: 600 }} />
+              <input type="text" id="newsTitle" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Masalan: Filial iqtidorli talabalari xalqaro IT olimpiadasida g'olib bo'ldi" required style={{ width: '100%', padding: '11px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 14, fontWeight: 600 }} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
               <div>
                 <label htmlFor="newsCategory" style={labelStyle}>Toifasi *</label>
-                <select id="newsCategory" value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: '100%', padding: '11px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5, fontWeight: 600, background: 'var(--bg-white)' }}>
+                <select id="newsCategory" value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: '100%', padding: '11px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, fontWeight: 600, background: 'var(--bg-white)' }}>
                   <option value="Ilm-fan va tadqiqot">Ilm-fan va tadqiqot</option>
                   <option value="Iqtidorli talabalar">Iqtidorli talabalar yutuqlari</option>
                   <option value="Tanlovlar va grantlar">Tanlovlar va grantlar</option>
@@ -271,9 +277,9 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
               <label htmlFor="newsImageFileInput" style={labelStyle}>Yangilik muqova rasmi *</label>
               <input type="file" id="newsImageFileInput" ref={fileInputRef} accept="image/png, image/jpeg, image/webp" onChange={handleNewsImageFileSelect} style={{ display: 'none' }} />
 
-              <div style={{ border: '2px dashed #cbd5e1', borderRadius: 12, padding: '12px 16px', background: 'var(--bg-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ border: '2px dashed var(--border-color)', borderRadius: 12, padding: '12px 16px', background: 'var(--bg-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 56, height: 42, borderRadius: 8, overflow: 'hidden', background: 'var(--border-color)', border: '1px solid #cbd5e1', flexShrink: 0 }}>
+                  <div style={{ width: 56, height: 42, borderRadius: 8, overflow: 'hidden', background: 'var(--border-color)', border: '1px solid var(--border-color)', flexShrink: 0 }}>
                     <img id="newsThumbPreview" src={currentImageSrc} alt="Rasm" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
@@ -298,7 +304,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                       className="news-preset-chip"
                       aria-pressed={active}
                       onClick={() => selectPresetNewsImage(p.url, p.name)}
-                      style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${active ? '#0b3b70' : '#cbd5e1'}`, background: active ? '#eff6ff' : '#ffffff', fontSize: 11.5, cursor: 'pointer', fontWeight: 600, color: active ? '#0b3b70' : '#334155' }}
+                      style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${active ? 'var(--primary-color)' : 'var(--border-color)'}`, background: active ? 'var(--badge-info-bg)' : 'var(--bg-white)', fontSize: 11.5, cursor: 'pointer', fontWeight: 600, color: active ? 'var(--primary-color)' : 'var(--text-secondary)' }}
                     >
                       {p.label}
                     </button>
@@ -309,13 +315,13 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
 
             <div style={{ marginBottom: 20 }}>
               <label htmlFor="newsContent" style={labelStyle}>Yangilikning to'liq matni *</label>
-              <textarea id="newsContent" rows={6} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Tadbir tafsilotlari, erishilgan ilmiy natijalar va iqtidorli talabalar haqida to'liq matn..." required style={{ width: '100%', padding: '12px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, resize: 'vertical' }}></textarea>
+              <textarea id="newsContent" rows={6} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Tadbir tafsilotlari, erishilgan ilmiy natijalar va iqtidorli talabalar haqida to'liq matn..." required style={{ width: '100%', padding: '12px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, lineHeight: 1.6, resize: 'vertical' }}></textarea>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: 18, flexWrap: 'wrap', gap: 12 }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }} id="newsActionHint">Saytda darhol e'lon qilish yoki qoralama qilishni tanlang</span>
               <div style={{ display: 'inline-flex', gap: 10 }}>
-                <button type="button" id="btnNewsDraft" disabled={submitting} onClick={() => submitNewsWithStatus('draft')} style={{ background: 'var(--bg-white)', color: '#ea580c', border: '1px solid #fdba74', padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
+                <button type="button" id="btnNewsDraft" disabled={submitting} onClick={() => submitNewsWithStatus('draft')} style={{ background: 'var(--bg-white)', color: 'var(--badge-warning-text)', border: '1px solid var(--badge-warning-border)', padding: '10px 18px', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                   <span>Qoralama (Draft)</span>
                 </button>
@@ -332,12 +338,12 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
           <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
             <div style={{ padding: '14px 18px', background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-table-header)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Saytdagi jonli ko'rinishi</span>
-              <span style={{ background: '#ecfdf5', color: '#059669', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>Jonli preview</span>
+              <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>Jonli preview</span>
             </div>
             <div style={{ height: 160, position: 'relative', background: '#072950', overflow: 'hidden' }}>
               <img id="previewNewsImg" src={currentImageSrc} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }} />
               <span style={{ position: 'absolute', bottom: 10, right: 12, background: 'rgba(0,0,0,0.65)', color: '#ffffff', padding: '3px 10px', borderRadius: 4, fontSize: 11, fontWeight: 700 }} id="previewCategoryBadge">{previewCat}</span>
-              <span style={{ position: 'absolute', top: 10, left: 12, background: previewIsDraft ? '#fff7ed' : '#ecfdf5', color: previewIsDraft ? '#ea580c' : '#059669', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }} id="previewStatusBadge">
+              <span style={{ position: 'absolute', top: 10, left: 12, background: previewIsDraft ? 'var(--badge-warning-bg)' : 'var(--badge-success-bg)', color: previewIsDraft ? 'var(--badge-warning-text)' : 'var(--badge-success-text)', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }} id="previewStatusBadge">
                 {previewIsDraft ? 'Qoralama (Draft)' : 'Chop etiladi'}
               </span>
             </div>
@@ -354,7 +360,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
 
           <div style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 18 }}>
             <h4 style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-heading)', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f2721c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-orange)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
               <span>Chop etish va Qoralama tartibi</span>
             </h4>
             <ul style={{ fontSize: 12, color: 'var(--text-table-header)', lineHeight: 1.6, paddingLeft: 18, margin: 0 }}>
@@ -370,11 +376,11 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
         <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <h3 style={{ fontSize: 16.5, fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>Mavjud maqolalar va qoralamalar ro'yxati</h3>
-            <span style={{ background: '#eff6ff', color: '#0284c7', padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700 }}>{list.length} ta</span>
+            <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700 }}>{list.length} ta</span>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-            <input type="text" id="adminNewsSearchInput" aria-label="Yangilik nomi bo'yicha qidiruv" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Yangilik nomi bo'yicha..." style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, width: 200 }} />
-            <select id="adminNewsStatusFilter" aria-label="Holat bo'yicha filtr" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ padding: '7px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }}>
+            <input type="text" id="adminNewsSearchInput" aria-label="Yangilik nomi bo'yicha qidiruv" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Yangilik nomi bo'yicha..." style={{ padding: '7px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13, width: 200 }} />
+            <select id="adminNewsStatusFilter" aria-label="Holat bo'yicha filtr" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ padding: '7px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }}>
               <option value="all">Barcha holatlar</option>
               <option value="published">Faqat chop etilganlar</option>
               <option value="draft">Faqat qoralamalar (Draft)</option>
@@ -401,7 +407,7 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={6} role="alert" style={{ padding: 30, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={6} role="alert" style={{ padding: 30, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               ) : list.length === 0 ? (
                 <tr>
@@ -424,12 +430,12 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                       <td style={{ ...tdStyle, color: 'var(--text-muted)', fontSize: 12.5 }}>{n.published_date}</td>
                       <td style={{ ...tdStyle, textAlign: 'center' }} id={`news-status-cell-${n.id}`}>
                         {isDraft ? (
-                          <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                             <span>Qoralama (Draft)</span>
                           </span>
                         ) : (
-                          <span style={{ background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             <span>Chop etilgan</span>
                           </span>
@@ -444,10 +450,10 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             <span>Tahrirlash</span>
                           </button>
-                          <button type="button" disabled={busyRowId === n.id} onClick={() => toggleNewsStatus(n)} id={`btn-toggle-news-${n.id}`} title="Holatini o'zgartirish" style={{ background: isDraft ? '#0b3b70' : '#ffffff', color: isDraft ? '#ffffff' : '#475569', border: '1px solid #cbd5e1', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                          <button type="button" disabled={busyRowId === n.id} onClick={() => toggleNewsStatus(n)} id={`btn-toggle-news-${n.id}`} title="Holatini o'zgartirish" style={{ background: isDraft ? 'var(--primary-color)' : 'var(--bg-white)', color: isDraft ? '#ffffff' : 'var(--text-table-header)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
                             {isDraft ? 'Chop etish' : 'Qoralamaga'}
                           </button>
-                          <button type="button" disabled={busyRowId === n.id} onClick={() => deleteNewsItem(n)} title="O'chirish" aria-label={`'${n.title}' yangiligini o'chirish`} style={{ background: '#fef2f2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: 6, cursor: 'pointer' }}>
+                          <button type="button" disabled={busyRowId === n.id} onClick={() => deleteNewsItem(n)} title="O'chirish" aria-label={`'${n.title}' yangiligini o'chirish`} style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: 'none', padding: '6px 8px', borderRadius: 6, cursor: 'pointer' }}>
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                           </button>
                         </div>
@@ -459,6 +465,10 @@ export default function NewsTab({ news, loading, error, onReload, onNewsDeleted,
             </tbody>
           </table>
         </div>
+
+        {!loading && !error && (
+          <Pagination page={page} totalPages={totalPages} total={total} pageSize={pageSize} onPageChange={onPageChange} />
+        )}
       </div>
     </div>
   )

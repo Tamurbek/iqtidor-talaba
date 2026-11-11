@@ -33,6 +33,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const storedRole = localStorage.getItem(ACTIVE_ROLE_KEY)
         const validRole = user.assigned_roles?.some((r) => r.code === storedRole)
         setActiveRoleState(validRole ? storedRole : user.role)
+
+        // localStorage'dagi rol ro'yxati eski sessiyadan qolgan bo'lishi mumkin
+        // (masalan, admin rollar sxemasi backendda yangilangan bo'lsa). Har safar
+        // ilova ochilganda eng so'nggi rol/huquqlarni serverdan qayta tortib,
+        // foydalanuvchini qayta login qilishga majburlamasdan yangilab turamiz.
+        client.get<{ role: string; assigned_roles?: User['assigned_roles'] }>('/users/me')
+          .then(({ data }) => {
+            setCurrentUser((prev) => {
+              if (!prev) return prev
+              const next = { ...prev, role: data.role, assigned_roles: data.assigned_roles }
+              localStorage.setItem('current_user', JSON.stringify(next))
+              return next
+            })
+            setActiveRoleState((prevActiveRole) => {
+              const stillValid = data.assigned_roles?.some((r) => r.code === prevActiveRole)
+              return stillValid ? prevActiveRole : data.role
+            })
+          })
+          .catch(() => {
+            // Tarmoq xatosi bo'lsa localStorage'dagi eski ma'lumot bilan davom etamiz.
+          })
       } catch {
         localStorage.removeItem('current_user')
       }

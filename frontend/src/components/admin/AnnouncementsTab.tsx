@@ -4,7 +4,7 @@ import type { Announcement } from '../../types/content'
 import { extractErrorMessage } from '../../types/dashboard'
 
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }
-const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 14 }
+const inputStyle: React.CSSProperties = { width: '100%', padding: '12px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 14, background: 'var(--bg-white)', color: 'var(--text-dark)' }
 
 const DEFAULT_CATEGORY = 'Davlat stipendiyasi'
 
@@ -54,7 +54,7 @@ export default function AnnouncementsTab() {
       <div className="admin-form-split" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 24, alignItems: 'flex-start' }}>
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 28, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--bg-white)7ed', color: '#ea580c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="7"></circle>
                 <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
@@ -67,7 +67,7 @@ export default function AnnouncementsTab() {
           </div>
 
           {msg && (
-            <div id="contestMsg" role={msg.type === 'error' ? 'alert' : 'status'} style={{ display: 'block', padding: 12, borderRadius: 8, margin: '16px 0', fontSize: 13, background: msg.type === 'success' ? '#ecfdf5' : '#fef2f2', color: msg.type === 'success' ? '#059669' : '#dc2626' }}>
+            <div id="contestMsg" role={msg.type === 'error' ? 'alert' : 'status'} style={{ display: 'block', padding: 12, borderRadius: 8, margin: '16px 0', fontSize: 13, background: msg.type === 'success' ? 'var(--badge-success-bg)' : 'var(--badge-danger-bg)', color: msg.type === 'success' ? 'var(--badge-success-text)' : 'var(--badge-danger-text)' }}>
               {msg.text}
             </div>
           )}
@@ -117,8 +117,8 @@ export default function AnnouncementsTab() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 24, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ background: '#eff6ff', color: '#0284c7', padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700 }} id="previewContestCatBadge">{previewCat}</span>
-              <span style={{ fontSize: 11.5, color: '#ea580c', fontWeight: 700 }} id="previewContestDeadline">Muddati: {previewDeadline}</span>
+              <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700 }} id="previewContestCatBadge">{previewCat}</span>
+              <span style={{ fontSize: 11.5, color: 'var(--badge-warning-text)', fontWeight: 700 }} id="previewContestDeadline">Muddati: {previewDeadline}</span>
             </div>
             <h4 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text-heading)', lineHeight: 1.4, margin: '0 0 10px' }} id="previewContestTitle">
               {previewTitle}
@@ -126,9 +126,9 @@ export default function AnnouncementsTab() {
             <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5, margin: '0 0 16px' }} id="previewContestText">
               {previewText}
             </p>
-            <div style={{ background: 'var(--bg-light)', border: '1px dashed #cbd5e1', borderRadius: 10, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ background: 'var(--bg-light)', border: '1px dashed var(--border-color)', borderRadius: 10, padding: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Sovrin:</span>
-              <strong style={{ fontSize: 13, color: '#059669' }} id="previewContestPrize">{previewPrize}</strong>
+              <strong style={{ fontSize: 13, color: 'var(--badge-success-text)' }} id="previewContestPrize">{previewPrize}</strong>
             </div>
           </div>
 

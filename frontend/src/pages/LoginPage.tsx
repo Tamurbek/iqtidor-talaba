@@ -519,7 +519,7 @@ export default function LoginPage() {
               {eimzoLoading && (
                 <div id="eimzoLoading" style={{ display: 'block', textAlign: 'center', padding: '24px 0' }}>
                   <div className="eimzo-spinner"></div>
-                  <p style={{ marginTop: 12, fontSize: 14, color: '#475569', fontWeight: 500 }}>
+                  <p style={{ marginTop: 12, fontSize: 14, color: 'var(--text-table-header)', fontWeight: 500 }}>
                     E-IMZO moduli bilan aloqa o'rnatilmoqda...
                   </p>
                 </div>
@@ -571,8 +571,8 @@ export default function LoginPage() {
                   )}
 
                   {/* E-IMZO Native Password Note (Password entered in E-IMZO desktop application) */}
-                  <div style={{ fontSize: 12.5, color: '#64748b', background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0070f3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <div style={{ fontSize: 12.5, color: 'var(--text-muted)', background: 'var(--bg-light)', border: '1px dashed var(--border-light)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                       <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
@@ -581,7 +581,7 @@ export default function LoginPage() {
 
                   {/* Optional HEMIS ID input if user wants to ensure unambiguous match */}
                   <div className="form-group" style={{ marginBottom: 20 }}>
-                    <label className="form-label" htmlFor="eimzoHemisIdInput" style={{ fontSize: 12.5, color: '#64748b', marginBottom: 4 }}>
+                    <label className="form-label" htmlFor="eimzoHemisIdInput" style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 4 }}>
                       HEMIS ID (ixtiyoriy, agar kalit nomi bilan qidirishda noaniqlik bo'lsa):
                     </label>
                     <input
@@ -641,7 +641,7 @@ export default function LoginPage() {
 
             {/* Clean Key / Info SVG Icon (No AI icons) */}
             <div className="forgot-modal-icon">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0070f3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2l-2 2m-1.5 1.5L16 7m-1.5 1.5L13 10m-1.5 1.5L10 13m-1.5 1.5L7 16m-1.5 1.5L4 19m-1.5 1.5L1 22"></path>
                 <circle cx="15.5" cy="8.5" r="5.5"></circle>
               </svg>
@@ -655,8 +655,8 @@ export default function LoginPage() {
             </p>
 
             <div className="forgot-modal-info-chip">
-              <div style={{ fontWeight: 700, color: '#0b3b70', marginBottom: 2 }}>O'zMU Jizzax filiali</div>
-              <div style={{ fontSize: 12, color: '#64748b' }}>HEMIS koordinatori va Raqamli ta'lim bo'limi</div>
+              <div style={{ fontWeight: 700, color: 'var(--text-heading)', marginBottom: 2 }}>O'zMU Jizzax filiali</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>HEMIS koordinatori va Raqamli ta'lim bo'limi</div>
             </div>
 
             {/* Countdown Slider & Animated Progress Track */}

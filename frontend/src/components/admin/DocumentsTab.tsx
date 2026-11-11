@@ -4,11 +4,17 @@ import type { DocumentItem } from '../../types/content'
 import type { DocumentUploadResponse } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
+import Pagination from '../common/Pagination'
 
 interface Props {
   documents: DocumentItem[] | null
   loading: boolean
   error: string | null
+  page: number
+  totalPages: number
+  total: number
+  pageSize: number
+  onPageChange: (page: number) => void
   onReload: () => void
   onDocumentDeleted: (id: number) => void
   showToast: ShowToast
@@ -20,7 +26,7 @@ const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWe
 const thStyle: React.CSSProperties = { padding: '12px 18px' }
 const tdStyle: React.CSSProperties = { padding: '12px 18px' }
 
-export default function DocumentsTab({ documents, loading, error, onReload, onDocumentDeleted, showToast }: Props) {
+export default function DocumentsTab({ documents, loading, error, page, totalPages, total, pageSize, onPageChange, onReload, onDocumentDeleted, showToast }: Props) {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [title, setTitle] = useState('')
   const [fileUrl, setFileUrl] = useState('')
@@ -133,7 +139,7 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
           <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>Me'yoriy hujjatlar boshqaruvi</h3>
           <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '3px 0 0' }}>Bosh sahifadagi "Hujjatlar" bo'limi uchun PDF fayllarni yuklash va boshqarish</p>
         </div>
-        <span style={{ background: '#eff6ff', color: '#0284c7', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+        <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '6px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
           Jami: <span id="docsTotalCount">{list.length}</span> ta
         </span>
       </div>
@@ -142,7 +148,7 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
         <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 26, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: '#eff6ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
@@ -158,7 +164,7 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
               </div>
             </div>
             {isEditing && (
-              <button type="button" id="btnCancelDocEdit" onClick={resetDocFormToCreate} style={{ display: 'inline-block', background: 'var(--border-light)', color: 'var(--text-table-header)', border: '1px solid #cbd5e1', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+              <button type="button" id="btnCancelDocEdit" onClick={resetDocFormToCreate} style={{ display: 'inline-block', background: 'var(--border-light)', color: 'var(--text-table-header)', border: '1px solid var(--border-color)', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
                 Tahrirlashni bekor qilish
               </button>
             )}
@@ -167,16 +173,16 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
           <form id="adminDocForm" ref={formRef} onSubmit={(e) => e.preventDefault()} style={{ marginTop: 18 }}>
             <div style={{ marginBottom: 16 }}>
               <label htmlFor="docTitle" style={labelStyle}>Hujjat nomi *</label>
-              <input type="text" id="docTitle" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Masalan: Iqtidorli talabalar bilan ishlash to'g'risida Nizom" required style={{ width: '100%', padding: '11px 14px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 14, fontWeight: 600 }} />
+              <input type="text" id="docTitle" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Masalan: Iqtidorli talabalar bilan ishlash to'g'risida Nizom" required style={{ width: '100%', padding: '11px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 14, fontWeight: 600, background: 'var(--bg-white)', color: 'var(--text-dark)' }} />
             </div>
 
             <div style={{ marginBottom: 18 }}>
               <label htmlFor="docFileInput" style={labelStyle}>PDF fayl *</label>
               <input type="file" id="docFileInput" ref={fileInputRef} accept="application/pdf" onChange={handleDocFileSelect} style={{ display: 'none' }} />
 
-              <div style={{ border: '2px dashed #cbd5e1', borderRadius: 12, padding: '12px 16px', background: 'var(--bg-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+              <div style={{ border: '2px dashed var(--border-color)', borderRadius: 12, padding: '12px 16px', background: 'var(--bg-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 8, background: '#fef2f2', color: '#dc2626', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 8, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                   </div>
                   <div>
@@ -216,7 +222,7 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
       <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, marginTop: 24, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
         <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
           <h3 style={{ fontSize: 16.5, fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>Mavjud hujjatlar ro'yxati</h3>
-          <span style={{ background: '#eff6ff', color: '#0284c7', padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700 }}>{list.length} ta</span>
+          <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 700 }}>{list.length} ta</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -237,7 +243,7 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={5} role="alert" style={{ padding: 30, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={5} role="alert" style={{ padding: 30, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               ) : list.length === 0 ? (
                 <tr>
@@ -262,7 +268,7 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                           <span>Tahrirlash</span>
                         </button>
-                        <button type="button" disabled={busyRowId === d.id} onClick={() => deleteDocItem(d)} title="O'chirish" aria-label={`'${d.title}' hujjatini o'chirish`} style={{ background: '#fef2f2', color: '#dc2626', border: 'none', padding: '6px 8px', borderRadius: 6, cursor: 'pointer' }}>
+                        <button type="button" disabled={busyRowId === d.id} onClick={() => deleteDocItem(d)} title="O'chirish" aria-label={`'${d.title}' hujjatini o'chirish`} style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: 'none', padding: '6px 8px', borderRadius: 6, cursor: 'pointer' }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                       </div>
@@ -273,6 +279,10 @@ export default function DocumentsTab({ documents, loading, error, onReload, onDo
             </tbody>
           </table>
         </div>
+
+        {!loading && !error && (
+          <Pagination page={page} totalPages={totalPages} total={total} pageSize={pageSize} onPageChange={onPageChange} />
+        )}
       </div>
     </div>
   )

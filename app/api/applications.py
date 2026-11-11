@@ -10,8 +10,9 @@ from app.models.user import User
 from app.models.achievement import StudentAchievement
 from app.models.application import ContestApplication
 from app.models.exam import StudentExamResult
-from app.schemas.application import ApplicationCreate, ApplicationReview, ApplicationResponse
+from app.schemas.application import ApplicationCreate, ApplicationReview, ApplicationResponse, ApplicationListResponse
 from app.api.deps import get_current_student, require_permission
+from app.core.pagination import PageParams, paginate_query, total_pages
 
 logger = logging.getLogger("iqtidorli_applications")
 
@@ -141,13 +142,21 @@ async def get_my_applications(
     return res.scalars().all()
 
 # 3. Get All Applications (Department Head / Faculty Coordinator / Admin)
-@router.get("/all", response_model=List[ApplicationResponse])
+@router.get("/all", response_model=ApplicationListResponse)
 async def get_all_applications(
+    page_params: PageParams = Depends(),
     current_admin: User = Depends(require_permission("contests.review")),
     db: AsyncSession = Depends(get_db)
 ):
-    res = await db.execute(select(ContestApplication).order_by(desc(ContestApplication.id)))
-    return res.scalars().all()
+    query = select(ContestApplication).order_by(desc(ContestApplication.id))
+    result, total = await paginate_query(db, query, page_params.page, page_params.page_size)
+    return ApplicationListResponse(
+        items=result.scalars().all(),
+        total=total,
+        page=page_params.page,
+        page_size=page_params.page_size,
+        total_pages=total_pages(total, page_params.page_size),
+    )
 
 # 4. Review Application (Department Head / Faculty Coordinator / Admin)
 @router.post("/{app_id}/review", response_model=ApplicationResponse)

@@ -3,8 +3,9 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import { useApiResource } from '../hooks/useApiResource'
-import type { Application } from '../types/dashboard'
-import type { DocumentItem, NewsItem } from '../types/content'
+import { usePaginatedResource } from '../hooks/usePaginatedResource'
+import type { ApplicationListResponse } from '../types/dashboard'
+import type { DocumentListResponse, NewsListResponse } from '../types/content'
 import type {
   AdminAchievementListResponse,
   AdminTabKey,
@@ -58,14 +59,18 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'profile-security': 'Mening profilim & Parol',
 }
 
-const loadAchievements = () => client.get<AdminAchievementListResponse>('/achievements/all').then(({ data }) => data)
-const loadRanking = () => client.get<RankingResponse>('/achievements/ranking').then(({ data }) => data.ranking)
-const loadApplications = () => client.get<Application[]>('/applications/all').then(({ data }) => data)
+const loadAchievements = (page: number, page_size: number) =>
+  client.get<AdminAchievementListResponse>('/achievements/all', { params: { page, page_size } }).then(({ data }) => data)
+const loadRanking = (page: number, page_size: number) =>
+  client.get<RankingResponse>('/achievements/ranking', { params: { page, page_size } }).then(({ data }) => data)
+const loadApplications = (page: number, page_size: number) =>
+  client.get<ApplicationListResponse>('/applications/all', { params: { page, page_size } }).then(({ data }) => data)
 const loadStarostas = () => client.get<StarostasResponse>('/roles/starostas').then(({ data }) => data.groups)
 const loadRoles = () => client.get<RolesResponse>('/roles').then(({ data }) => data.roles)
-const loadNews = () => client.get<NewsItem[]>('/news', { params: { limit: 1000 } }).then(({ data }) => data)
-const loadDocuments = () => client.get<DocumentItem[]>('/documents').then(({ data }) => data)
-const loadUsers = () => client.get<UsersListResponse>('/users', { params: { limit: 1000 } }).then(({ data }) => data.users)
+const loadNews = (page: number, page_size: number) =>
+  client.get<NewsListResponse>('/news', { params: { page, page_size } }).then(({ data }) => data)
+const loadDocuments = (page: number, page_size: number) =>
+  client.get<DocumentListResponse>('/documents', { params: { page, page_size } }).then(({ data }) => data)
 
 function tabFromHash(): AdminTabKey | null {
   const h = window.location.hash.replace('#', '')
@@ -99,6 +104,32 @@ export default function AdminDashboardPage() {
   const [toasts, setToasts] = useState<ToastItem[]>([])
   const toastId = useRef(0)
 
+  const [userSearch, setUserSearch] = useState('')
+  const [userSearchDebounced, setUserSearchDebounced] = useState('')
+  const [userRoleFilter, setUserRoleFilter] = useState('all')
+  const [userStatusFilter, setUserStatusFilter] = useState('all')
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setUserSearchDebounced(userSearch.trim()), 300)
+    return () => window.clearTimeout(t)
+  }, [userSearch])
+
+  const loadUsers = useCallback(
+    (page: number, page_size: number) =>
+      client
+        .get<UsersListResponse>('/users', {
+          params: {
+            page,
+            page_size,
+            q: userSearchDebounced || undefined,
+            role: userRoleFilter !== 'all' ? userRoleFilter : undefined,
+            is_active: userStatusFilter !== 'all' ? userStatusFilter === 'active' : undefined,
+          },
+        })
+        .then(({ data }) => data),
+    [userSearchDebounced, userRoleFilter, userStatusFilter]
+  )
+
   // Joriy rolga tegishli bo'lmagan tab ochilib qolsa (masalan hash orqali),
   // foydalanuvchiga ko'rinadigan birinchi tabga o'tkazamiz.
   useEffect(() => {
@@ -108,14 +139,19 @@ export default function AdminDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.role, activeRole])
 
-  const achievements = useApiResource(loadAchievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", caps.canVerifyAchievements)
-  const ranking = useApiResource(loadRanking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports)
-  const applications = useApiResource(loadApplications, 'Tanlov arizalarini yuklashda xatolik yuz berdi', caps.canReviewContests)
+  const achievements = usePaginatedResource(loadAchievements, (r) => r.achievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", caps.canVerifyAchievements, 8)
+  const ranking = usePaginatedResource(loadRanking, (r) => r.ranking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports, 10)
+  const applications = usePaginatedResource(loadApplications, (r) => r.items, 'Tanlov arizalarini yuklashda xatolik yuz berdi', caps.canReviewContests, 10)
   const starostas = useApiResource(loadStarostas, "Guruh ma'lumotlarini yuklab bo'lmadi", caps.canViewStarostas)
   const roles = useApiResource(loadRoles, "Rollar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageRoles)
-  const news = useApiResource(loadNews, 'Yangiliklarni yuklashda xatolik yuz berdi', caps.canManageContent)
-  const documents = useApiResource(loadDocuments, "Hujjatlar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageContent)
-  const users = useApiResource(loadUsers, "Foydalanuvchilar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageUsers)
+  const news = usePaginatedResource(loadNews, (r) => r.items, 'Yangiliklarni yuklashda xatolik yuz berdi', caps.canManageContent, 10)
+  const documents = usePaginatedResource(loadDocuments, (r) => r.items, "Hujjatlar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageContent, 10)
+  const users = usePaginatedResource(loadUsers, (r) => r.users, "Foydalanuvchilar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageUsers, 10)
+
+  const usersSetPage = users.setPage
+  useEffect(() => {
+    usersSetPage(1)
+  }, [userSearchDebounced, userRoleFilter, userStatusFilter, usersSetPage])
 
   const closeToast = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
@@ -174,8 +210,8 @@ export default function AdminDashboardPage() {
   if (!currentUser) return <Navigate to="/login?next=/admin" replace />
   if (currentUser.role === 'student') return <Navigate to="/dashboard" replace />
 
-  const pendingCount = achievements.data?.pending_count ?? null
-  const approvedCount = achievements.data?.approved_count ?? null
+  const pendingCount = achievements.response?.pending_count ?? null
+  const approvedCount = achievements.response?.approved_count ?? null
 
   return (
     <>
@@ -191,13 +227,13 @@ export default function AdminDashboardPage() {
           activeTab={activeTab}
           counts={{
             pending: pendingCount,
-            applications: applications.data?.length ?? null,
-            ranking: ranking.data?.length ?? null,
+            applications: applications.response ? applications.total : null,
+            ranking: ranking.response ? ranking.total : null,
             groups: starostas.data?.length ?? null,
             roles: roles.data?.length ?? null,
-            news: news.data?.length ?? null,
-            documents: documents.data?.length ?? null,
-            users: users.data?.length ?? null,
+            news: news.response ? news.total : null,
+            documents: documents.response ? documents.total : null,
+            users: users.response ? users.total : null,
           }}
           visibleTabs={visibleTabs}
           mobileOpen={mobileOpen}
@@ -221,14 +257,19 @@ export default function AdminDashboardPage() {
           <main className="cabinet-main" style={{ padding: '20px 28px 60px', minWidth: 0 }}>
           {activeTab === 'moderation' && (
             <AchievementsApprovalTab
-              achievements={achievements.data?.achievements ?? null}
+              achievements={achievements.items}
               loading={achievements.loading}
               error={achievements.error}
               pendingCount={pendingCount}
               approvedCount={approvedCount}
-              rankingCount={ranking.data?.length ?? null}
+              rankingCount={ranking.response ? ranking.total : null}
+              page={achievements.page}
+              totalPages={achievements.totalPages}
+              total={achievements.total}
+              pageSize={achievements.pageSize}
+              onPageChange={achievements.setPage}
               onAchievementUpdated={(id, patch) =>
-                achievements.setData((prev) => {
+                achievements.setResponse((prev) => {
                   if (!prev) return prev
                   const updated = prev.achievements.map((a) => (a.id === id ? { ...a, ...patch } : a))
                   return {
@@ -245,20 +286,30 @@ export default function AdminDashboardPage() {
           )}
           {activeTab === 'contests-monitoring' && (
             <ApplicationsReviewTab
-              applications={applications.data}
+              applications={applications.items}
               loading={applications.loading}
               error={applications.error}
+              page={applications.page}
+              totalPages={applications.totalPages}
+              total={applications.total}
+              pageSize={applications.pageSize}
+              onPageChange={applications.setPage}
               onApplicationUpdated={(app) =>
-                applications.setData((prev) => (prev ? prev.map((a) => (a.id === app.id ? app : a)) : prev))
+                applications.setResponse((prev) => (prev ? { ...prev, items: prev.items.map((a) => (a.id === app.id ? app : a)) } : prev))
               }
               showToast={showToast}
             />
           )}
           {activeTab === 'ranking' && (
             <RankingExportTab
-              ranking={ranking.data}
+              ranking={ranking.items}
               loading={ranking.loading}
               error={ranking.error}
+              page={ranking.page}
+              totalPages={ranking.totalPages}
+              total={ranking.total}
+              pageSize={ranking.pageSize}
+              onPageChange={ranking.setPage}
               onReload={ranking.reload}
               showToast={showToast}
             />
@@ -306,31 +357,52 @@ export default function AdminDashboardPage() {
           {activeTab === 'add-announcement' && <AnnouncementsTab />}
           {activeTab === 'add-news' && (
             <NewsTab
-              news={news.data}
+              news={news.items}
               loading={news.loading}
               error={news.error}
+              page={news.page}
+              totalPages={news.totalPages}
+              total={news.total}
+              pageSize={news.pageSize}
+              onPageChange={news.setPage}
               onReload={news.reload}
-              onNewsDeleted={(id) => news.setData((prev) => (prev ? prev.filter((n) => n.id !== id) : prev))}
+              onNewsDeleted={(id) => news.setResponse((prev) => (prev ? { ...prev, items: prev.items.filter((n) => n.id !== id) } : prev))}
               showToast={showToast}
             />
           )}
           {activeTab === 'add-document' && (
             <DocumentsTab
-              documents={documents.data}
+              documents={documents.items}
               loading={documents.loading}
               error={documents.error}
+              page={documents.page}
+              totalPages={documents.totalPages}
+              total={documents.total}
+              pageSize={documents.pageSize}
+              onPageChange={documents.setPage}
               onReload={documents.reload}
-              onDocumentDeleted={(id) => documents.setData((prev) => (prev ? prev.filter((d) => d.id !== id) : prev))}
+              onDocumentDeleted={(id) => documents.setResponse((prev) => (prev ? { ...prev, items: prev.items.filter((d) => d.id !== id) } : prev))}
               showToast={showToast}
             />
           )}
           {activeTab === 'users-management' && (
             <UsersTab
-              users={users.data}
+              users={users.items}
               roles={roles.data}
               loading={users.loading}
               error={users.error}
               currentUserId={currentUser.id}
+              page={users.page}
+              totalPages={users.totalPages}
+              total={users.total}
+              pageSize={users.pageSize}
+              onPageChange={users.setPage}
+              search={userSearch}
+              onSearchChange={setUserSearch}
+              roleFilter={userRoleFilter}
+              onRoleFilterChange={setUserRoleFilter}
+              statusFilter={userStatusFilter}
+              onStatusFilterChange={setUserStatusFilter}
               onReload={users.reload}
               showToast={showToast}
             />

@@ -90,7 +90,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
             <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 3 }}>Iqtidorli bo'lim boshlig'i tomonidan har bir akademik guruhga bitta mas'ul guruh sardorini tayinlash va monitoring qilish</p>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <span style={{ background: '#eff6ff', color: '#0284c7', padding: '6px 14px', borderRadius: 20, fontSize: 12.5, fontWeight: 700 }}>
+            <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '6px 14px', borderRadius: 20, fontSize: 12.5, fontWeight: 700 }}>
               Jami guruhlar: {list.length} ta
             </span>
           </div>
@@ -116,7 +116,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
               )}
               {!loading && error && (
                 <tr>
-                  <td colSpan={6} role="alert" style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={6} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               )}
               {!loading && !error && list.length === 0 && (
@@ -141,18 +141,18 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
                   <td style={tdStyle} id={`starosta-cell-${g.group_name}`}>
                     {g.starosta ? (
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#eff6ff', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, border: '1px solid #bfdbfe' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13, border: '1px solid var(--badge-info-text)' }}>
                           <StarIcon />
                         </div>
                         <div>
                           <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{g.starosta.full_name}</div>
-                          <div style={{ fontSize: 11.5, color: '#059669', fontWeight: 600 }}>
+                          <div style={{ fontSize: 11.5, color: 'var(--badge-success-text)', fontWeight: 600 }}>
                             {justAssigned[g.group_name] ? 'Guruh sardori etib tayinlandi' : `HEMIS ID: ${g.starosta.hemis_id}`}
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                      <span style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
                         Tayinlanmagan
                       </span>
                     )}
@@ -176,7 +176,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
                           type="button"
                           disabled={revokingGroup === g.group_name}
                           onClick={() => executeRevokeStarosta(g)}
-                          style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', padding: '7px 14px', borderRadius: 8, fontWeight: 600, fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap' }}
                         >
                           {revokingGroup === g.group_name ? 'Bekor qilinmoqda...' : 'Bekor qilish'}
                         </button>
@@ -206,7 +206,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
               {pickerGroup.students.map((s) => {
                 const isCurrent = s.id === currentStarostaId
                 return (
-                  <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', border: `1px solid ${isCurrent ? '#0b3b70' : '#e2e8f0'}`, borderRadius: 8, marginBottom: 8, background: isCurrent ? '#f0f7ff' : '#ffffff' }}>
+                  <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', border: `1px solid ${isCurrent ? 'var(--primary-color)' : 'var(--border-color)'}`, borderRadius: 8, marginBottom: 8, background: isCurrent ? 'rgba(59,130,246,0.12)' : 'var(--bg-white)' }}>
                     <div>
                       <div style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{s.full_name}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -218,7 +218,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
                         )}
                       </div>
                     </div>
-                    <button type="button" disabled={assigningId !== null} onClick={() => executeAssignStarosta(pickerGroup.group_name, s)} style={{ background: isCurrent ? '#059669' : '#0b3b70', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
+                    <button type="button" disabled={assigningId !== null} onClick={() => executeAssignStarosta(pickerGroup.group_name, s)} style={{ background: isCurrent ? 'var(--badge-success-text)' : 'var(--primary-color)', color: '#ffffff', border: 'none', padding: '6px 14px', borderRadius: 6, fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>
                       {isCurrent ? 'Qayta tasdiqlash' : 'Guruh sardori etib tayinlash'}
                     </button>
                   </div>

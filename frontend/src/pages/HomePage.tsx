@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import client from '../api/client'
-import type { NewsItem, Announcement, DocumentItem } from '../types/content'
+import type { NewsItem, NewsListResponse, Announcement, DocumentItem, DocumentListResponse } from '../types/content'
 
 export default function HomePage() {
   const location = useLocation()
@@ -11,8 +11,8 @@ export default function HomePage() {
 
   useEffect(() => {
     client
-      .get<NewsItem[]>('/news', { params: { status: 'published', limit: 3 } })
-      .then((res) => setNewsItems(res.data.slice(0, 3)))
+      .get<NewsListResponse>('/news', { params: { status: 'published', page: 1, page_size: 3 } })
+      .then((res) => setNewsItems(res.data.items.slice(0, 3)))
       .catch(() => setNewsItems([]))
 
     client
@@ -21,8 +21,8 @@ export default function HomePage() {
       .catch(() => setAnnouncements([]))
 
     client
-      .get<DocumentItem[]>('/documents')
-      .then((res) => setDocuments(res.data.slice(0, 5)))
+      .get<DocumentListResponse>('/documents', { params: { page: 1, page_size: 5 } })
+      .then((res) => setDocuments(res.data.items.slice(0, 5)))
       .catch(() => setDocuments([]))
   }, [])
 
@@ -92,9 +92,9 @@ export default function HomePage() {
         className="iqtidor-showcase-section"
         style={{
           padding: '60px 0',
-          background: 'linear-gradient(180deg, #f8fafc 0%, #edf4fc 100%)',
-          borderTop: '1px solid #e2e8f0',
-          borderBottom: '1px solid #e2e8f0',
+          background: 'linear-gradient(180deg, var(--bg-light) 0%, var(--bg-light) 100%)',
+          borderTop: '1px solid var(--border-color)',
+          borderBottom: '1px solid var(--border-color)',
         }}
       >
         <div className="container">
@@ -250,10 +250,10 @@ export default function HomePage() {
           >
             <div
               style={{
-                background: '#ffffff',
+                background: 'var(--bg-white)',
                 padding: '20px 16px',
                 borderRadius: '14px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 textAlign: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
               }}
@@ -276,15 +276,15 @@ export default function HomePage() {
                   <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
                 </svg>
               </div>
-              <div style={{ fontWeight: 800, color: '#0b3b70', fontSize: '14px' }}>&ldquo;Innovator&rdquo;</div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>Tabiiy fanlar va texnologiya</div>
+              <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '14px' }}>&ldquo;Innovator&rdquo;</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Tabiiy fanlar va texnologiya</div>
             </div>
             <div
               style={{
-                background: '#ffffff',
+                background: 'var(--bg-white)',
                 padding: '20px 16px',
                 borderRadius: '14px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 textAlign: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
               }}
@@ -308,15 +308,15 @@ export default function HomePage() {
                   <line x1="12" y1="17" x2="12" y2="21"></line>
                 </svg>
               </div>
-              <div style={{ fontWeight: 800, color: '#0b3b70', fontSize: '14px' }}>&ldquo;Yangi avlod yaratuvchisi&rdquo;</div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>Axborot texnologiyalari va IT</div>
+              <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '14px' }}>&ldquo;Yangi avlod yaratuvchisi&rdquo;</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Axborot texnologiyalari va IT</div>
             </div>
             <div
               style={{
-                background: '#ffffff',
+                background: 'var(--bg-white)',
                 padding: '20px 16px',
                 borderRadius: '14px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 textAlign: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
               }}
@@ -339,15 +339,15 @@ export default function HomePage() {
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
               </div>
-              <div style={{ fontWeight: 800, color: '#0b3b70', fontSize: '14px' }}>&ldquo;Zukko&rdquo;</div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>Aniq fanlar (Matematika)</div>
+              <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '14px' }}>&ldquo;Zukko&rdquo;</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Aniq fanlar (Matematika)</div>
             </div>
             <div
               style={{
-                background: '#ffffff',
+                background: 'var(--bg-white)',
                 padding: '20px 16px',
                 borderRadius: '14px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 textAlign: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
               }}
@@ -372,15 +372,15 @@ export default function HomePage() {
                   <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
               </div>
-              <div style={{ fontWeight: 800, color: '#0b3b70', fontSize: '14px' }}>&ldquo;Tamaddun&rdquo;</div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>Psixologiya fanlari</div>
+              <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '14px' }}>&ldquo;Tamaddun&rdquo;</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Psixologiya fanlari</div>
             </div>
             <div
               style={{
-                background: '#ffffff',
+                background: 'var(--bg-white)',
                 padding: '20px 16px',
                 borderRadius: '14px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 textAlign: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
               }}
@@ -403,15 +403,15 @@ export default function HomePage() {
                   <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                 </svg>
               </div>
-              <div style={{ fontWeight: 800, color: '#0b3b70', fontSize: '14px' }}>&ldquo;Iftixor&rdquo;</div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>Filologiya fanlari</div>
+              <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '14px' }}>&ldquo;Iftixor&rdquo;</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Filologiya fanlari</div>
             </div>
             <div
               style={{
-                background: '#ffffff',
+                background: 'var(--bg-white)',
                 padding: '20px 16px',
                 borderRadius: '14px',
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border-color)',
                 textAlign: 'center',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
               }}
@@ -434,8 +434,8 @@ export default function HomePage() {
                   <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
               </div>
-              <div style={{ fontWeight: 800, color: '#0b3b70', fontSize: '14px' }}>&ldquo;E'tirof&rdquo;</div>
-              <div style={{ fontSize: '11.5px', color: '#64748b', marginTop: '4px' }}>Iqtisodiyot va turizm</div>
+              <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: '14px' }}>&ldquo;E'tirof&rdquo;</div>
+              <div style={{ fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '4px' }}>Iqtisodiyot va turizm</div>
             </div>
           </div>
         </div>
@@ -561,7 +561,7 @@ export default function HomePage() {
       <section className="announcements-section" id="elonlar">
         <div className="container">
           <div className="section-header-row">
-            <h2 className="section-heading" style={{ color: '#0070f3' }}>E'lonlar</h2>
+            <h2 className="section-heading" style={{ color: 'var(--primary-color)' }}>E'lonlar</h2>
           </div>
 
           <div className="announcements-grid-layout">

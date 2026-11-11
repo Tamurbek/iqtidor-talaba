@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.supervisor_request import SupervisorRequest
 from app.api.deps import get_current_user, get_current_student, get_current_admin
+from app.core.pagination import PageParams, paginate_query, total_pages
 
 logger = logging.getLogger("iqtidorli_supervisor_requests")
 
@@ -121,11 +122,12 @@ async def get_my_requests(
 
 @router.get("/incoming")
 async def get_incoming_requests(
+    page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """10.3-modda: professor-o'qituvchi o'ziga kelib tushgan so'rovlarni ko'radi."""
-    res = await db.execute(
+    query = (
         select(SupervisorRequest, User.full_name, User.hemis_id, User.faculty, User.direction, User.group_name)
         .join(User, User.id == SupervisorRequest.student_id)
         .where(
@@ -134,8 +136,9 @@ async def get_incoming_requests(
         )
         .order_by(SupervisorRequest.requested_at.asc())
     )
+    res, total = await paginate_query(db, query, page_params.page, page_params.page_size)
     rows = res.all()
-    return [
+    items = [
         {
             "id": r.id,
             "student_id": r.student_id,
@@ -149,6 +152,13 @@ async def get_incoming_requests(
         }
         for r, full_name, hemis_id, faculty, direction, group_name in rows
     ]
+    return {
+        "items": items,
+        "total": total,
+        "page": page_params.page,
+        "page_size": page_params.page_size,
+        "total_pages": total_pages(total, page_params.page_size),
+    }
 
 
 @router.post("/{request_id}/accept")

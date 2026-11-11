@@ -21,7 +21,7 @@ const MODULE_LABELS: Record<string, string> = {
 }
 
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 12.5, fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 6 }
-const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 13.5 }
+const inputStyle: React.CSSProperties = { width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, background: 'var(--bg-white)', color: 'var(--text-dark)' }
 
 export default function RoleFormModal({ roleId, onClose, onSaved }: Props) {
   const isEdit = roleId !== null
@@ -141,7 +141,7 @@ export default function RoleFormModal({ roleId, onClose, onSaved }: Props) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <h3 id="roleModalTitle" style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-heading)' }}>Rolni tahrirlash</h3>
                 {role && (
-                  <span style={{ fontFamily: 'monospace', fontSize: 11, background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>{role.code}</span>
+                  <span style={{ fontFamily: 'monospace', fontSize: 11, background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '2px 8px', borderRadius: 4, fontWeight: 700 }}>{role.code}</span>
                 )}
               </div>
             ) : (
@@ -160,11 +160,11 @@ export default function RoleFormModal({ roleId, onClose, onSaved }: Props) {
           {loading ? (
             <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</div>
           ) : loadError ? (
-            <div role="alert" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: '#fef2f2', color: '#dc2626' }}>{loadError}</div>
+            <div role="alert" style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }}>{loadError}</div>
           ) : (
             <>
               {error && (
-                <div role="alert" style={{ padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: '#fef2f2', color: '#dc2626' }}>{error}</div>
+                <div role="alert" style={{ padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }}>{error}</div>
               )}
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 16, marginBottom: 16 }}>
                 <div>
@@ -180,7 +180,7 @@ export default function RoleFormModal({ roleId, onClose, onSaved }: Props) {
                     disabled={codeDisabled}
                     placeholder={isEdit ? undefined : 'kafedra_masul'}
                     onChange={(e) => setCode(e.target.value)}
-                    style={{ ...inputStyle, fontFamily: 'monospace', background: codeDisabled ? '#f1f5f9' : isEdit ? undefined : '#f8fafc', cursor: codeDisabled ? 'not-allowed' : undefined }}
+                    style={{ ...inputStyle, fontFamily: 'monospace', background: codeDisabled ? 'var(--border-light)' : isEdit ? undefined : 'var(--bg-light)', cursor: codeDisabled ? 'not-allowed' : undefined }}
                   />
                   {codeDisabled && (
                     <span style={{ fontSize: 11, color: 'var(--text-light)', marginTop: 2, display: 'block' }}>Tizim asosiy rolining kodi o'zgarmaydi</span>
@@ -203,7 +203,7 @@ export default function RoleFormModal({ roleId, onClose, onSaved }: Props) {
                     <div key={moduleKey} style={{ background: 'var(--bg-light)', border: '1px solid var(--border-color)', borderRadius: 10, padding: 14, marginBottom: 12 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, borderBottom: '1px solid var(--border-color)', paddingBottom: 6 }}>
                         <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 13 }}>{MODULE_LABELS[moduleKey] || moduleKey}</span>
-                        <label style={{ fontSize: 11.5, color: '#0284c7', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+                        <label style={{ fontSize: 11.5, color: 'var(--badge-info-text)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
                           <input type="checkbox" checked={allChecked} onChange={(e) => toggleModulePerms(perms, e.target.checked)} />
                           <span>Barchasi</span>
                         </label>
@@ -228,7 +228,7 @@ export default function RoleFormModal({ roleId, onClose, onSaved }: Props) {
         </div>
 
         <div style={{ padding: '16px 26px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 12, background: 'var(--bg-light)', borderRadius: '0 0 16px 16px' }}>
-          <button type="button" onClick={onClose} style={{ background: 'var(--bg-white)', border: '1px solid #cbd5e1', color: 'var(--text-table-header)', padding: '10px 20px', borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
+          <button type="button" onClick={onClose} style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', color: 'var(--text-table-header)', padding: '10px 20px', borderRadius: 8, fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }}>
             Bekor qilish
           </button>
           <button type="button" id="btnSubmitRole" disabled={submitting || loading || !!loadError} onClick={submitSaveRole} style={{ background: '#0070f3', color: '#ffffff', border: 'none', padding: '10px 24px', borderRadius: 8, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,112,243,0.3)' }}>

@@ -12,8 +12,9 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.news import News
 from app.models.user import User
-from app.schemas.content import NewsResponse
+from app.schemas.content import NewsResponse, NewsListResponse
 from app.api.deps import get_current_admin
+from app.core.pagination import PageParams, paginate_query, total_pages
 
 router = APIRouter(prefix="/news", tags=["News"])
 
@@ -94,12 +95,11 @@ async def upload_news_image(
         "message": "Rasm muvaffaqiyatli yuklandi"
     }
 
-@router.get("", response_model=List[NewsResponse])
+@router.get("", response_model=NewsListResponse)
 async def get_news(
-    skip: int = 0,
-    limit: int = 50,
     category: Optional[str] = None,
     status: Optional[str] = None,
+    page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
     query = select(News).order_by(desc(News.id))
@@ -107,9 +107,15 @@ async def get_news(
         query = query.where(News.category == category)
     if status:
         query = query.where(News.status == status)
-    query = query.offset(skip).limit(limit)
-    result = await db.execute(query)
-    return result.scalars().all()
+
+    result, total = await paginate_query(db, query, page_params.page, page_params.page_size)
+    return NewsListResponse(
+        items=result.scalars().all(),
+        total=total,
+        page=page_params.page,
+        page_size=page_params.page_size,
+        total_pages=total_pages(total, page_params.page_size),
+    )
 
 @router.get("/{news_id}", response_model=NewsResponse)
 async def get_single_news(news_id: int, db: AsyncSession = Depends(get_db)):

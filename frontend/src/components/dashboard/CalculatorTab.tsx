@@ -49,10 +49,12 @@ const numberFieldStyle: CSSProperties = {
   width: '100%',
   marginTop: 6,
   padding: '8px 10px',
-  border: '1px solid #cbd5e1',
+  border: '1px solid var(--border-color)',
   borderRadius: 6,
   fontWeight: 700,
   fontSize: 15,
+  background: 'var(--bg-white)',
+  color: 'var(--text-dark)',
 }
 
 export default function CalculatorTab({ user }: Props) {

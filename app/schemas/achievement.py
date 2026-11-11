@@ -43,3 +43,6 @@ class AdminAchievementListResponse(BaseModel):
     approved_count: int
     rejected_count: int
     achievements: List[AdminAchievementResponse]
+    page: int
+    page_size: int
+    total_pages: int

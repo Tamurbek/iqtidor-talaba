@@ -10,7 +10,7 @@ interface Props {
 function StatusBadge({ status }: { status: string }) {
   if (status === 'approved') {
     return (
-      <span style={{ background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         <span>Tavsiya etildi</span>
       </span>
@@ -18,14 +18,14 @@ function StatusBadge({ status }: { status: string }) {
   }
   if (status === 'rejected') {
     return (
-      <span style={{ background: '#fef2f2', color: '#dc2626', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+      <span style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         <span>Rad etilgan</span>
       </span>
     )
   }
   return (
-    <span style={{ background: 'var(--bg-white)7ed', color: '#ea580c', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+    <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
       <span>Ko'rib chiqilmoqda</span>
     </span>
@@ -48,7 +48,7 @@ export default function ApplicationsTab({ applications, loading, error, onGoToCo
             <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginTop: 3 }}>Arizalaringizning ekspert komissiyasi tomonidan ko'rib chiqilish holati</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-heading)', background: '#eff6ff', padding: '6px 14px', borderRadius: 20 }}>Jami {applications.length} ta ariza</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--badge-info-text)', background: 'var(--badge-info-bg)', padding: '6px 14px', borderRadius: 20 }}>Jami {applications.length} ta ariza</span>
             <button onClick={onGoToContests} style={{ background: '#f2721c', color: '#ffffff', border: 'none', padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -60,7 +60,7 @@ export default function ApplicationsTab({ applications, loading, error, onGoToCo
         </div>
 
         {error && (
-          <div style={{ padding: 14, borderRadius: 10, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', fontSize: 13.5, marginBottom: 16 }}>{error}</div>
+          <div style={{ padding: 14, borderRadius: 10, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', fontSize: 13.5, marginBottom: 16 }}>{error}</div>
         )}
 
         <div style={{ overflowX: 'auto' }}>
@@ -86,7 +86,7 @@ export default function ApplicationsTab({ applications, loading, error, onGoToCo
                     <td style={{ padding: '14px 18px', color: 'var(--text-muted)', fontSize: 13 }}>
                       {app.created_at ? new Date(app.created_at).toLocaleDateString('uz-UZ') : ''}
                     </td>
-                    <td style={{ padding: '14px 18px', fontWeight: 700, color: '#059669' }}>{app.portfolio_score} ball</td>
+                    <td style={{ padding: '14px 18px', fontWeight: 700, color: 'var(--badge-success-text)' }}>{app.portfolio_score} ball</td>
                     <td style={{ padding: '14px 18px', color: 'var(--text-table-header)', fontSize: 13 }}>
                       {app.decision_note || "1-bosqich saralashida ko'rib chiqilmoqda"}
                     </td>

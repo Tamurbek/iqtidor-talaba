@@ -99,9 +99,9 @@ export default function UploadTab({ onUploaded }: Props) {
               fontSize: 14,
               marginBottom: 20,
               fontWeight: 500,
-              background: feedback.type === 'success' ? '#ecfdf5' : '#fef2f2',
-              color: feedback.type === 'success' ? '#059669' : '#dc2626',
-              border: `1px solid ${feedback.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+              background: feedback.type === 'success' ? 'var(--badge-success-bg)' : 'var(--badge-danger-bg)',
+              color: feedback.type === 'success' ? 'var(--badge-success-text)' : 'var(--badge-danger-text)',
+              border: `1px solid ${feedback.type === 'success' ? 'var(--badge-success-text)' : 'var(--badge-danger-border)'}`,
             }}
           >
             {feedback.message}
@@ -185,7 +185,7 @@ export default function UploadTab({ onUploaded }: Props) {
               accept=".pdf,.png,.jpg,.jpeg"
               required
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              style={{ width: '100%', fontSize: 14, padding: 8, border: '1px dashed var(--text-light)', borderRadius: 8, background: 'var(--bg-light)', color: '#0f172a' }}
+              style={{ width: '100%', fontSize: 14, padding: 8, border: '1px dashed var(--text-light)', borderRadius: 8, background: 'var(--bg-light)', color: 'var(--text-dark)' }}
             />
           </div>
 

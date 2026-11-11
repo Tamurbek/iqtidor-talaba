@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
 
+from app.schemas.pagination import PaginatedResponse
+
 class NewsBase(BaseModel):
     title: str
     slug: Optional[str] = None
@@ -18,6 +20,9 @@ class NewsResponse(NewsBase):
 
     class Config:
         from_attributes = True
+
+class NewsListResponse(PaginatedResponse[NewsResponse]):
+    pass
 
 class AnnouncementBase(BaseModel):
     title: str
@@ -48,3 +53,6 @@ class DocumentResponse(DocumentBase):
 
     class Config:
         from_attributes = True
+
+class DocumentListResponse(PaginatedResponse[DocumentResponse]):
+    pass

@@ -34,7 +34,7 @@ export default function GroupInfoTab({ user }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, marginBottom: 24, borderBottom: '1px solid var(--border-light)', paddingBottom: 18 }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>Guruh sardori</span>
+              <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>Guruh sardori</span>
               <span style={{ fontWeight: 800, fontSize: 13, color: 'var(--text-heading)' }}>{user.group_name} guruhi</span>
             </div>
             <h3 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text-heading)', marginTop: 8 }}>Guruhim talabalari faoliyati va monitoringi</h3>
@@ -65,7 +65,7 @@ export default function GroupInfoTab({ user }: Props) {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: '#dc2626' }}>{error}</td>
+                  <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               ) : !data || data.students.length === 0 ? (
                 <tr>
@@ -73,22 +73,22 @@ export default function GroupInfoTab({ user }: Props) {
                 </tr>
               ) : (
                 data.students.map((s) => (
-                  <tr key={s.id} style={{ borderBottom: '1px solid var(--border-light)', background: s.is_starosta ? '#fffbeb' : undefined }}>
+                  <tr key={s.id} style={{ borderBottom: '1px solid var(--border-light)', background: s.is_starosta ? 'var(--badge-warning-bg)' : undefined }}>
                     <td style={{ padding: '14px 18px' }}>
                       <div style={{ fontWeight: 700, color: 'var(--text-heading)' }}>
                         {s.full_name}
                         {s.is_starosta && (
-                          <span style={{ background: '#fef3c7', color: '#b45309', padding: '2px 8px', borderRadius: 12, fontSize: 11, marginLeft: 6, fontWeight: 700 }}>Guruh sardori</span>
+                          <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', padding: '2px 8px', borderRadius: 12, fontSize: 11, marginLeft: 6, fontWeight: 700 }}>Guruh sardori</span>
                         )}
                       </div>
                     </td>
                     <td style={{ padding: '14px 18px', fontFamily: 'monospace', fontSize: 13, color: 'var(--text-muted)' }}>{s.hemis_id}</td>
                     <td style={{ padding: '14px 18px', textAlign: 'center', fontWeight: 700, color: 'var(--text-dark)' }}>{s.avg_gpa.toFixed(2)}</td>
                     <td style={{ padding: '14px 18px', textAlign: 'center' }}>
-                      <span style={{ background: '#ecfdf5', color: '#059669', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>{s.approved_achievements} ta</span>
+                      <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>{s.approved_achievements} ta</span>
                     </td>
                     <td style={{ padding: '14px 18px', textAlign: 'center', fontWeight: 800, color: 'var(--text-heading)' }}>{s.portfolio_points} ball</td>
-                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 600, color: '#0284c7' }}>
+                    <td style={{ padding: '14px 18px', textAlign: 'right', fontWeight: 600, color: 'var(--badge-info-text)' }}>
                       {s.contests_applied > 0 ? (
                         `${s.contests_applied} ta ariza topshirgan`
                       ) : (

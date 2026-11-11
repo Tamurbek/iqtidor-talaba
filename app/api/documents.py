@@ -10,8 +10,9 @@ from pydantic import BaseModel
 from app.core.database import get_db
 from app.models.document import Document
 from app.models.user import User
-from app.schemas.content import DocumentResponse
+from app.schemas.content import DocumentResponse, DocumentListResponse
 from app.api.deps import get_current_admin
+from app.core.pagination import PageParams, paginate_query, total_pages
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -41,10 +42,17 @@ class DocumentUpdate(BaseModel):
     published_date: Optional[str] = None
 
 
-@router.get("", response_model=List[DocumentResponse])
-async def get_documents(db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Document).order_by(desc(Document.id)))
-    return result.scalars().all()
+@router.get("", response_model=DocumentListResponse)
+async def get_documents(page_params: PageParams = Depends(), db: AsyncSession = Depends(get_db)):
+    query = select(Document).order_by(desc(Document.id))
+    result, total = await paginate_query(db, query, page_params.page, page_params.page_size)
+    return DocumentListResponse(
+        items=result.scalars().all(),
+        total=total,
+        page=page_params.page,
+        page_size=page_params.page_size,
+        total_pages=total_pages(total, page_params.page_size),
+    )
 
 
 @router.post("/upload-file")

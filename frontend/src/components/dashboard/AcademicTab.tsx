@@ -21,7 +21,7 @@ export default function AcademicTab({ user }: Props) {
             </h3>
             <p style={{ color: 'var(--text-muted)', fontSize: 13.5, marginTop: 3 }}>Talabaning fakultet, yo'nalish, guruh va ta'lim shakli ko'rsatkichlari</p>
           </div>
-          <span style={{ background: '#eff6ff', color: '#0284c7', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+          <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
             O'quv bo'limi
           </span>
         </div>
@@ -42,8 +42,8 @@ export default function AcademicTab({ user }: Props) {
           <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Bosqich va Guruh</div>
             <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>{user.course}-kurs ({user.group_name})</div>
-            <p style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#059669' }}></span>
+            <p style={{ fontSize: 12, color: 'var(--badge-success-text)', fontWeight: 600, marginTop: 4, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: 'var(--badge-success-text)' }}></span>
               <span>Kunduzgi ta'lim shakli</span>
             </p>
           </div>
@@ -51,7 +51,7 @@ export default function AcademicTab({ user }: Props) {
           <div style={{ background: 'var(--bg-light)', padding: 18, borderRadius: 12, border: '1px solid var(--border-color)' }}>
             <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Ta'lim turi / Moliyalashtirish shakli</div>
             <div style={{ fontWeight: 700, color: 'var(--text-dark)', fontSize: 16, marginTop: 4 }}>
-              {user.education_type || 'Bakalavr'} <span style={{ opacity: 0.35, margin: '0 4px' }}>|</span> <span style={{ color: '#059669' }}>{user.payment_form || 'Davlat granti'}</span>
+              {user.education_type || 'Bakalavr'} <span style={{ opacity: 0.35, margin: '0 4px' }}>|</span> <span style={{ color: 'var(--badge-success-text)' }}>{user.payment_form || 'Davlat granti'}</span>
             </div>
             <p style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>Byudjet mablag'lari hisobidan</p>
           </div>
@@ -69,12 +69,12 @@ export default function AcademicTab({ user }: Props) {
           </div>
         </div>
 
-        <div style={{ marginTop: 24, padding: 20, borderRadius: 14, background: '#f0fdf4', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
+        <div style={{ marginTop: 24, padding: 20, borderRadius: 14, background: 'var(--badge-success-bg)', border: '1px solid var(--badge-success-text)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#166534' }}>Akademik qarzdorlik mavjud emas</div>
-            <div style={{ fontSize: 12.5, color: '#15803d', marginTop: 2 }}>Barcha o'quv modullari va kredit-modul (ECTS) talablari muvaffaqiyatli bajarilgan. "Iqtidor" tanloviga to'liq tavsiya etiladi.</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--badge-success-text)' }}>Akademik qarzdorlik mavjud emas</div>
+            <div style={{ fontSize: 12.5, color: 'var(--badge-success-text)', marginTop: 2 }}>Barcha o'quv modullari va kredit-modul (ECTS) talablari muvaffaqiyatli bajarilgan. "Iqtidor" tanloviga to'liq tavsiya etiladi.</div>
           </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#15803d', background: 'var(--bg-white)', padding: '6px 14px', borderRadius: 20, border: '1px solid #86efac', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--badge-success-text)', background: 'var(--bg-white)', padding: '6px 14px', borderRadius: 20, border: '1px solid var(--badge-success-text)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>ECTS 100%</span>
           </span>
@@ -96,12 +96,12 @@ export default function AcademicTab({ user }: Props) {
               <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 3 }}>Talabaning ilmiy-tadqiqot faoliyatini muvofiqlashtiruvchi mas'ul professor-o'qituvchi</p>
             </div>
             {hasSupervisor ? (
-              <span style={{ background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', border: '1px solid var(--badge-success-text)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 <span>Biriktirilgan</span>
               </span>
             ) : (
-              <span style={{ background: 'var(--bg-white)beb', color: '#d97706', border: '1px solid #fde68a', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
+              <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', border: '1px solid var(--badge-warning-border)', padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700 }}>
                 Biriktirilmagan
               </span>
             )}
@@ -113,7 +113,7 @@ export default function AcademicTab({ user }: Props) {
                 <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
                   <div style={{ color: 'var(--text-muted)', fontSize: 12, fontWeight: 600 }}>Ilmiy rahbar (F.I.O.)</div>
                   <div style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: 16, marginTop: 4 }}>{user.supervisor_name}</div>
-                  <p style={{ fontSize: 12, color: '#0284c7', fontWeight: 600, marginTop: 2 }}>{user.supervisor_degree || "Professor-o'qituvchi"}</p>
+                  <p style={{ fontSize: 12, color: 'var(--badge-info-text)', fontWeight: 600, marginTop: 2 }}>{user.supervisor_degree || "Professor-o'qituvchi"}</p>
                 </div>
 
                 <div style={{ background: 'var(--bg-light)', padding: 16, borderRadius: 12, border: '1px solid var(--border-color)' }}>
@@ -123,16 +123,16 @@ export default function AcademicTab({ user }: Props) {
                 </div>
               </div>
 
-              <div style={{ marginTop: 16, background: '#f0f7ff', padding: 18, borderRadius: 12, border: '1px solid #bae6fd' }}>
-                <div style={{ color: '#0369a1', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Tasdiqlangan ilmiy-tadqiqot mavzusi:</div>
-                <div style={{ fontWeight: 800, color: '#072950', fontSize: 15, marginTop: 6, lineHeight: 1.5 }}>
+              <div style={{ marginTop: 16, background: 'var(--badge-info-bg)', padding: 18, borderRadius: 12, border: '1px solid var(--badge-info-text)' }}>
+                <div style={{ color: 'var(--badge-info-text)', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Tasdiqlangan ilmiy-tadqiqot mavzusi:</div>
+                <div style={{ fontWeight: 800, color: 'var(--text-heading)', fontSize: 15, marginTop: 6, lineHeight: 1.5 }}>
                   "{user.research_topic || 'Ilmiy-tadqiqot mavzusi tasdiqlanish arafasida'}"
                 </div>
               </div>
             </>
           ) : (
-            <div style={{ background: 'var(--bg-light)', border: '1px dashed #cbd5e1', borderRadius: 12, padding: 24, textAlign: 'center' }}>
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
+            <div style={{ background: 'var(--bg-light)', border: '1px dashed var(--border-color)', borderRadius: 12, padding: 24, textAlign: 'center' }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--text-light)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 10px' }}>
                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="8.5" cy="7" r="4"></circle>
                 <line x1="20" y1="8" x2="20" y2="14"></line>

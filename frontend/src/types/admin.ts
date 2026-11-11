@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from './pagination'
+
 export type AdminTabKey =
   | 'moderation'
   | 'contests-monitoring'
@@ -39,6 +41,9 @@ export interface AdminAchievementListResponse {
   approved_count: number
   rejected_count: number
   achievements: AdminAchievement[]
+  page: number
+  page_size: number
+  total_pages: number
 }
 
 // app/services/ranking.py -> compute_ranking()
@@ -73,6 +78,10 @@ export interface RankingItem {
 export interface RankingResponse {
   success: boolean
   ranking: RankingItem[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
 }
 
 // GET /roles
@@ -162,6 +171,9 @@ export interface UsersListResponse {
   success: boolean
   total: number
   users: AdminUser[]
+  page: number
+  page_size: number
+  total_pages: number
 }
 
 // GET /users/supervisors/list
@@ -203,6 +215,8 @@ export interface IncomingSupervisorRequest {
   research_topic: string | null
   requested_at: string
 }
+
+export interface IncomingSupervisorRequestListResponse extends PaginatedResponse<IncomingSupervisorRequest> {}
 
 export interface MessageResponse {
   success?: boolean

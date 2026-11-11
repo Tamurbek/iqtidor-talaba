@@ -19,6 +19,22 @@
   --text-heading: #0b3b70;
   --text-secondary: #334155;
   --text-table-header: #475569;
+  --badge-info-bg: #e0f2fe;
+  --badge-info-text: #0369a1;
+  --badge-success-bg: #ecfdf5;
+  --badge-success-text: #059669;
+  --badge-danger-bg: #fef2f2;
+  --badge-danger-text: #dc2626;
+  --badge-danger-border: #fecaca;
+  --badge-warning-bg: #fffbeb;
+  --badge-warning-text: #b45309;
+  --badge-warning-border: #fde68a;
+  --badge-purple-bg: #fdf4ff;
+  --badge-purple-text: #7e22ce;
+  --badge-purple-border: #f3d4fa;
+  --badge-bronze-bg: #ffedd5;
+  --badge-bronze-text: #c2410c;
+  --badge-bronze-border: #fed7aa;
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 20px;
@@ -1755,14 +1771,10 @@ select {
   background: transparent;
   padding: 4px 6px;
   border-radius: 10px;
-  cursor: default;
-}
-
-.role-switcher-trigger.is-clickable {
   cursor: pointer;
 }
 
-.role-switcher-trigger.is-clickable:hover {
+.role-switcher-trigger:hover {
   background: #f1f5f9;
 }
 
@@ -1815,6 +1827,14 @@ select {
   padding: 0 2px;
 }
 
+.role-switcher-section-title-spaced {
+  margin-top: 12px;
+}
+
+.role-switcher-current {
+  cursor: default;
+}
+
 .role-switcher-list {
   list-style: none;
   margin: 0;
@@ -1828,11 +1848,10 @@ select {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 9px 10px;
+  gap: 10px;
+  padding: 8px 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: #1e293b;
   font-size: 13px;
@@ -1846,21 +1865,65 @@ select {
   background: #f1f5f9;
 }
 
+.role-switcher-item-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #64748b;
+}
+
+.role-switcher-item-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.role-switcher-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-switcher-item-status {
+  font-size: 11px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.role-switcher-item-dot {
+  flex-shrink: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
 .role-switcher-item.active {
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: #334155;
+  color: #ffffff;
 }
 
-.role-switcher-badge {
-  font-size: 10px;
-  font-weight: 700;
-  color: #16a34a;
-  background: #dcfce7;
-  border-radius: 999px;
-  padding: 2px 8px;
+.role-switcher-item.active .role-switcher-item-icon {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
 }
 
-:root[data-theme='dark'] .role-switcher-trigger.is-clickable:hover {
+.role-switcher-item.active .role-switcher-item-status {
+  color: #cbd5e1;
+}
+
+.role-switcher-item.active .role-switcher-item-dot {
+  background: #cbd5e1;
+}
+
+:root[data-theme='dark'] .role-switcher-trigger:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
@@ -1885,9 +1948,14 @@ select {
   background: rgba(255, 255, 255, 0.06);
 }
 
+:root[data-theme='dark'] .role-switcher-item-icon {
+  background: rgba(255, 255, 255, 0.08);
+  color: #cbd5e1;
+}
+
 :root[data-theme='dark'] .role-switcher-item.active {
-  background: rgba(59, 130, 246, 0.15);
-  color: #93c5fd;
+  background: #475569;
+  color: #ffffff;
 }
 
 .cabinet-topbar-logout:hover {
@@ -2096,6 +2164,22 @@ select {
   --text-heading: #93c5fd;
   --text-secondary: #cbd5e1;
   --text-table-header: #94a3b8;
+  --badge-info-bg: #0c3a5c;
+  --badge-info-text: #7dd3fc;
+  --badge-success-bg: #0b3a2e;
+  --badge-success-text: #34d399;
+  --badge-danger-bg: #3f1d1d;
+  --badge-danger-text: #f87171;
+  --badge-danger-border: #5c2626;
+  --badge-warning-bg: #3f2d0c;
+  --badge-warning-text: #fbbf24;
+  --badge-warning-border: #5c4a16;
+  --badge-purple-bg: #3a1d4a;
+  --badge-purple-text: #d8b4fe;
+  --badge-purple-border: #5b2d73;
+  --badge-bronze-bg: #3f2a14;
+  --badge-bronze-text: #fb923c;
+  --badge-bronze-border: #5c3c1d;
 }
 
 :root[data-theme='dark'] body {

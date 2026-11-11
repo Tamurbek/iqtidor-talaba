@@ -25,7 +25,7 @@ export default function PressPage() {
                   </svg> 6-noyabr, 2024
                 </div>
                 <h3 className="press-item-title">Talant shou: talabalar o'rtasida iste'dodlar bellashuvi</h3>
-                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
                   Kuz-qish mavsumi saralash bosqichida filial iqtidorli talabalari sahna ko'rinishlari,
                   kuy-qo'shiq va raqs mahoratini namoyish etishdi.
                 </p>
@@ -45,7 +45,7 @@ export default function PressPage() {
                   </svg> 13-oktabr, 2024
                 </div>
                 <h3 className="press-item-title">Talaba-yoshlar hayotiga bog'liq media loyihalar tanlovi</h3>
-                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
                   Media sohasida ijod qilayotgan talabalar uchun zamonaviy kontent yaratish bo'yicha amaliy
                   seminar va tanlov o'tkazildi.
                 </p>
@@ -65,7 +65,7 @@ export default function PressPage() {
                   </svg> 13-sentabr, 2024
                 </div>
                 <h3 className="press-item-title">Ijodiy startaplar va innovatsion loyihalar tanlovi</h3>
-                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
                   Talabalarning innovatsion g'oyalari va startap loyihalarini moliyalashtirish hamda
                   amaliyotga tatbiq etish imkoniyati.
                 </p>
@@ -85,7 +85,7 @@ export default function PressPage() {
                   </svg> 5-sentabr, 2024
                 </div>
                 <h3 className="press-item-title">QVZ - Quvnoqlar va zukkolar yangi mavsumiga start berildi</h3>
-                <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
                   Filial fakultetlararo talabalar ligasi o'yinlari uchun arizalar qabuli e'lon qilindi.
                 </p>
               </div>
