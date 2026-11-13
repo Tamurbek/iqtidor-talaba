@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import engine, AsyncSessionLocal
+from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services.seed_data import seed_initial_data, seed_roles_and_permissions
 from app.api import api_router
 
@@ -44,9 +45,12 @@ async def lifespan(app: FastAPI):
             logger.info("Database initialized. Demo data seeding skipped (SEED_DEMO_DATA is not set).")
     except Exception as e:
         logger.error(f"Database initialization warning: {e}. (Will retry on queries or when DB service is fully up)")
-    
+
+    start_scheduler()
+
     yield
     # Shutdown
+    shutdown_scheduler()
     await engine.dispose()
     logger.info("Database connections closed.")
 
