@@ -16,6 +16,7 @@ import CalculatorTab from '../components/dashboard/CalculatorTab'
 import ExamTab from '../components/dashboard/ExamTab'
 import GroupInfoTab from '../components/dashboard/GroupInfoTab'
 import SupervisorTab from '../components/dashboard/SupervisorTab'
+import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
 import type { Achievement, Application, ExamStatus, MeResponse, StudentTabKey } from '../types/dashboard'
 import { extractErrorMessage } from '../types/dashboard'
 import { isStaffRole } from '../utils/roles'
@@ -32,6 +33,7 @@ const VALID_TABS: StudentTabKey[] = [
   'upload',
   'calculator',
   'supervisor',
+  'development-plan',
 ]
 
 const TAB_TITLES: Record<StudentTabKey, string> = {
@@ -46,6 +48,7 @@ const TAB_TITLES: Record<StudentTabKey, string> = {
   upload: 'Yutuq / Hujjat yuklash',
   calculator: 'Nizom 100 ball kalkulyatori',
   supervisor: 'Ilmiy rahbar',
+  'development-plan': 'Individual rivojlanish rejasi',
 }
 
 export default function DashboardPage() {
@@ -201,6 +204,7 @@ export default function DashboardPage() {
         )}
         {activeTab === 'academic' && <AcademicTab user={currentUser} />}
         {activeTab === 'supervisor' && <SupervisorTab user={currentUser} />}
+        {activeTab === 'development-plan' && <DevelopmentPlanTab user={currentUser} mode="student" />}
         {activeTab === 'rating' && (
           <RatingTab
             user={currentUser}

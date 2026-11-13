@@ -29,6 +29,7 @@ import DocumentsTab from '../components/admin/DocumentsTab'
 import ProfileTab from '../components/admin/ProfileTab'
 import SupervisorTab from '../components/dashboard/SupervisorTab'
 import TutorTab from '../components/dashboard/TutorTab'
+import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
@@ -412,7 +413,10 @@ export default function AdminDashboardPage() {
             />
           )}
           {activeTab === 'supervisor-requests' && (
-            <SupervisorTab user={currentUser} hideSelfRequest />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <SupervisorTab user={currentUser} hideSelfRequest />
+              <DevelopmentPlanTab user={currentUser} mode="supervisor" />
+            </div>
           )}
           {activeTab === 'tutor-students' && (
             <TutorTab user={currentUser} />

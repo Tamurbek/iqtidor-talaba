@@ -163,6 +163,36 @@ export type StudentTabKey =
   | 'upload'
   | 'calculator'
   | 'supervisor'
+  | 'development-plan'
+
+// app/schemas/development_plan.py
+export interface DevelopmentTask {
+  title: string
+  deadline?: string | null
+  status: string
+  result_note?: string | null
+}
+
+// GET /development-plans/me, GET /development-plans/{student_id}
+export interface DevelopmentPlan {
+  id: number
+  student_id: number
+  supervisor_id: number
+  goal: string
+  tasks: DevelopmentTask[]
+  start_date?: string | null
+  end_date?: string | null
+  status: 'draft' | 'active' | 'completed' | string
+  created_at: string
+  updated_at?: string | null
+}
+
+// GET /development-plans (rahbar uchun, talaba ma'lumotlari bilan)
+export interface DevelopmentPlanWithStudent extends DevelopmentPlan {
+  student_name: string
+  student_hemis_id?: string | null
+  student_group_name?: string | null
+}
 
 // app/services/ranking.py -> compute_achievement_points() bilan bir xil mantiq:
 // faqat hujjat biriktirilgan va tasdiqlangan yutuqlar, har bir indikator o'z cap'i bilan.

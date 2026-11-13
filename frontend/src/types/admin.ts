@@ -219,6 +219,18 @@ export interface IncomingSupervisorRequest {
 
 export interface IncomingSupervisorRequestListResponse extends PaginatedResponse<IncomingSupervisorRequest> {}
 
+// GET /tutor/students
+export interface TutorStudent {
+  id: number
+  hemis_id: string
+  full_name: string
+  faculty: string | null
+  direction: string | null
+  group_name: string | null
+  course: number | null
+  assigned_at: string
+}
+
 export interface MessageResponse {
   success?: boolean
   message?: string

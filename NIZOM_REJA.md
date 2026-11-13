@@ -7,14 +7,14 @@
 
 ## BOSQICH 0 — Tutor roli funksionalligi (qisman tayyor → tugallash)
 **Nizom:** 24-modda, 17-modda
-**Holat:** [ ] Qisman tugallandi — 2026-11-13 (0.1, 0.2, 0.4, 0.5 bajarildi; 0.3 ataylab BOSQICH 2'dan keyinga qoldirildi)
+**Holat:** [x] Tugallandi — 2026-11-13 (0.1-0.5 barchasi bajarildi)
 
 Hozir: `app/models/role.py` da `code="tutor"` roli bor (yoki `ROLE_LABELS` da nom bor), lekin unga tegishli hech qanday endpoint/sahifa yo'q.
 
 - [x] 0.1. `app/models/user.py` dagi `ROLE_LABELS`/role kodlarini tekshirib, "tutor" kodi borligini tasdiqlash — `ROLE_CODE_TO_NAME["tutor"] = "Tyutor"` (app/models/user.py:16) mavjud ekanligi tasdiqlandi.
 - [x] 0.2. Backend: `app/api/deps.py` ga `require_tutor` yoki umumiy rol tekshiruvchi dependency qo'shish — `get_current_tutor()` qo'shildi (app/api/deps.py).
-- [ ] 0.3. Backend: tutorga biriktirilgan talabalar ro'yxatini qaytaruvchi endpoint (`GET /api/tutor/students`) — `supervisor_requests`dagi kabi, lekin tyutor-talaba bog'lanishi uchun yangi jadval kerak (bu BOSQICH 2 bilan bog'liq, shu sababli BOSQICH 2 dan keyin davom ettirish mumkin)
-- [x] 0.4. Frontend: `frontend/src/components/dashboard/` ichida `TutorTab.tsx` yaratildi — hozircha bo'sh holat (placeholder), chunki 0.3 backend endpointi hali yo'q. 0.3 bajarilgach shu komponentga talabalar ro'yxati/davomat UI qo'shiladi.
+- [x] 0.3. Backend: tutorga biriktirilgan talabalar ro'yxatini qaytaruvchi endpoint — `app/models/tutor_assignment.py` (yangi `tutor_assignments` jadvali, migratsiya `e5f6a7b8c9d0`), `app/api/tutor.py`: `GET /api/v1/tutor/students` (tyutor o'zinikini ko'radi) va `POST /api/v1/tutor/assign/{student_id}` (admin biriktiradi, notification yuboriladi).
+- [x] 0.4. Frontend: `TutorTab.tsx` yangilandi — endi `GET /tutor/students`ni chaqirib, biriktirilgan talabalar ro'yxatini ko'rsatadi (placeholder olib tashlandi).
 - [x] 0.5. Sidebar/nav: `AdminSidebar.tsx` ga "Mening talabalarim" (`tutor-students`) menyu punkti, `utils/roles.ts` ga `canViewTutorStudents` capability, `types/admin.ts` ga `AdminTabKey` qo'shildi; `AdminDashboardPage.tsx` da ulandi.
 
 ---
@@ -37,20 +37,23 @@ Eng ko'p keyingi bosqichlar shunga tayanadi (uchrashuv eslatmasi, reja muddati e
 
 ## BOSQICH 2 — Individual rivojlanish rejasi
 **Nizom:** 7.3, 16.2, 23.4-modda
-**Holat:** [ ] Boshlanmagan
+**Holat:** [x] Tugallandi — 2026-11-13
 
-- [ ] 2.1. `app/models/development_plan.py` yaratish: `id, student_id, supervisor_id, goal, tasks (JSON yoki alohida jadval), start_date, end_date, status (draft/active/completed), created_at, updated_at`
-- [ ] 2.2. (ixtiyoriy, agar vazifalarni alohida kuzatish kerak bo'lsa) `app/models/development_task.py`: `id, plan_id, title, deadline, status, result_note`
-- [ ] 2.3. Migratsiya yozish
-- [ ] 2.4. `app/schemas/development_plan.py`
-- [ ] 2.5. `app/api/development_plans.py`:
-  - `POST /api/development-plans` — talaba yoki rahbar yaratadi
-  - `GET /api/development-plans/me` — talaba o'zinikini ko'radi
-  - `GET /api/development-plans/{student_id}` — rahbar o'z talabasinikini ko'radi
-  - `PATCH /api/development-plans/{id}` — rahbar tasdiqlaydi/o'zgartiradi (16.1-16.4)
-- [ ] 2.6. Reja yaratilganda/yangilanganda BOSQICH 1 notification chaqirish
-- [ ] 2.7. Frontend: `SupervisorTab.tsx` ichiga yoki yangi `DevelopmentPlanTab.tsx` ga reja ko'rish/tahrirlash UI qo'shish (talaba tomoni)
-- [ ] 2.8. Frontend: professor/rahbar kabineti uchun reja tasdiqlash UI (hozircha professor paneli bo'lmasa, shuni ham shu bosqichda loyihalash)
+- [x] 2.1. `app/models/development_plan.py` yaratildi: `id, student_id, supervisor_id, goal, tasks (JSON), start_date, end_date, status (draft/active/completed), created_at, updated_at`
+- [x] 2.2. (ixtiyoriy) — alohida `development_task` jadvali kerak emas deb topildi; vazifalar `tasks` JSON ustunida `{title, deadline, status, result_note}` ro'yxati sifatida saqlanadi (`app/schemas/development_plan.py:DevelopmentTaskItem`).
+- [x] 2.3. Migratsiya yozildi: `migrations/versions/d4e5f6a7b8c9_development_plans.py` (head = c3d4e5f6a7b8 ustiga)
+- [x] 2.4. `app/schemas/development_plan.py` yaratildi (`DevelopmentPlanCreate`, `DevelopmentPlanUpdate`, `DevelopmentPlanResponse`, `DevelopmentPlanWithStudent`)
+- [x] 2.5. `app/api/development_plans.py` (prefiks `/api/v1`, loyihadagi boshqa barcha endpointlar kabi):
+  - `POST /api/v1/development-plans` — talaba yoki rahbar yaratadi
+  - `GET /api/v1/development-plans/me` — talaba o'zinikini ko'radi
+  - `GET /api/v1/development-plans` — rahbar o'ziga biriktirilgan barcha talabalarning rejalarini ko'radi (sahifalangan, talaba ismi bilan)
+  - `GET /api/v1/development-plans/{student_id}` — rahbar (yoki admin) o'z talabasinikini ko'radi
+  - `PATCH /api/v1/development-plans/{id}` — rahbar (yoki admin) tasdiqlaydi/o'zgartiradi (16.1-16.4)
+- [x] 2.6. Reja yaratilganda/yangilanganda `app/services/notifications.py:notify()` chaqiriladi (talaba yaratsa -> rahbarga, rahbar yangilasa -> talabaga)
+- [x] 2.7. Frontend: yangi `DevelopmentPlanTab.tsx` yaratildi — talaba tomoni (reja yaratish formasi, vazifalar ro'yxati, tarix), `DashboardPage.tsx`da `development-plan` tab + `CabinetSidebar.tsx`da menyu punkti sifatida ulandi.
+- [x] 2.8. Frontend: professor/rahbar kabineti uchun reja tasdiqlash UI — `DevelopmentPlanTab.tsx`ga `mode="supervisor"` qo'shildi, `AdminDashboardPage.tsx`da `supervisor-requests` tab ichida `SupervisorTab` bilan birga ko'rsatiladi (tasdiqlash/yakunlash tugmalari).
+
+Backend to'liq qo'lda sinaldi (login -> POST -> GET/me -> notify -> PATCH approve -> notify), barcha qadamlar 200 OK qaytardi; test yozuvlari keyin tozalandi.
 
 ---
 
