@@ -61,6 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false)
   }, [])
 
+  useEffect(() => {
+    // Token muddati tugab, backend 401 qaytarganda (client.ts) login sahifasiga
+    // qayta yo'naltirish uchun currentUser'ni tozalaymiz (ProtectedRoute Navigate qiladi).
+    const handleUnauthorized = () => {
+      setCurrentUser(null)
+      setActiveRoleState(null)
+    }
+    window.addEventListener('auth:unauthorized', handleUnauthorized)
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized)
+  }, [])
+
   const setActiveRole = useCallback((roleCode: string) => {
     localStorage.setItem(ACTIVE_ROLE_KEY, roleCode)
     setActiveRoleState(roleCode)

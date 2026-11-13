@@ -89,6 +89,17 @@ async def get_current_student(
         )
     return current_user
 
+async def get_current_tutor(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """Faqat Tyutor (Nizom 17, 24-modda: biriktirilgan talabalar bilan ishlash)."""
+    if not current_user.has_role("tutor"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Ushbu amal faqat tyutor uchun mavjud"
+        )
+    return current_user
+
 def require_permission(perm_code: str):
     """TTZ 3.2 RBAC matritsasiga mos keladigan dinamik ruxsat tekshiruvi.
 

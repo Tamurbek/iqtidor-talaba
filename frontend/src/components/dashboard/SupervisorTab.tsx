@@ -150,8 +150,16 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     return <div style={cardStyle}>Yuklanmoqda...</div>
   }
 
+  const isEmpty = hideSelfRequest && incoming.length === 0 && !error
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {isEmpty && (
+        <div style={{ ...cardStyle, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14, padding: 40 }}>
+          Hozircha ilmiy rahbarlik so'rovlari mavjud emas
+        </div>
+      )}
+
       {incoming.length > 0 && (
         <div style={cardStyle}>
           <h3 style={{ margin: '0 0 12px', fontSize: 16, color: 'var(--text-heading)' }}>Kiruvchi so'rovlar (ilmiy rahbarlikka)</h3>

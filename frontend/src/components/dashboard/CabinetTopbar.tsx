@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { RoleAssignment } from '../../types/user'
+import NotificationBell from './NotificationBell'
 
 interface Props {
   title: string
@@ -63,6 +64,8 @@ export default function CabinetTopbar({
       </div>
 
       <div className="cabinet-topbar-right">
+        <NotificationBell />
+
         <div className="role-switcher" ref={wrapperRef}>
           <button
             type="button"

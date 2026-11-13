@@ -112,8 +112,10 @@ export default function ApplicationsReviewTab({ applications, loading, error, pa
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{formatDate(app.created_at)}</div>
                     </td>
                     <td style={tdStyle}>
-                      <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600 }}>GPA: {app.gpa}</span>
-                      <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, marginLeft: 4 }}>{app.social_points} ball</span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                        <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>GPA: {app.gpa}</span>
+                        <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>{app.social_points} ball</span>
+                      </div>
                     </td>
                     <td style={tdStyle}>
                       <span style={{ fontWeight: 800, color: 'var(--badge-success-text)', fontSize: 15 }}>{app.portfolio_score} ball</span>

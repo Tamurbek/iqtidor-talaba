@@ -28,6 +28,7 @@ import UsersTab from '../components/admin/UsersTab'
 import DocumentsTab from '../components/admin/DocumentsTab'
 import ProfileTab from '../components/admin/ProfileTab'
 import SupervisorTab from '../components/dashboard/SupervisorTab'
+import TutorTab from '../components/dashboard/TutorTab'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
@@ -42,6 +43,7 @@ const VALID_TABS: AdminTabKey[] = [
   'add-document',
   'users-management',
   'supervisor-requests',
+  'tutor-students',
   'profile-security',
 ]
 
@@ -56,6 +58,7 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'add-document': "Me'yoriy hujjatlar",
   'users-management': 'Foydalanuvchilar',
   'supervisor-requests': "Ilmiy rahbarlik so'rovlari",
+  'tutor-students': 'Mening talabalarim',
   'profile-security': 'Mening profilim & Parol',
 }
 
@@ -95,6 +98,7 @@ export default function AdminDashboardPage() {
   }
   if (caps.canManageUsers) visibleTabs.add('users-management')
   if (caps.canManageSupervisorRequests) visibleTabs.add('supervisor-requests')
+  if (caps.canViewTutorStudents) visibleTabs.add('tutor-students')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
     const fromHash = tabFromHash()
@@ -409,6 +413,9 @@ export default function AdminDashboardPage() {
           )}
           {activeTab === 'supervisor-requests' && (
             <SupervisorTab user={currentUser} hideSelfRequest />
+          )}
+          {activeTab === 'tutor-students' && (
+            <TutorTab user={currentUser} />
           )}
           {activeTab === 'profile-security' && (
             <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />

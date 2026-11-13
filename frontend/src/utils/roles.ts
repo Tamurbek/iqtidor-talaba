@@ -25,6 +25,7 @@ export interface AdminCapabilities {
   canManageUsers: boolean
   canManageContent: boolean
   canManageSupervisorRequests: boolean
+  canViewTutorStudents: boolean
 }
 
 /** seed_data.py role_definitions'dagi permissions ro'yxatiga mos keladigan tab huquqlari. */
@@ -46,5 +47,6 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
     canManageUsers: deptHead,
     canManageContent: deptHead,
     canManageSupervisorRequests: deptHead || role === 'supervisor',
+    canViewTutorStudents: deptHead || role === 'tutor',
   }
 }

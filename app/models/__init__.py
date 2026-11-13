@@ -9,10 +9,11 @@ from app.models.application import ContestApplication
 from app.models.club import ScientificClub, ClubMembership
 from app.models.exam import StudentExamResult
 from app.models.supervisor_request import SupervisorRequest
+from app.models.notification import Notification
 
 __all__ = [
     "Base", "User", "Role", "Permission", "role_permissions", "user_roles",
     "News", "Announcement", "Document", "StudentAchievement",
     "ContestApplication", "ScientificClub", "ClubMembership", "StudentExamResult",
-    "SupervisorRequest"
+    "SupervisorRequest", "Notification"
 ]

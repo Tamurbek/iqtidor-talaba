@@ -11,6 +11,7 @@ export type AdminTabKey =
   | 'users-management'
   | 'add-document'
   | 'supervisor-requests'
+  | 'tutor-students'
   | 'profile-security'
 
 // StudentAchievement modeli (app/models/achievement.py). Admin uchun barcha yutuqlar ro'yxatini
