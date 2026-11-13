@@ -12,7 +12,46 @@ export type AdminTabKey =
   | 'add-document'
   | 'supervisor-requests'
   | 'tutor-students'
+  | 'monitoring'
   | 'profile-security'
+
+// app/schemas/monitoring.py -> GET /monitoring/students
+export interface StudentMonitoringItem {
+  id: number
+  full_name: string
+  hemis_id: string
+  faculty?: string | null
+  direction?: string | null
+  group_name?: string | null
+  course?: number | null
+  supervisor_id?: number | null
+  supervisor_name?: string | null
+  last_meeting_date?: string | null
+  days_since_last_meeting?: number | null
+  meeting_overdue: boolean
+  plan_completion_pct?: number | null
+  plan_overdue: boolean
+  activity_score: number
+  is_at_risk: boolean
+}
+
+// GET /monitoring/summary
+export interface MonitoringSummary {
+  total_students: number
+  at_risk_count: number
+  avg_activity_score: number
+  avg_plan_completion_pct: number
+  students_without_plan: number
+  generated_at: string
+}
+
+// POST /monitoring/notify-at-risk
+export interface NotifyAtRiskResponse {
+  meeting_overdue_notified: number
+  plan_overdue_notified: number
+}
+
+export type StudentMonitoringListResponse = PaginatedResponse<StudentMonitoringItem>
 
 // StudentAchievement modeli (app/models/achievement.py). Admin uchun barcha yutuqlar ro'yxatini
 // qaytaruvchi API endpoint hozircha backendda mavjud emas.

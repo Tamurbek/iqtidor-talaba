@@ -31,6 +31,7 @@ import SupervisorTab from '../components/dashboard/SupervisorTab'
 import TutorTab from '../components/dashboard/TutorTab'
 import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
 import MeetingsTab from '../components/dashboard/MeetingsTab'
+import MonitoringTab from '../components/dashboard/MonitoringTab'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
@@ -46,6 +47,7 @@ const VALID_TABS: AdminTabKey[] = [
   'users-management',
   'supervisor-requests',
   'tutor-students',
+  'monitoring',
   'profile-security',
 ]
 
@@ -61,6 +63,7 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'users-management': 'Foydalanuvchilar',
   'supervisor-requests': "Ilmiy rahbarlik so'rovlari",
   'tutor-students': 'Mening talabalarim',
+  monitoring: 'Monitoring va hisobot',
   'profile-security': 'Mening profilim & Parol',
 }
 
@@ -101,6 +104,7 @@ export default function AdminDashboardPage() {
   if (caps.canManageUsers) visibleTabs.add('users-management')
   if (caps.canManageSupervisorRequests) visibleTabs.add('supervisor-requests')
   if (caps.canViewTutorStudents) visibleTabs.add('tutor-students')
+  if (caps.canViewMonitoring) visibleTabs.add('monitoring')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
     const fromHash = tabFromHash()
@@ -426,6 +430,7 @@ export default function AdminDashboardPage() {
               <MeetingsTab user={currentUser} mode="tutor" />
             </div>
           )}
+          {activeTab === 'monitoring' && <MonitoringTab />}
           {activeTab === 'profile-security' && (
             <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />
           )}

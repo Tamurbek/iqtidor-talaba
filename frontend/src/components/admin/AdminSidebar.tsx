@@ -197,6 +197,18 @@ export default function AdminSidebar({ activeTab, counts, visibleTabs, mobileOpe
             </button>
           </li>
           )}
+          {visibleTabs.has('monitoring') && (
+          <li>
+            <button type="button" onClick={() => onSwitchTab('monitoring')} className={linkClass('monitoring')} id="admin-side-monitoring">
+              <span className="cabinet-menu-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+              </span>
+              <span>Monitoring va hisobot</span>
+            </button>
+          </li>
+          )}
           <li>
             <button type="button" onClick={() => onSwitchTab('profile-security')} className={linkClass('profile-security')} id="admin-side-profile">
               <span className="cabinet-menu-icon">

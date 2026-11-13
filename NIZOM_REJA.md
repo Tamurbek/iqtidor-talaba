@@ -80,16 +80,18 @@ Backend to'liq qo'lda sinaldi (talaba/rahbar/tyutor/admin rollari uchun create/l
 
 ## BOSQICH 4 — Monitoring va hisobot tizimi
 **Nizom:** VII bo'lim (28-32-modda), 12-modda
-**Holat:** [ ] Boshlanmagan
+**Holat:** [x] Tugallandi — 2026-11-13
 
 Bu bosqich BOSQICH 1-3 ustiga quriladi (ma'lumotlar manbai sifatida ulardan foydalanadi), shu sababli oxiriga qoldirilgan.
 
-- [ ] 4.1. Backend: `app/services/monitoring.py` — har bir talaba uchun: oxirgi uchrashuv sanasi, reja bajarilish foizi, faollik balli hisoblovchi funksiyalar
-- [ ] 4.2. Backend: "faolligi pasaygan talaba" aniqlash logikasi (masalan, 1 oydan ortiq uchrashuv yo'q yoki reja muddati o'tgan) + shunga notification yuborish
-- [ ] 4.3. `app/api/monitoring.py`: mas'ul bo'lim uchun umumlashtirilgan hisobot endpointi (`GET /api/monitoring/summary`, filterlar bilan)
-- [ ] 4.4. Oylik/semestrlik avtomatik hisobot generatsiyasi (cron yoki scheduled task — mavjud infratuzilmaga qarab, masalan APScheduler yoki oddiy on-demand endpoint)
-- [ ] 4.5. Frontend: admin panelga `MonitoringTab.tsx` — mas'ul bo'lim uchun umumiy monitoring paneli (23.9-modda)
-- [ ] 4.6. Frontend: "faolligi pasaygan talabalar" ro'yxati admin panelda ajratib ko'rsatiladi
+- [x] 4.1. Backend: `app/services/monitoring.py` yaratildi — `get_students_monitoring_data()` har bir talaba uchun oxirgi uchrashuv sanasi (`app/models/meeting.py`), individual reja bajarilish foizi (`DevelopmentPlan.tasks` JSON) va `compute_activity_score()` orqali faollik ballini hisoblaydi.
+- [x] 4.2. "Faolligi pasaygan talaba" (`is_at_risk`): 1 oydan ortiq uchrashuv yo'q (mavjud `app/services/meetings.py:find_students_without_monthly_meeting()` kengaytirilgan) YOKI reja muddati o'tgan (`end_date < now`, `status != completed`). `notify_at_risk_students()` — `notify_overdue_monthly_meetings()` + yangi `_notify_overdue_plans()` orqali talaba va rahbarga `notify()` yuboradi.
+- [x] 4.3. `app/api/monitoring.py` (prefiks `/api/v1`): `GET /monitoring/summary` (umumlashtirilgan hisobot, fakultet/kurs/yo'nalish filtri bilan), `GET /monitoring/students` (sahifalangan, `only_at_risk` filtri bilan har bir talaba bo'yicha monitoring).
+- [x] 4.4. Oylik/semestrlik hisobot: `GET /monitoring/report?period=monthly|semester` — hozircha on-demand endpoint (summary + faolligi pasaygan talabalar ro'yxati); scheduler (APScheduler/cron) ulash keyingi ishga qoldirildi. `POST /monitoring/notify-at-risk` — 4.2 bildirishnomalarini qo'lda ishga tushirish endpointi.
+- [x] 4.5. Frontend: `MonitoringTab.tsx` yaratildi — statistik kartalar (jami talaba, faolligi pasayganlar, o'rtacha faollik/reja bajarilishi), fakultet/kurs/yo'nalish filtri, "bildirishnoma yubor" tugmasi. `AdminDashboardPage.tsx`ga `monitoring` tab sifatida ulandi (faqat `canViewMonitoring` = department_head darajasi, `utils/roles.ts` va `AdminSidebar.tsx`da menyu punkti qo'shildi).
+- [x] 4.6. Frontend: jadvaldagi har bir qator `is_at_risk`ga qarab qizil fon va "Faolligi pasaygan" belgisi bilan ajratiladi; "Faqat faolligi pasaygan talabalar" checkbox orqali alohida ro'yxat sifatida ham ko'rish mumkin.
+
+Backend to'liq qo'lda sinaldi (admin sifatida: `/monitoring/summary`, `/monitoring/students` (oddiy va `only_at_risk=true`), `/monitoring/report`, `POST /monitoring/notify-at-risk`), barcha qadamlar kutilgan natijani qaytardi (1 ta faolligi pasaygan talaba to'g'ri aniqlandi va bildirishnoma yuborildi). Frontend `tsc --noEmit` xatosiz o'tdi.
 
 ---
 
