@@ -21,7 +21,9 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
   const [dept, setDept] = useState(student.supervisor_department || '')
   const [topic, setTopic] = useState(student.research_topic || '')
   const [submitting, setSubmitting] = useState(false)
+  const [removing, setRemoving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const hasExistingSupervisor = Boolean(student.supervisor_id || student.supervisor_name)
 
   useEffect(() => {
     client
@@ -65,6 +67,26 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
     } catch (err) {
       setError(extractErrorMessage(err, 'Ilmiy rahbarni biriktirishda xatolik yuz berdi'))
       setSubmitting(false)
+    }
+  }
+
+  const handleRemove = async () => {
+    if (!window.confirm(`${student.full_name} uchun ilmiy rahbar biriktirilishini bekor qilmoqchimisiz?`)) return
+    setRemoving(true)
+    setError(null)
+    try {
+      const { data } = await client.post<{ success: boolean; message?: string }>(`/users/${student.id}/assign-supervisor`, {
+        supervisor_id: null,
+        supervisor_name: '',
+        supervisor_degree: null,
+        supervisor_department: null,
+        supervisor_phone: null,
+        research_topic: '',
+      })
+      onSaved(data.message || 'Ilmiy rahbar biriktirilishi bekor qilindi')
+    } catch (err) {
+      setError(extractErrorMessage(err, "Ilmiy rahbarni bekor qilishda xatolik yuz berdi"))
+      setRemoving(false)
     }
   }
 
@@ -135,9 +157,15 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
             <textarea id="supInputTopic" rows={3} required value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Masalan: Sun'iy intellekt algoritmlari asosida tibbiy tasvirlarni qayta ishlash..." style={{ ...inputStyle, lineHeight: 1.5, resize: 'vertical' }}></textarea>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', borderTop: '1px solid var(--border-light)', paddingTop: 16 }}>
-            <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-table-header)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Bekor qilish</button>
-            <button type="submit" id="btnSubmitAssignSup" disabled={submitting} style={{ padding: '10px 22px', border: 'none', background: '#059669', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-light)', paddingTop: 16 }}>
+            {hasExistingSupervisor ? (
+              <button type="button" onClick={handleRemove} disabled={removing || submitting} style={{ padding: '10px 16px', border: '1px solid var(--badge-danger-text)', background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                {removing ? 'Bekor qilinmoqda...' : 'Biriktirishni bekor qilish'}
+              </button>
+            ) : <span />}
+            <div style={{ display: 'flex', gap: 10 }}>
+            <button type="button" onClick={onClose} style={{ padding: '10px 16px', border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-table-header)', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Yopish</button>
+            <button type="submit" id="btnSubmitAssignSup" disabled={submitting || removing} style={{ padding: '10px 22px', border: 'none', background: '#059669', color: '#ffffff', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
               {submitting ? (
                 'Saqlanmoqda...'
               ) : (
@@ -147,6 +175,7 @@ export default function AssignSupervisorModal({ student, onClose, onSaved }: Pro
                 </>
               )}
             </button>
+            </div>
           </div>
         </form>
       </div>

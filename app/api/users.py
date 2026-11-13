@@ -521,9 +521,9 @@ async def assign_scientific_supervisor(
         sup_user = s_res.scalar_one_or_none()
 
     student.supervisor_id = payload.supervisor_id
-    student.supervisor_name = (payload.supervisor_name or (sup_user.full_name if sup_user else "")).strip()
-    student.supervisor_degree = (payload.supervisor_degree or (sup_user.supervisor_degree if sup_user else "")).strip()
-    student.supervisor_department = (payload.supervisor_department or (sup_user.faculty if sup_user else "")).strip()
+    student.supervisor_name = (payload.supervisor_name or (sup_user.full_name if sup_user else "") or "").strip()
+    student.supervisor_degree = (payload.supervisor_degree or (sup_user.supervisor_degree if sup_user else "") or "").strip()
+    student.supervisor_department = (payload.supervisor_department or (sup_user.faculty if sup_user else "") or "").strip()
     student.supervisor_phone = (payload.supervisor_phone or "").strip()
     student.research_topic = (payload.research_topic or "").strip()
 
