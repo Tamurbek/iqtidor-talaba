@@ -164,6 +164,7 @@ export type StudentTabKey =
   | 'calculator'
   | 'supervisor'
   | 'development-plan'
+  | 'meetings'
 
 // app/schemas/development_plan.py
 export interface DevelopmentTask {
@@ -189,6 +190,26 @@ export interface DevelopmentPlan {
 
 // GET /development-plans (rahbar uchun, talaba ma'lumotlari bilan)
 export interface DevelopmentPlanWithStudent extends DevelopmentPlan {
+  student_name: string
+  student_hemis_id?: string | null
+  student_group_name?: string | null
+}
+
+// app/schemas/meeting.py -> GET /meetings/me, GET /meetings/{student_id}
+export interface Meeting {
+  id: number
+  student_id: number
+  supervisor_id?: number | null
+  tutor_id?: number | null
+  meeting_date: string
+  summary: string
+  agreed_tasks?: string | null
+  created_by?: number | null
+  created_at: string
+}
+
+// GET /meetings (rahbar/tyutor uchun, talaba ma'lumotlari bilan)
+export interface MeetingWithStudent extends Meeting {
   student_name: string
   student_hemis_id?: string | null
   student_group_name?: string | null

@@ -12,10 +12,11 @@ from app.models.supervisor_request import SupervisorRequest
 from app.models.notification import Notification
 from app.models.development_plan import DevelopmentPlan
 from app.models.tutor_assignment import TutorAssignment
+from app.models.meeting import Meeting
 
 __all__ = [
     "Base", "User", "Role", "Permission", "role_permissions", "user_roles",
     "News", "Announcement", "Document", "StudentAchievement",
     "ContestApplication", "ScientificClub", "ClubMembership", "StudentExamResult",
-    "SupervisorRequest", "Notification", "DevelopmentPlan", "TutorAssignment"
+    "SupervisorRequest", "Notification", "DevelopmentPlan", "TutorAssignment", "Meeting"
 ]

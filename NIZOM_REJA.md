@@ -59,14 +59,22 @@ Backend to'liq qo'lda sinaldi (login -> POST -> GET/me -> notify -> PATCH approv
 
 ## BOSQICH 3 — Uchrashuvlar jurnali
 **Nizom:** 20-modda (oyiga kamida 1 marta)
-**Holat:** [ ] Boshlanmagan
+**Holat:** [x] Tugallandi — 2026-11-13
 
-- [ ] 3.1. `app/models/meeting.py` yaratish: `id, student_id, supervisor_id, tutor_id (nullable), meeting_date, summary, agreed_tasks, created_by, created_at`
-- [ ] 3.2. Migratsiya yozish
-- [ ] 3.3. `app/schemas/meeting.py`
-- [ ] 3.4. `app/api/meetings.py`: CRUD — rahbar/tyutor yozadi, talaba ko'radi
-- [ ] 3.5. Backend: oyiga 1 marta uchrashuv bo'lmasa ogohlantirish logikasi (BOSQICH 4 monitoring bilan birga ishlaши mumkin)
-- [ ] 3.6. Frontend: `SupervisorTab.tsx`/`TutorTab.tsx` ichida uchrashuvlar tarixi va yangi yozuv qo'shish formasi
+- [x] 3.1. `app/models/meeting.py` yaratildi: `id, student_id, supervisor_id, tutor_id (nullable), meeting_date, summary, agreed_tasks, created_by, created_at`
+- [x] 3.2. Migratsiya yozildi: `migrations/versions/f1a2b3c4d5e6_meetings.py` (head = e5f6a7b8c9d0 ustiga)
+- [x] 3.3. `app/schemas/meeting.py` yaratildi (`MeetingCreate`, `MeetingUpdate`, `MeetingResponse`, `MeetingWithStudent`)
+- [x] 3.4. `app/api/meetings.py` (prefiks `/api/v1`):
+  - `GET /api/v1/meetings/my-students` — rahbar/tyutorga biriktirilgan talabalar (forma uchun)
+  - `POST /api/v1/meetings` — rahbar yoki tyutor yozadi (faqat o'ziga biriktirilgan talaba uchun)
+  - `GET /api/v1/meetings/me` — talaba o'z uchrashuvlar tarixini ko'radi
+  - `GET /api/v1/meetings` — rahbar/tyutor o'zi yozgan barcha uchrashuvlarni ko'radi (sahifalangan, talaba ismi bilan)
+  - `GET /api/v1/meetings/{student_id}` — rahbar/tyutor/admin bitta talabaning tarixini ko'radi
+  - `PATCH /api/v1/meetings/{id}`, `DELETE /api/v1/meetings/{id}` — yozuvni yaratgan rahbar/tyutor (yoki admin) tahrirlaydi/o'chiradi
+- [x] 3.5. `app/services/meetings.py`: `find_students_without_monthly_meeting()` va `notify_overdue_monthly_meetings()` — oyiga 1 marta uchrashuv bo'lmasa aniqlash/ogohlantirish logikasi tayyor, lekin hali hech qayerdan chaqirilmaydi (chaqirish BOSQICH 4 scheduler'iga qoldirildi)
+- [x] 3.6. Frontend: yangi `MeetingsTab.tsx` yaratildi (`mode="student"/"supervisor"/"tutor"`) — `AdminDashboardPage.tsx`da `supervisor-requests` tabida `SupervisorTab`+`DevelopmentPlanTab` yoniga, `tutor-students` tabida `TutorTab` yoniga ulandi; talaba tomoni uchun `DashboardPage.tsx`da yangi `meetings` tab + `CabinetSidebar.tsx`da "Uchrashuvlar jurnali" menyu punkti qo'shildi.
+
+Backend to'liq qo'lda sinaldi (talaba/rahbar/tyutor/admin rollari uchun create/list/me/{student_id}/patch/delete, va `find_students_without_monthly_meeting` funksiyasi), barcha qadamlar kutilgan natijani qaytardi; test yozuvlari keyin tozalandi. Frontend `tsc --noEmit` xatosiz o'tdi.
 
 ---
 

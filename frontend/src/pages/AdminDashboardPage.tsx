@@ -30,6 +30,7 @@ import ProfileTab from '../components/admin/ProfileTab'
 import SupervisorTab from '../components/dashboard/SupervisorTab'
 import TutorTab from '../components/dashboard/TutorTab'
 import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
+import MeetingsTab from '../components/dashboard/MeetingsTab'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
@@ -416,10 +417,14 @@ export default function AdminDashboardPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <SupervisorTab user={currentUser} hideSelfRequest />
               <DevelopmentPlanTab user={currentUser} mode="supervisor" />
+              <MeetingsTab user={currentUser} mode="supervisor" />
             </div>
           )}
           {activeTab === 'tutor-students' && (
-            <TutorTab user={currentUser} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <TutorTab user={currentUser} />
+              <MeetingsTab user={currentUser} mode="tutor" />
+            </div>
           )}
           {activeTab === 'profile-security' && (
             <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />
