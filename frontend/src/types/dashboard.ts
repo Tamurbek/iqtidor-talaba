@@ -204,6 +204,9 @@ export interface Meeting {
   meeting_date: string
   summary: string
   agreed_tasks?: string | null
+  has_concern?: boolean
+  concern_note?: string | null
+  help_action?: string | null
   created_by?: number | null
   created_at: string
 }

@@ -92,6 +92,9 @@ async def create_meeting(
         meeting_date=payload.meeting_date,
         summary=payload.summary.strip(),
         agreed_tasks=(payload.agreed_tasks or "").strip() or None,
+        has_concern=payload.has_concern,
+        concern_note=(payload.concern_note or "").strip() or None,
+        help_action=(payload.help_action or "").strip() or None,
         created_by=current_user.id,
     )
     db.add(meeting)
@@ -107,6 +110,20 @@ async def create_meeting(
         related_entity_id=meeting.id,
         commit=False,
     )
+
+    # Nizom 17.4-modda: qiyinchilik qayd etilsa, ilmiy rahbarga (agar yozuvni tyutor
+    # kiritgan bo'lsa) hamkorlikda yordam chorasi ko'rish uchun bildirishnoma yuboriladi.
+    if meeting.has_concern and is_tutor and student.supervisor_id and student.supervisor_id != current_user.id:
+        await notify(
+            db,
+            user_id=student.supervisor_id,
+            title=f"Tyutor {current_user.full_name} talabada qiyinchilik qayd etdi: {student.full_name}",
+            body=meeting.concern_note,
+            type="meeting_concern",
+            related_entity_type="meeting",
+            related_entity_id=meeting.id,
+            commit=False,
+        )
 
     await db.commit()
     await db.refresh(meeting)
@@ -214,6 +231,12 @@ async def update_meeting(
         meeting.summary = payload.summary.strip()
     if payload.agreed_tasks is not None:
         meeting.agreed_tasks = payload.agreed_tasks.strip() or None
+    if payload.has_concern is not None:
+        meeting.has_concern = payload.has_concern
+    if payload.concern_note is not None:
+        meeting.concern_note = payload.concern_note.strip() or None
+    if payload.help_action is not None:
+        meeting.help_action = payload.help_action.strip() or None
 
     await db.commit()
     await db.refresh(meeting)

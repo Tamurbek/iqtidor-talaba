@@ -8,12 +8,18 @@ class MeetingCreate(BaseModel):
     meeting_date: datetime
     summary: str
     agreed_tasks: Optional[str] = None
+    has_concern: bool = False
+    concern_note: Optional[str] = None
+    help_action: Optional[str] = None
 
 
 class MeetingUpdate(BaseModel):
     meeting_date: Optional[datetime] = None
     summary: Optional[str] = None
     agreed_tasks: Optional[str] = None
+    has_concern: Optional[bool] = None
+    concern_note: Optional[str] = None
+    help_action: Optional[str] = None
 
 
 class MeetingResponse(BaseModel):
@@ -24,6 +30,9 @@ class MeetingResponse(BaseModel):
     meeting_date: datetime
     summary: str
     agreed_tasks: Optional[str] = None
+    has_concern: bool = False
+    concern_note: Optional[str] = None
+    help_action: Optional[str] = None
     created_by: Optional[int] = None
     created_at: datetime
 

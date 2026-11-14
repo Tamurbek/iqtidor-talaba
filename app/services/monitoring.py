@@ -52,10 +52,22 @@ async def get_students_monitoring_data(
     faculty: Optional[str] = None,
     course: Optional[int] = None,
     direction: Optional[str] = None,
+    student_ids: Optional[List[int]] = None,
+    tutor_scoped: bool = False,
 ) -> List[Dict]:
     """4.1: har bir talaba uchun oxirgi uchrashuv sanasi, reja bajarilish foizi va
-    faollik ballini hisoblab, bitta ro'yxat sifatida qaytaradi."""
+    faollik ballini hisoblab, bitta ro'yxat sifatida qaytaradi.
+
+    `student_ids` berilsa, faqat shu talabalar bo'yicha hisoblanadi (Nizom 17.1-modda:
+    tyutorning o'ziga biriktirilgan talabalar faolligini kuzatishi uchun, `/tutor/monitoring`
+    endpointida ishlatiladi). `tutor_scoped=True` bo'lsa, talabada ilmiy rahbar
+    biriktirilmagan bo'lsa ham (chunki uni tyutor kuzatmoqda) uchrashuv muddati va
+    at-risk hisobga olinadi."""
     query = select(User).where(User.role == "student")
+    if student_ids is not None:
+        if not student_ids:
+            return []
+        query = query.where(User.id.in_(student_ids))
     if faculty:
         query = query.where(User.faculty == faculty)
     if course:
@@ -87,9 +99,10 @@ async def get_students_monitoring_data(
     now = datetime.utcnow()
     results: List[Dict] = []
     for s in students:
+        has_overseer = bool(s.supervisor_id) or tutor_scoped
         last_meeting_date = last_meeting_by_student.get(s.id)
         days_since_last_meeting = (now - last_meeting_date).days if last_meeting_date else None
-        meeting_overdue = bool(s.supervisor_id) and (
+        meeting_overdue = has_overseer and (
             last_meeting_date is None or days_since_last_meeting > MONTHLY_MEETING_WINDOW_DAYS
         )
 
@@ -97,7 +110,7 @@ async def get_students_monitoring_data(
         plan_completion_pct = compute_plan_completion_percentage(plan)
         plan_overdue = bool(plan and plan.end_date and plan.end_date < now and plan.status != "completed")
 
-        is_at_risk = bool(s.supervisor_id) and (meeting_overdue or plan_overdue)
+        is_at_risk = has_overseer and (meeting_overdue or plan_overdue)
         activity_score = compute_activity_score(days_since_last_meeting, plan_completion_pct, plan_overdue)
 
         results.append({

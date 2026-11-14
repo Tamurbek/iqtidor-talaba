@@ -47,6 +47,9 @@ export default function MeetingsTab({ user, mode = 'student' }: Props) {
   const [meetingDate, setMeetingDate] = useState('')
   const [summary, setSummary] = useState('')
   const [agreedTasks, setAgreedTasks] = useState('')
+  const [hasConcern, setHasConcern] = useState(false)
+  const [concernNote, setConcernNote] = useState('')
+  const [helpAction, setHelpAction] = useState('')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -81,6 +84,9 @@ export default function MeetingsTab({ user, mode = 'student' }: Props) {
     setMeetingDate('')
     setSummary('')
     setAgreedTasks('')
+    setHasConcern(false)
+    setConcernNote('')
+    setHelpAction('')
   }
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -95,6 +101,9 @@ export default function MeetingsTab({ user, mode = 'student' }: Props) {
         meeting_date: meetingDate,
         summary: summary.trim(),
         agreed_tasks: agreedTasks.trim() || null,
+        has_concern: hasConcern,
+        concern_note: hasConcern ? concernNote.trim() || null : null,
+        help_action: hasConcern ? helpAction.trim() || null : null,
       })
       setMessage('Uchrashuv yozuvi qo\'shildi')
       resetForm()
@@ -178,6 +187,28 @@ export default function MeetingsTab({ user, mode = 'student' }: Props) {
                 placeholder="Kelishilgan vazifalar (ixtiyoriy)"
                 style={{ padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, resize: 'vertical' }}
               />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--text-dark)', cursor: 'pointer' }}>
+                <input type="checkbox" checked={hasConcern} onChange={(e) => setHasConcern(e.target.checked)} />
+                Talabada qiyinchilik/muammo aniqlandi (Nizom 17.4-modda)
+              </label>
+              {hasConcern && (
+                <>
+                  <textarea
+                    value={concernNote}
+                    onChange={(e) => setConcernNote(e.target.value)}
+                    rows={2}
+                    placeholder="Qiyinchilik/muammo tavsifi"
+                    style={{ padding: '10px 12px', border: '1px solid var(--badge-danger-border)', borderRadius: 8, fontSize: 13.5, resize: 'vertical' }}
+                  />
+                  <textarea
+                    value={helpAction}
+                    onChange={(e) => setHelpAction(e.target.value)}
+                    rows={2}
+                    placeholder="Belgilangan yordam chorasi"
+                    style={{ padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, resize: 'vertical' }}
+                  />
+                </>
+              )}
               <button
                 type="submit"
                 disabled={submitting || !studentId || !meetingDate || !summary.trim()}
@@ -206,6 +237,12 @@ export default function MeetingsTab({ user, mode = 'student' }: Props) {
                       <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>{m.summary}</div>
                       {m.agreed_tasks && (
                         <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 6 }}><strong>Vazifalar:</strong> {m.agreed_tasks}</div>
+                      )}
+                      {m.has_concern && (
+                        <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', fontSize: 12.5 }}>
+                          <div><strong>Qiyinchilik:</strong> {m.concern_note || '—'}</div>
+                          {m.help_action && <div style={{ marginTop: 4 }}><strong>Yordam chorasi:</strong> {m.help_action}</div>}
+                        </div>
                       )}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, flexShrink: 0 }}>
@@ -257,6 +294,11 @@ export default function MeetingsTab({ user, mode = 'student' }: Props) {
                 </div>
                 {m.agreed_tasks && (
                   <div style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 8 }}><strong>Vazifalar:</strong> {m.agreed_tasks}</div>
+                )}
+                {m.has_concern && m.help_action && (
+                  <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: 'var(--badge-warning-bg, #fff7ed)', color: 'var(--badge-warning-text, #9a3412)', fontSize: 12.5 }}>
+                    <strong>Belgilangan yordam chorasi:</strong> {m.help_action}
+                  </div>
                 )}
               </div>
             ))}

@@ -17,6 +17,15 @@ Hozir: `app/models/role.py` da `code="tutor"` roli bor (yoki `ROLE_LABELS` da no
 - [x] 0.4. Frontend: `TutorTab.tsx` yangilandi — endi `GET /tutor/students`ni chaqirib, biriktirilgan talabalar ro'yxatini ko'rsatadi (placeholder olib tashlandi).
 - [x] 0.5. Sidebar/nav: `AdminSidebar.tsx` ga "Mening talabalarim" (`tutor-students`) menyu punkti, `utils/roles.ts` ga `canViewTutorStudents` capability, `types/admin.ts` ga `AdminTabKey` qo'shildi; `AdminDashboardPage.tsx` da ulandi.
 
+### BOSQICH 0.6 — Tyutor vazifalarining qolgan qismlari (17.1, 17.2, 17.4-modda)
+**Holat:** [x] Tugallandi — 2026-11-14
+
+- [x] 0.6.1. 17.4-modda (qiyinchilik/yordam chorasi): `Meeting` modeliga `has_concern`, `concern_note`, `help_action` qo'shildi (migratsiya `a9b8c7d6e5f4`); `app/api/meetings.py`da yaratish/tahrirlashda saqlanadi, qiyinchilik qayd etilganda (tyutor yozgan bo'lsa) ilmiy rahbarga bildirishnoma yuboriladi; `MeetingsTab.tsx`da forma va tarixda ko'rsatiladi (talaba o'ziga tegishli yordam chorasini ham ko'radi).
+- [x] 0.6.2. 17.1-modda (faollik/uchrashuv kuzatuvi): `app/services/monitoring.py`ga `student_ids`/`tutor_scoped` parametrlari qo'shildi; `GET /api/v1/tutor/monitoring` — faqat o'ziga biriktirilgan talabalar bo'yicha faollik balli va uchrashuv muddati holatini qaytaradi; `TutorTab.tsx`da har bir talaba qatorida ko'rsatiladi.
+- [x] 0.6.3. 17.2-modda (to'garak/tadbir/imkoniyat haqida xabardor qilish): `POST /api/v1/tutor/notify/{student_id}` (bitta talaba) va `POST /api/v1/tutor/notify-all` (barcha biriktirilganlar) — umumiy `notify()` helper orqali bildirishnoma yuboradi; `TutorTab.tsx`da "Xabar yuborish" va "Barchasiga xabar yuborish" formalari qo'shildi.
+
+Hali qoplanmagan: 17.1-moddadagi "o'quv intizomi, davomat" — HEMIS'da bu ma'lumot (davomat) uchun API mavjud emas, shuning uchun faqat uchrashuv muddati va individual reja bajarilishi asosidagi faollik balli bilan cheklandi.
+
 ---
 
 ## BOSQICH 1 — Bildirishnoma (notifications) tizimi
