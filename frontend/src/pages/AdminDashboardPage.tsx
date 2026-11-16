@@ -8,6 +8,7 @@ import type { ApplicationListResponse } from '../types/dashboard'
 import type { DocumentListResponse, NewsListResponse } from '../types/content'
 import type {
   AdminAchievementListResponse,
+  AdminGiftedApplicationListResponse,
   AdminTabKey,
   RankingResponse,
   RolesResponse,
@@ -19,6 +20,7 @@ import CabinetTopbar from '../components/dashboard/CabinetTopbar'
 import AdminToasts, { type ToastItem, type ToastType } from '../components/admin/AdminToasts'
 import AchievementsApprovalTab from '../components/admin/AchievementsApprovalTab'
 import ApplicationsReviewTab from '../components/admin/ApplicationsReviewTab'
+import GiftedApplicationsReviewTab from '../components/admin/GiftedApplicationsReviewTab'
 import RankingExportTab from '../components/admin/RankingExportTab'
 import StarostasTab from '../components/admin/StarostasTab'
 import RolesTab from '../components/admin/RolesTab'
@@ -48,6 +50,7 @@ const VALID_TABS: AdminTabKey[] = [
   'supervisor-requests',
   'tutor-students',
   'monitoring',
+  'gifted-applications',
   'profile-security',
 ]
 
@@ -64,6 +67,7 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'supervisor-requests': "Ilmiy rahbarlik so'rovlari",
   'tutor-students': 'Mening talabalarim',
   monitoring: 'Monitoring va hisobot',
+  'gifted-applications': 'Saralash arizalari',
   'profile-security': 'Mening profilim & Parol',
 }
 
@@ -79,6 +83,8 @@ const loadNews = (page: number, page_size: number) =>
   client.get<NewsListResponse>('/news', { params: { page, page_size } }).then(({ data }) => data)
 const loadDocuments = (page: number, page_size: number) =>
   client.get<DocumentListResponse>('/documents', { params: { page, page_size } }).then(({ data }) => data)
+const loadGiftedApplications = (page: number, page_size: number) =>
+  client.get<AdminGiftedApplicationListResponse>('/gifted-applications/all', { params: { page, page_size } }).then(({ data }) => data)
 
 function tabFromHash(): AdminTabKey | null {
   const h = window.location.hash.replace('#', '')
@@ -105,6 +111,7 @@ export default function AdminDashboardPage() {
   if (caps.canManageSupervisorRequests) visibleTabs.add('supervisor-requests')
   if (caps.canViewTutorStudents) visibleTabs.add('tutor-students')
   if (caps.canViewMonitoring) visibleTabs.add('monitoring')
+  if (caps.canReviewGiftedApplications) visibleTabs.add('gifted-applications')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
     const fromHash = tabFromHash()
@@ -157,6 +164,7 @@ export default function AdminDashboardPage() {
   const news = usePaginatedResource(loadNews, (r) => r.items, 'Yangiliklarni yuklashda xatolik yuz berdi', caps.canManageContent, 10)
   const documents = usePaginatedResource(loadDocuments, (r) => r.items, "Hujjatlar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageContent, 10)
   const users = usePaginatedResource(loadUsers, (r) => r.users, "Foydalanuvchilar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageUsers, 10)
+  const giftedApplications = usePaginatedResource(loadGiftedApplications, (r) => r.items, 'Saralash arizalarini yuklashda xatolik yuz berdi', caps.canReviewGiftedApplications, 10)
 
   const usersSetPage = users.setPage
   useEffect(() => {
@@ -244,6 +252,7 @@ export default function AdminDashboardPage() {
             news: news.response ? news.total : null,
             documents: documents.response ? documents.total : null,
             users: users.response ? users.total : null,
+            giftedApplications: giftedApplications.response ? giftedApplications.total : null,
           }}
           visibleTabs={visibleTabs}
           mobileOpen={mobileOpen}
@@ -431,6 +440,22 @@ export default function AdminDashboardPage() {
             </div>
           )}
           {activeTab === 'monitoring' && <MonitoringTab />}
+          {activeTab === 'gifted-applications' && (
+            <GiftedApplicationsReviewTab
+              applications={giftedApplications.items}
+              loading={giftedApplications.loading}
+              error={giftedApplications.error}
+              page={giftedApplications.page}
+              totalPages={giftedApplications.totalPages}
+              total={giftedApplications.total}
+              pageSize={giftedApplications.pageSize}
+              onPageChange={giftedApplications.setPage}
+              onApplicationUpdated={(app) =>
+                giftedApplications.setResponse((prev) => (prev ? { ...prev, items: prev.items.map((a) => (a.id === app.id ? app : a)) } : prev))
+              }
+              showToast={showToast}
+            />
+          )}
           {activeTab === 'profile-security' && (
             <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />
           )}

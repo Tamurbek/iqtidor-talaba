@@ -18,7 +18,8 @@ import GroupInfoTab from '../components/dashboard/GroupInfoTab'
 import SupervisorTab from '../components/dashboard/SupervisorTab'
 import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
 import MeetingsTab from '../components/dashboard/MeetingsTab'
-import type { Achievement, Application, ExamStatus, MeResponse, StudentTabKey } from '../types/dashboard'
+import GiftedApplicationTab from '../components/dashboard/GiftedApplicationTab'
+import type { Achievement, Application, ExamStatus, GiftedApplication, MeResponse, StudentTabKey } from '../types/dashboard'
 import { extractErrorMessage } from '../types/dashboard'
 import { isStaffRole } from '../utils/roles'
 
@@ -36,6 +37,7 @@ const VALID_TABS: StudentTabKey[] = [
   'supervisor',
   'development-plan',
   'meetings',
+  'gifted-application',
 ]
 
 const TAB_TITLES: Record<StudentTabKey, string> = {
@@ -52,6 +54,7 @@ const TAB_TITLES: Record<StudentTabKey, string> = {
   supervisor: 'Ilmiy rahbar',
   'development-plan': 'Individual rivojlanish rejasi',
   meetings: 'Uchrashuvlar jurnali',
+  'gifted-application': 'Saralash arizasi',
 }
 
 export default function DashboardPage() {
@@ -76,6 +79,10 @@ export default function DashboardPage() {
   const [me, setMe] = useState<MeResponse | null>(null)
   const [meLoading, setMeLoading] = useState(true)
   const [meError, setMeError] = useState<string | null>(null)
+
+  const [giftedApplication, setGiftedApplication] = useState<GiftedApplication | null>(null)
+  const [giftedApplicationLoading, setGiftedApplicationLoading] = useState(true)
+  const [giftedApplicationError, setGiftedApplicationError] = useState<string | null>(null)
 
   const loadAchievements = useCallback(() => {
     setAchievementsLoading(true)
@@ -116,13 +123,30 @@ export default function DashboardPage() {
       .finally(() => setMeLoading(false))
   }, [])
 
+  const loadGiftedApplication = useCallback(() => {
+    setGiftedApplicationLoading(true)
+    setGiftedApplicationError(null)
+    client
+      .get<GiftedApplication>('/gifted-applications/my')
+      .then(({ data }) => setGiftedApplication(data))
+      .catch((err) => {
+        if (err?.response?.status === 404) {
+          setGiftedApplication(null)
+          return
+        }
+        setGiftedApplicationError(extractErrorMessage(err, 'Saralash arizasini yuklashda xatolik yuz berdi'))
+      })
+      .finally(() => setGiftedApplicationLoading(false))
+  }, [])
+
   useEffect(() => {
     if (!currentUser || isStaff) return
     loadAchievements()
     loadApplications()
     loadExamStatus()
     loadMe()
-  }, [currentUser, isStaff, loadAchievements, loadApplications, loadExamStatus, loadMe])
+    loadGiftedApplication()
+  }, [currentUser, isStaff, loadAchievements, loadApplications, loadExamStatus, loadMe, loadGiftedApplication])
 
   useEffect(() => {
     if (window.location.hash) {
@@ -260,6 +284,14 @@ export default function DashboardPage() {
           />
         )}
         {activeTab === 'my-group' && isStarostaView && <GroupInfoTab user={currentUser} />}
+        {activeTab === 'gifted-application' && (
+          <GiftedApplicationTab
+            application={giftedApplication}
+            loading={giftedApplicationLoading}
+            error={giftedApplicationError}
+            onSubmitted={(app) => setGiftedApplication(app)}
+          />
+        )}
         </main>
       </div>
     </div>

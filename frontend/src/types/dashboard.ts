@@ -73,6 +73,23 @@ export interface Application {
 
 export interface ApplicationListResponse extends PaginatedResponse<Application> {}
 
+// GET /gifted-applications/my (Nizom 7.1/10-modda)
+export interface GiftedApplication {
+  id: number
+  user_id: number
+  student_name: string
+  hemis_id: string
+  faculty?: string | null
+  direction?: string | null
+  course?: number | null
+  motivation_text?: string | null
+  status: 'pending' | 'approved' | 'rejected' | string
+  decision_note?: string | null
+  reviewed_by_id?: number | null
+  reviewed_at?: string | null
+  created_at: string
+}
+
 export interface ExamStatus {
   has_taken: boolean
   message?: string
@@ -165,6 +182,7 @@ export type StudentTabKey =
   | 'supervisor'
   | 'development-plan'
   | 'meetings'
+  | 'gifted-application'
 
 // app/schemas/development_plan.py
 export interface DevelopmentTask {

@@ -27,6 +27,7 @@ export interface AdminCapabilities {
   canManageSupervisorRequests: boolean
   canViewTutorStudents: boolean
   canViewMonitoring: boolean
+  canReviewGiftedApplications: boolean
 }
 
 /** seed_data.py role_definitions'dagi permissions ro'yxatiga mos keladigan tab huquqlari. */
@@ -51,5 +52,7 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
     canViewTutorStudents: deptHead || role === 'tutor',
     // app/api/deps.py:get_current_admin bilan bir xil: backend ham faqat shu darajani qo'yadi
     canViewMonitoring: deptHead,
+    // gifted_applications.review: department_head, faculty_coordinator (seed_data.py)
+    canReviewGiftedApplications: coordinatorLevel,
   }
 }

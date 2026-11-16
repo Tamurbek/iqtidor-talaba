@@ -12,6 +12,7 @@ export interface AdminSidebarCounts {
   news: number | null
   documents: number | null
   users: number | null
+  giftedApplications: number | null
 }
 
 interface Props {
@@ -206,6 +207,19 @@ export default function AdminSidebar({ activeTab, counts, visibleTabs, mobileOpe
                 </svg>
               </span>
               <span>Monitoring va hisobot</span>
+            </button>
+          </li>
+          )}
+          {visibleTabs.has('gifted-applications') && (
+          <li>
+            <button type="button" onClick={() => onSwitchTab('gifted-applications')} className={linkClass('gifted-applications')} id="admin-side-gifted-applications">
+              <span className="cabinet-menu-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l2.4 7.2H22l-6.2 4.5 2.4 7.3L12 16.5 5.8 21l2.4-7.3L2 9.2h7.6z"></path>
+                </svg>
+              </span>
+              <span>Saralash arizalari</span>
+              <span className="cabinet-menu-badge badge-orange" id="sideGiftedAppsBadge">{fmt(counts.giftedApplications)}</span>
             </button>
           </li>
           )}

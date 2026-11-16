@@ -62,6 +62,16 @@ export default function CabinetSidebar({
             </button>
           </li>
           <li>
+            <button type="button" className={linkClass('gifted-application')} id="side-link-gifted-application" onClick={() => onSwitchTab('gifted-application')}>
+              <span className="cabinet-menu-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2l2.4 7.2H22l-6.2 4.5 2.4 7.3L12 16.5 5.8 21l2.4-7.3L2 9.2h7.6z"></path>
+                </svg>
+              </span>
+              <span>Saralash arizasi</span>
+            </button>
+          </li>
+          <li>
             <button type="button" className={linkClass('academic')} id="side-link-academic" onClick={() => onSwitchTab('academic')}>
               <span className="cabinet-menu-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

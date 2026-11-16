@@ -3,8 +3,9 @@ import time
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, update
 from pydantic import BaseModel
 
 from app.core.database import get_db
@@ -53,6 +54,31 @@ async def get_documents(page_params: PageParams = Depends(), db: AsyncSession = 
         page_size=page_params.page_size,
         total_pages=total_pages(total, page_params.page_size),
     )
+
+
+@router.get("/{document_id}/download")
+async def download_document(document_id: int, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Document).where(Document.id == document_id))
+    doc_item = result.scalar_one_or_none()
+    if not doc_item:
+        raise HTTPException(status_code=404, detail="Hujjat topilmadi")
+
+    await db.execute(
+        update(Document)
+        .where(Document.id == document_id)
+        .values(download_count=Document.download_count + 1)
+    )
+    await db.commit()
+
+    prefix = "/static/uploads/documents/"
+    if doc_item.file_url.startswith(prefix):
+        filename = doc_item.file_url[len(prefix):]
+        file_path = os.path.join(UPLOAD_DOCS_DIR, filename)
+        if not os.path.isfile(file_path):
+            raise HTTPException(status_code=404, detail="Fayl topilmadi")
+        return FileResponse(file_path, media_type="application/pdf", filename=f"{doc_item.title}.pdf")
+
+    return RedirectResponse(url=doc_item.file_url)
 
 
 @router.post("/upload-file")
@@ -114,7 +140,7 @@ async def create_document(
         title=data.title,
         file_url=data.file_url,
         file_format=data.file_format or "PDF",
-        file_size=data.file_size or "1.8 MB",
+        file_size=data.file_size,
         published_date=data.published_date or datetime.now().strftime("%d.%m.%Y"),
         download_count=0
     )

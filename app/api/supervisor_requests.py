@@ -10,6 +10,7 @@ from sqlalchemy import select, func
 from app.core.database import get_db
 from app.models.user import User
 from app.models.supervisor_request import SupervisorRequest
+from app.models.tutor_assignment import TutorAssignment
 from app.api.deps import get_current_user, get_current_student, get_current_admin
 from app.core.pagination import PageParams, paginate_query, total_pages
 
@@ -173,6 +174,8 @@ async def accept_supervisor_request(
     req = res.scalar_one_or_none()
     if not req:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="So'rov topilmadi")
+    if not current_user.has_role("supervisor"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu amal faqat ilmiy rahbar uchun mavjud")
     if req.supervisor_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu so'rov sizga tegishli emas")
     if req.status != "pending":
@@ -194,6 +197,18 @@ async def accept_supervisor_request(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Bu talabaga boshqa ilmiy rahbar allaqachon biriktirilgan."
+        )
+
+    tutor_res = await db.execute(
+        select(TutorAssignment).where(
+            TutorAssignment.student_id == student.id,
+            TutorAssignment.tutor_id == current_user.id,
+        )
+    )
+    if tutor_res.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Siz bu talabaning tyutorisiz, ilmiy rahbari bo'la olmaysiz (Nizom 19-modda)",
         )
 
     req.status = "accepted"
@@ -241,6 +256,8 @@ async def reject_supervisor_request(
     req = res.scalar_one_or_none()
     if not req:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="So'rov topilmadi")
+    if not current_user.has_role("supervisor"):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu amal faqat ilmiy rahbar uchun mavjud")
     if req.supervisor_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu so'rov sizga tegishli emas")
     if req.status != "pending":

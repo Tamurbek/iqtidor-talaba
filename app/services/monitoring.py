@@ -7,11 +7,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.models.meeting import Meeting
 from app.models.development_plan import DevelopmentPlan
+from app.models.monitoring_report import MonitoringReport
 from app.services.notifications import notify
 from app.services.meetings import (
     MONTHLY_MEETING_WINDOW_DAYS,
     notify_overdue_monthly_meetings,
 )
+
+
+def period_start(period: str, now: Optional[datetime] = None) -> datetime:
+    """28-modda: 'monthly' uchun joriy oy boshi, 'semester' uchun joriy semestr
+    boshi (sentyabr yoki fevral) qaytariladi."""
+    now = now or datetime.utcnow()
+    if period == "semester":
+        if now.month >= 9:
+            return datetime(now.year, 9, 1)
+        if now.month >= 2:
+            return datetime(now.year, 2, 1)
+        return datetime(now.year - 1, 9, 1)
+    return datetime(now.year, now.month, 1)
 
 
 def compute_plan_completion_percentage(plan: Optional[DevelopmentPlan]) -> Optional[float]:
@@ -54,6 +68,7 @@ async def get_students_monitoring_data(
     direction: Optional[str] = None,
     student_ids: Optional[List[int]] = None,
     tutor_scoped: bool = False,
+    period: Optional[str] = None,
 ) -> List[Dict]:
     """4.1: har bir talaba uchun oxirgi uchrashuv sanasi, reja bajarilish foizi va
     faollik ballini hisoblab, bitta ro'yxat sifatida qaytaradi.
@@ -86,6 +101,16 @@ async def get_students_monitoring_data(
         .group_by(Meeting.student_id)
     )
     last_meeting_by_student = {row.student_id: row.last_meeting_date for row in last_meeting_res}
+
+    meetings_in_period_by_student: Dict[int, int] = {}
+    if period:
+        range_start = period_start(period)
+        period_meetings_res = await db.execute(
+            select(Meeting.student_id, func.count(Meeting.id).label("cnt"))
+            .where(Meeting.student_id.in_(student_ids), Meeting.meeting_date >= range_start)
+            .group_by(Meeting.student_id)
+        )
+        meetings_in_period_by_student = {row.student_id: row.cnt for row in period_meetings_res}
 
     plans_res = await db.execute(
         select(DevelopmentPlan)
@@ -130,6 +155,7 @@ async def get_students_monitoring_data(
             "plan_overdue": plan_overdue,
             "activity_score": activity_score,
             "is_at_risk": is_at_risk,
+            **({"meetings_in_period": meetings_in_period_by_student.get(s.id, 0)} if period else {}),
         })
 
     return results
@@ -140,10 +166,12 @@ async def find_at_risk_students(
     faculty: Optional[str] = None,
     course: Optional[int] = None,
     direction: Optional[str] = None,
+    period: Optional[str] = None,
 ) -> List[Dict]:
     """4.2: faolligi pasaygan (oyidan ortiq uchrashuvsiz yoki reja muddati o'tgan)
-    talabalar ro'yxati."""
-    data = await get_students_monitoring_data(db, faculty, course, direction)
+    talabalar ro'yxati. `period` berilsa, har bir talaba uchun shu davr ichidagi
+    uchrashuvlar soni (`meetings_in_period`) ham qo'shiladi (28-modda)."""
+    data = await get_students_monitoring_data(db, faculty, course, direction, period=period)
     return [item for item in data if item["is_at_risk"]]
 
 
@@ -152,14 +180,18 @@ async def get_monitoring_summary(
     faculty: Optional[str] = None,
     course: Optional[int] = None,
     direction: Optional[str] = None,
+    period: Optional[str] = None,
 ) -> Dict:
-    """4.3: mas'ul bo'lim uchun umumlashtirilgan monitoring hisoboti."""
-    data = await get_students_monitoring_data(db, faculty, course, direction)
+    """4.3: mas'ul bo'lim uchun umumlashtirilgan monitoring hisoboti. `period`
+    ('monthly'/'semester') berilsa, hisobot shu davr oralig'iga nisbatan
+    hisoblangan qo'shimcha ko'rsatkichlar (davr boshlanish sanasi, davr ichidagi
+    o'rtacha uchrashuvlar soni) bilan boyitiladi — 28-modda."""
+    data = await get_students_monitoring_data(db, faculty, course, direction, period=period)
     total = len(data)
     at_risk_count = sum(1 for item in data if item["is_at_risk"])
     plan_values = [item["plan_completion_pct"] for item in data if item["plan_completion_pct"] is not None]
 
-    return {
+    summary = {
         "total_students": total,
         "at_risk_count": at_risk_count,
         "avg_activity_score": round(sum(item["activity_score"] for item in data) / total, 1) if total else 0.0,
@@ -167,6 +199,15 @@ async def get_monitoring_summary(
         "students_without_plan": sum(1 for item in data if item["plan_completion_pct"] is None),
         "generated_at": datetime.utcnow(),
     }
+
+    if period:
+        range_start = period_start(period)
+        meetings_values = [item.get("meetings_in_period", 0) for item in data]
+        summary["period_start"] = range_start
+        summary["avg_meetings_in_period"] = round(sum(meetings_values) / total, 1) if total else 0.0
+        summary["students_without_meeting_in_period"] = sum(1 for v in meetings_values if v == 0)
+
+    return summary
 
 
 async def _notify_overdue_plans(db: AsyncSession) -> int:
@@ -205,6 +246,31 @@ async def _notify_overdue_plans(db: AsyncSession) -> int:
 
     await db.commit()
     return len(plans)
+
+
+async def generate_and_store_report(db: AsyncSession, period: str) -> MonitoringReport:
+    """28-modda: oylik/semestrlik monitoring hisobotini hisoblab, tarix sifatida
+    saqlaydi. `app/core/scheduler.py`dagi avtomatik job'lar shu funksiyani chaqiradi."""
+    summary = await get_monitoring_summary(db, period=period)
+    at_risk = await find_at_risk_students(db, period=period)
+
+    def _default(value):
+        if isinstance(value, datetime):
+            return value.isoformat()
+        return str(value)
+
+    import json
+    summary_json = json.loads(json.dumps(summary, default=_default))
+
+    report = MonitoringReport(
+        period=period,
+        summary_json=summary_json,
+        at_risk_count=len(at_risk),
+    )
+    db.add(report)
+    await db.commit()
+    await db.refresh(report)
+    return report
 
 
 async def notify_at_risk_students(db: AsyncSession) -> Dict[str, int]:

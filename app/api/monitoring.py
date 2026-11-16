@@ -2,16 +2,19 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import select, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.pagination import PageParams, paginate_sequence, total_pages
+from app.core.pagination import PageParams, paginate_query, paginate_sequence, total_pages
 from app.models.user import User
+from app.models.monitoring_report import MonitoringReport
 from app.schemas.monitoring import (
     StudentMonitoringItem,
     MonitoringSummaryResponse,
     NotifyAtRiskResponse,
     MonitoringReportResponse,
+    StoredMonitoringReportResponse,
 )
 from app.schemas.pagination import PaginatedResponse
 from app.api.deps import get_current_admin
@@ -93,15 +96,40 @@ async def monitoring_report(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin),
 ):
-    """4.4: oylik/semestrlik hisobot — hozircha on-demand endpoint sifatida,
-    scheduler (cron/APScheduler) ulash keyingi ishga qoldirilgan."""
+    """4.4: oylik/semestrlik hisobot. `period` endi haqiqatan ham davr oralig'iga
+    nisbatan qo'shimcha ko'rsatkichlar (`period_start`, `avg_meetings_in_period`)
+    hisoblashga uzatiladi (28-modda). Shuningdek, `app/core/scheduler.py`dagi
+    avtomatik job'lar shu funksiyani chaqirib natijani `MonitoringReport`ga saqlaydi."""
     from datetime import datetime
 
-    summary = await get_monitoring_summary(db, faculty=faculty, course=course, direction=direction)
-    at_risk = await find_at_risk_students(db, faculty=faculty, course=course, direction=direction)
+    summary = await get_monitoring_summary(db, faculty=faculty, course=course, direction=direction, period=period)
+    at_risk = await find_at_risk_students(db, faculty=faculty, course=course, direction=direction, period=period)
     return {
         "period": period,
         "generated_at": datetime.utcnow(),
         "summary": summary,
         "at_risk_students": at_risk,
+    }
+
+
+@router.get("/reports", response_model=PaginatedResponse[StoredMonitoringReportResponse])
+async def monitoring_reports_history(
+    period: Optional[str] = Query(None, pattern="^(monthly|semester)$"),
+    page_params: PageParams = Depends(),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_admin),
+):
+    """28-modda: scheduler tomonidan avtomatik generatsiya qilingan oylik/semestrlik
+    hisobotlar tarixi."""
+    query = select(MonitoringReport).order_by(desc(MonitoringReport.generated_at))
+    if period:
+        query = query.where(MonitoringReport.period == period)
+
+    result, total = await paginate_query(db, query, page_params.page, page_params.page_size)
+    return {
+        "items": result.scalars().all(),
+        "total": total,
+        "page": page_params.page,
+        "page_size": page_params.page_size,
+        "total_pages": total_pages(total, page_params.page_size),
     }

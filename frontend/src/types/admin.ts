@@ -13,6 +13,7 @@ export type AdminTabKey =
   | 'supervisor-requests'
   | 'tutor-students'
   | 'monitoring'
+  | 'gifted-applications'
   | 'profile-security'
 
 // app/schemas/monitoring.py -> GET /monitoring/students
@@ -33,6 +34,7 @@ export interface StudentMonitoringItem {
   plan_overdue: boolean
   activity_score: number
   is_at_risk: boolean
+  meetings_in_period?: number | null
 }
 
 // GET /monitoring/summary
@@ -43,6 +45,9 @@ export interface MonitoringSummary {
   avg_plan_completion_pct: number
   students_without_plan: number
   generated_at: string
+  period_start?: string | null
+  avg_meetings_in_period?: number | null
+  students_without_meeting_in_period?: number | null
 }
 
 // POST /monitoring/notify-at-risk
@@ -52,6 +57,27 @@ export interface NotifyAtRiskResponse {
 }
 
 export type StudentMonitoringListResponse = PaginatedResponse<StudentMonitoringItem>
+
+export type MonitoringPeriod = 'monthly' | 'semester'
+
+// GET /monitoring/report
+export interface MonitoringReportResponse {
+  period: MonitoringPeriod
+  generated_at: string
+  summary: MonitoringSummary
+  at_risk_students: StudentMonitoringItem[]
+}
+
+// GET /monitoring/reports
+export interface StoredMonitoringReport {
+  id: number
+  period: MonitoringPeriod
+  generated_at: string
+  summary_json: Record<string, unknown>
+  at_risk_count: number
+}
+
+export type StoredMonitoringReportListResponse = PaginatedResponse<StoredMonitoringReport>
 
 // StudentAchievement modeli (app/models/achievement.py). Admin uchun barcha yutuqlar ro'yxatini
 // qaytaruvchi API endpoint hozircha backendda mavjud emas.
@@ -71,6 +97,31 @@ export interface AdminAchievement {
   rejection_reason?: string | null
   created_at: string
   group_name?: string | null
+}
+
+// GET /gifted-applications/all (Nizom 7.1/10-modda)
+export interface AdminGiftedApplication {
+  id: number
+  user_id: number
+  student_name: string
+  hemis_id: string
+  faculty?: string | null
+  direction?: string | null
+  course?: number | null
+  motivation_text?: string | null
+  status: 'pending' | 'approved' | 'rejected' | string
+  decision_note?: string | null
+  reviewed_by_id?: number | null
+  reviewed_at?: string | null
+  created_at: string
+}
+
+export interface AdminGiftedApplicationListResponse {
+  items: AdminGiftedApplication[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
 }
 
 // GET /achievements/all
@@ -227,6 +278,13 @@ export interface SupervisorOption {
   capacity: number | null
   current_load: number
   is_full: boolean
+}
+
+// PATCH /supervisor-requests/capacity/{supervisor_id}
+export interface SupervisorCapacityResponse {
+  success: boolean
+  message?: string
+  capacity: number | null
 }
 
 // GET /supervisor-requests/mine

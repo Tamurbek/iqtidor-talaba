@@ -304,6 +304,8 @@ async def seed_roles_and_permissions(db: AsyncSession):
         # Tanlovlar
         {"code": "contests.manage", "name": "Tanlovlar va kvotalarni boshqarish", "module": "contests"},
         {"code": "contests.review", "name": "Tanlov arizalarini ko'rib chiqish", "module": "contests"},
+        # Iqtidorli talaba sifatida saralash arizasi (Nizom 7.1/10-modda)
+        {"code": "gifted_applications.review", "name": "Saralash arizalarini ko'rib chiqish", "module": "gifted_applications"},
         # Test va imtihon
         {"code": "exams.manage", "name": "Savollar bazasi va monitoring", "module": "exams"},
         {"code": "exams.reset", "name": "Imtihon urinishlarini tiklash", "module": "exams"},
@@ -348,6 +350,7 @@ async def seed_roles_and_permissions(db: AsyncSession):
                 "starostas.view", "starostas.manage",
                 "achievements.view", "achievements.verify",
                 "contests.manage", "contests.review",
+                "gifted_applications.review",
                 "exams.manage", "exams.reset",
                 "reports.view", "users.manage"
             ]
@@ -357,7 +360,7 @@ async def seed_roles_and_permissions(db: AsyncSession):
             "name": "Fakultet koordinatori",
             "description": "Fakultet miqyosida talabalar va ularning yutuqlarini tekshiruvchi mas'ul",
             "is_system": True,
-            "permissions": ["achievements.view", "achievements.verify", "contests.review", "reports.view", "starostas.view"]
+            "permissions": ["achievements.view", "achievements.verify", "contests.review", "gifted_applications.review", "reports.view", "starostas.view"]
         },
         {
             "code": "jury_expert",

@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, ConfigDict
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 
@@ -20,6 +20,7 @@ class StudentMonitoringItem(BaseModel):
     plan_overdue: bool
     activity_score: float
     is_at_risk: bool
+    meetings_in_period: Optional[int] = None
 
 
 class MonitoringSummaryResponse(BaseModel):
@@ -29,6 +30,9 @@ class MonitoringSummaryResponse(BaseModel):
     avg_plan_completion_pct: float
     students_without_plan: int
     generated_at: datetime
+    period_start: Optional[datetime] = None
+    avg_meetings_in_period: Optional[float] = None
+    students_without_meeting_in_period: Optional[int] = None
 
 
 class NotifyAtRiskResponse(BaseModel):
@@ -41,3 +45,13 @@ class MonitoringReportResponse(BaseModel):
     generated_at: datetime
     summary: MonitoringSummaryResponse
     at_risk_students: List[StudentMonitoringItem]
+
+
+class StoredMonitoringReportResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    period: str
+    generated_at: datetime
+    summary_json: Dict[str, Any]
+    at_risk_count: int

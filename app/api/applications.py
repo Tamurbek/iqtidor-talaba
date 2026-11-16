@@ -9,10 +9,12 @@ from app.core.database import get_db
 from app.models.user import User
 from app.models.achievement import StudentAchievement
 from app.models.application import ContestApplication
+from app.models.gifted_application import GiftedApplication
 from app.models.exam import StudentExamResult
 from app.schemas.application import ApplicationCreate, ApplicationReview, ApplicationResponse, ApplicationListResponse
 from app.api.deps import get_current_student, require_permission
 from app.core.pagination import PageParams, paginate_query, total_pages
+from app.services.ranking import get_tier
 
 logger = logging.getLogger("iqtidorli_applications")
 
@@ -61,6 +63,20 @@ async def submit_application(
     db: AsyncSession = Depends(get_db),
     student: User = Depends(get_current_student)
 ):
+    # Nizom 32-modda: tanlovlarga tavsiya etish saralash reytingidan (saralangan,
+    # ya'ni GiftedApplication statusi "approved" bo'lgan) talabalar uchun amalga oshiriladi.
+    gifted = await db.execute(
+        select(GiftedApplication).where(
+            GiftedApplication.user_id == student.id,
+            GiftedApplication.status == "approved"
+        )
+    )
+    if gifted.scalar_one_or_none() is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Kontest arizasini topshirish uchun avval iqtidorli talaba sifatida saralashdan o'tgan (tasdiqlangan) bo'lishingiz kerak"
+        )
+
     # Check if student already applied for this contest
     existing = await db.execute(
         select(ContestApplication).where(
@@ -225,7 +241,14 @@ class CalculatorInput(BaseModel):
     patent_count: Optional[int] = 0
 
 @router.post("/calculator/evaluate")
-async def evaluate_smart_calculator(data: CalculatorInput):
+async def evaluate_smart_calculator(
+    data: CalculatorInput,
+    current_admin: User = Depends(require_permission("contests.review")),
+):
+    """Nizom 14.1-modda: hujjat bilan tasdiqlanmagan ma'lumotlar rasmiy baholashga
+    kiritilmaydi, shuning uchun bu endpoint faqat mas'ul komissiya (fakultet
+    koordinatori / bo'lim boshlig'i / admin) uchun simulyatsiya vositasi hisoblanadi,
+    talabaning rasmiy balli emas."""
     # Nizom 1-ilova baholash shkalasi (jami 100 ball):
     # 1. O'zlashtirish ko'rsatkichi (GPA): max 20 ball, GPA * 4
     gpa_pts = round(min(20.0, (data.gpa or 5.0) * 4.0), 1)
@@ -250,30 +273,31 @@ async def evaluate_smart_calculator(data: CalculatorInput):
     # Total Composite Score (GPA 20 + Imtihon 40 + Ilmiy yutuqlar 40 = Jami 100 ball)
     total_score = round(min(100.0, gpa_pts + exam_pts + scientific_score), 1)
 
-    # Recommendation tier
-    if total_score >= 90.0:
-        recommendation = "Prezident davlat stipendiyasi nomzodi"
+    # Recommendation tier — Nizom 14.5-modda bo'yicha yagona manba (get_tier)
+    tier = get_tier(total_score)
+    if tier["tier_code"] == "yuqori_salohiyat":
+        recommendation = "Nomdor davlat stipendiyalari va Prezident stipendiyasi nomzodi"
         tier_color = "#10b981"
-        tier_description = "A'lo darajadagi ko'rsatkich. Respublika miqyosidagi O'zbekiston Respublikasi Prezidenti davlat stipendiyasi tanloviga to'liq tavsiya etiladi."
-    elif total_score >= 80.0:
-        recommendation = "Nomdor davlat stipendiyalari nomzodi (Navoiy, Beruniy, Ibn Sino)"
-        tier_color = "#0284c7"
-        tier_description = "Yetakchi iqtidor darajasi. Nomdor davlat stipendiyalari filial va vazirlik bosqichiga saralashdan o'tish imkoniyati yuqori."
-    elif total_score >= 70.0:
+        tier_description = "Yuqori salohiyatli. Nomdor davlat stipendiyalari va respublika miqyosidagi tanlovlarga tavsiya etiladi."
+    elif tier["tier_code"] == "istiqbolli":
         recommendation = "Filial kengashi stipendiyasi va Faxriy yorliq"
         tier_color = "#f2721c"
-        tier_description = "Faol iqtidorli talaba. Filial ichki kengashi maxsus stipendiyasi va ilmiy grantlariga tavsiya etiladi."
+        tier_description = "Rivojlantirish uchun istiqbolli. Filial ichki kengashi maxsus stipendiyasi va ilmiy grantlariga tavsiya etiladi."
     else:
-        recommendation = "Iqtidorli talabalar zaxirasi"
+        recommendation = "Individual rivojlanish tavsiyasi"
         tier_color = "#64748b"
-        tier_description = "Yutuqlarni oshirish tavsiya etiladi. Scopus maqolasi yoki xalqaro til sertifikati yuklash orqali ballni 85+ ga yetkazish mumkin."
+        tier_description = "Yutuqlarni oshirish tavsiya etiladi. Ball 60dan past bo'lsa, individual rivojlanish rejasi tavsiya etiladi."
 
     return {
         "success": True,
+        "is_simulation": True,
+        "disclaimer": "Bu hisob-kitob simulyatsiya natijasidir, hujjat bilan tasdiqlanmagan ma'lumotlarga asoslangani uchun rasmiy ball hisoblanmaydi (Nizom 14.1-modda)",
         "gpa_points": gpa_pts,
-        "social_points": social_pts,
+        "exam_points": exam_pts,
         "scientific_points": scientific_score,
         "total_score": total_score,
+        "tier_code": tier["tier_code"],
+        "tier_label": tier["tier_label"],
         "recommendation": recommendation,
         "tier_color": tier_color,
         "tier_description": tier_description

@@ -86,6 +86,12 @@ async def assign_tutor(
     if not tutor or not tutor.has_role("tutor"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ko'rsatilgan foydalanuvchi tyutor emas")
 
+    if student.supervisor_id == tutor.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bu foydalanuvchi talabaning ilmiy rahbari, tyutor bo'la olmaydi (Nizom 19-modda)",
+        )
+
     existing_res = await db.execute(select(TutorAssignment).where(TutorAssignment.student_id == student_id))
     existing = existing_res.scalar_one_or_none()
     if existing:

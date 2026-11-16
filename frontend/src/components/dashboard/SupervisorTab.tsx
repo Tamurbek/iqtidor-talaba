@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import client from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
-import type { IncomingSupervisorRequest, IncomingSupervisorRequestListResponse, SupervisorOption, SupervisorRequestItem } from '../../types/admin'
+import type { IncomingSupervisorRequest, IncomingSupervisorRequestListResponse, SupervisorCapacityResponse, SupervisorOption, SupervisorRequestItem } from '../../types/admin'
 import type { User } from '../../types/user'
 import { extractErrorMessage } from '../../types/dashboard'
+import { isDeptHeadLevel } from '../../utils/roles'
 import Pagination from '../common/Pagination'
 
 const INCOMING_PAGE_SIZE = 10
@@ -44,9 +45,13 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
   const [topic, setTopic] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [decidingId, setDecidingId] = useState<number | null>(null)
+  const [capacityDrafts, setCapacityDrafts] = useState<Record<number, string>>({})
+  const [savingCapacityId, setSavingCapacityId] = useState<number | null>(null)
 
   const hasSupervisor = Boolean(user.supervisor_id)
   const hasPendingRequest = myRequests.some((r) => r.status === 'pending')
+  // 10.5-modda: mas'ul bo'lim (department_head/admin) professorlar kvotasini belgilaydi.
+  const canManageCapacity = hideSelfRequest && isDeptHeadLevel(user.role)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -56,14 +61,16 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
       // shu sababli professor-o'qituvchi (hideSelfRequest) uni chaqirmaydi.
       const emptyIncoming: IncomingSupervisorRequestListResponse = { items: [], total: 0, page: 1, page_size: INCOMING_PAGE_SIZE, total_pages: 1 }
       const [supRes, reqRes, incRes] = await Promise.all([
-        hideSelfRequest ? Promise.resolve({ data: [] as SupervisorOption[] }) : client.get<SupervisorOption[]>('/users/supervisors/list'),
+        hideSelfRequest && !canManageCapacity ? Promise.resolve({ data: [] as SupervisorOption[] }) : client.get<SupervisorOption[]>('/users/supervisors/list'),
         hideSelfRequest ? Promise.resolve({ data: [] as SupervisorRequestItem[] }) : client.get<SupervisorRequestItem[]>('/supervisor-requests/mine'),
         client
           .get<IncomingSupervisorRequestListResponse>('/supervisor-requests/incoming', { params: { page: incomingPage, page_size: INCOMING_PAGE_SIZE } })
           .catch(() => ({ data: emptyIncoming })),
       ])
       const requests = Array.isArray(reqRes.data) ? reqRes.data : []
-      setSupervisors(Array.isArray(supRes.data) ? supRes.data : [])
+      const supervisorList = Array.isArray(supRes.data) ? supRes.data : []
+      setSupervisors(supervisorList)
+      setCapacityDrafts(Object.fromEntries(supervisorList.map((s) => [s.id, s.capacity != null ? String(s.capacity) : ''])))
       setMyRequests(requests)
       setIncoming(incRes.data.items)
       setIncomingTotal(incRes.data.total)
@@ -87,7 +94,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     } finally {
       setLoading(false)
     }
-  }, [user.supervisor_id, updateCurrentUser, hideSelfRequest, incomingPage])
+  }, [user.supervisor_id, updateCurrentUser, hideSelfRequest, canManageCapacity, incomingPage])
 
   useEffect(() => {
     load()
@@ -146,6 +153,27 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     }
   }
 
+  const handleSaveCapacity = async (supervisorId: number) => {
+    const raw = (capacityDrafts[supervisorId] ?? '').trim()
+    const capacity = raw === '' ? null : parseInt(raw, 10)
+    if (capacity !== null && (Number.isNaN(capacity) || capacity < 0)) {
+      setError("Kvota manfiy bo'lmagan butun son bo'lishi kerak")
+      return
+    }
+    setSavingCapacityId(supervisorId)
+    setError(null)
+    setMessage(null)
+    try {
+      const { data } = await client.patch<SupervisorCapacityResponse>(`/supervisor-requests/capacity/${supervisorId}`, { capacity })
+      setMessage(data.message || 'Kvota yangilandi')
+      await load()
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Kvotani yangilashda xatolik yuz berdi'))
+    } finally {
+      setSavingCapacityId(null)
+    }
+  }
+
   if (loading) {
     return <div style={cardStyle}>Yuklanmoqda...</div>
   }
@@ -154,6 +182,46 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {canManageCapacity && supervisors.length > 0 && (
+        <div style={cardStyle}>
+          <h3 style={{ margin: '0 0 6px', fontSize: 16, color: 'var(--text-heading)' }}>Ilmiy rahbarlik kvotasi (10.5-modda)</h3>
+          <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-muted)' }}>
+            Har bir professor-o'qituvchi biriktirilishi mumkin bo'lgan talabalar sonini belgilang. Bo'sh qoldirilsa, kvota cheklanmaydi.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {supervisors.map((s) => (
+              <div key={s.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, border: '1px solid var(--border-light)', borderRadius: 10, padding: '10px 14px' }}>
+                <div style={{ flex: '1 1 220px' }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-dark)' }}>{s.full_name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {s.department || s.faculty || ''} &middot; Hozirgi yuklama: {s.current_load} talaba
+                  </div>
+                </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  Kvota
+                  <input
+                    type="number"
+                    min={0}
+                    value={capacityDrafts[s.id] ?? ''}
+                    onChange={(e) => setCapacityDrafts((prev) => ({ ...prev, [s.id]: e.target.value }))}
+                    placeholder="Cheklanmagan"
+                    style={{ width: 100, padding: '8px 10px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13 }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  disabled={savingCapacityId === s.id}
+                  onClick={() => handleSaveCapacity(s.id)}
+                  style={{ padding: '8px 16px', border: 'none', background: '#059669', color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+                >
+                  {savingCapacityId === s.id ? 'Saqlanmoqda...' : 'Saqlash'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isEmpty && (
         <div style={{ ...cardStyle, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14, padding: 40 }}>
           Hozircha ilmiy rahbarlik so'rovlari mavjud emas
