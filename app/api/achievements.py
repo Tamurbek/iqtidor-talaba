@@ -152,7 +152,7 @@ async def upload_achievement(
         user_id=student.id,
         student_name=student.full_name,
         hemis_id=student.hemis_id,
-        faculty=student.faculty or "Amaliy matematika va axborot texnologiyalari",
+        faculty=student.faculty,
         achievement_type=achievement_type,
         scope=scope,
         title=clean_title,
@@ -218,9 +218,10 @@ async def get_all_achievements(
     db: AsyncSession = Depends(get_db),
     current_admin: User = Depends(require_permission("achievements.verify"))
 ):
-    counts_res = await db.execute(
-        select(StudentAchievement.status, func.count(StudentAchievement.id)).group_by(StudentAchievement.status)
-    )
+    counts_query = select(StudentAchievement.status, func.count(StudentAchievement.id)).group_by(StudentAchievement.status)
+    if not current_admin.is_department_head:
+        counts_query = counts_query.where(StudentAchievement.faculty == current_admin.faculty)
+    counts_res = await db.execute(counts_query)
     counts = {s: c for s, c in counts_res.all()}
 
     query = (
@@ -230,6 +231,9 @@ async def get_all_achievements(
     )
     if status_filter:
         query = query.where(StudentAchievement.status == status_filter)
+    # Nizom 24-modda: fakultet koordinatori faqat o'z fakulteti yutuqlarini ko'radi
+    if not current_admin.is_department_head:
+        query = query.where(StudentAchievement.faculty == current_admin.faculty)
 
     result, filtered_total = await paginate_query(db, query, page_params.page, page_params.page_size)
 
@@ -261,6 +265,12 @@ async def approve_achievement(
     achievement = result.scalar_one_or_none()
     if not achievement:
         raise HTTPException(status_code=404, detail="Yutuq topilmadi")
+    # Nizom 24-modda: fakultet koordinatori faqat o'z fakulteti yutuqlarini tasdiqlashi mumkin
+    if not current_admin.is_department_head and achievement.faculty != current_admin.faculty:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Siz faqat o'z fakultetingiz yutuqlarini ko'rib chiqishingiz mumkin",
+        )
 
     achievement.status = "approved"
     achievement.points = float(payload.points)
@@ -290,6 +300,12 @@ async def reject_achievement(
     achievement = result.scalar_one_or_none()
     if not achievement:
         raise HTTPException(status_code=404, detail="Yutuq topilmadi")
+    # Nizom 24-modda: fakultet koordinatori faqat o'z fakulteti yutuqlarini rad etishi mumkin
+    if not current_admin.is_department_head and achievement.faculty != current_admin.faculty:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Siz faqat o'z fakultetingiz yutuqlarini ko'rib chiqishingiz mumkin",
+        )
 
     achievement.status = "rejected"
     achievement.rejection_reason = payload.reason
@@ -314,6 +330,7 @@ async def get_students_ranking(
     course: Optional[int] = None,
     page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(require_permission("reports.view")),
 ):
     # Nizom 13-14-moddalari baholash shkalasi (jami 100 ball):
     # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40)
@@ -371,12 +388,21 @@ async def export_excel_ranking(
     direction: Optional[str] = None,
     course: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(require_permission("reports.view")),
 ):
     # Haqiqiy .xlsx formatda, filial/yo'nalish/kurs bo'yicha filtrlash imkoniyati bilan
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
 
-    ranking_data = (await get_students_ranking(faculty, direction, course, db))["ranking"]
+    full_page_params = PageParams(page=1, page_size=100000)
+    ranking_data = (await get_students_ranking(
+        faculty=faculty,
+        direction=direction,
+        course=course,
+        page_params=full_page_params,
+        db=db,
+        current_admin=current_admin,
+    ))["ranking"]
 
     wb = Workbook()
     ws = wb.active
@@ -414,6 +440,7 @@ async def export_pdf_ranking(
     direction: Optional[str] = None,
     course: Optional[int] = None,
     db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(require_permission("reports.view")),
 ):
     # Rasmiy bayonnoma uchun PDF formatda reyting hisoboti
     from reportlab.lib import colors
@@ -422,7 +449,15 @@ async def export_pdf_ranking(
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib.styles import getSampleStyleSheet
 
-    ranking_data = (await get_students_ranking(faculty, direction, course, db))["ranking"]
+    full_page_params = PageParams(page=1, page_size=100000)
+    ranking_data = (await get_students_ranking(
+        faculty=faculty,
+        direction=direction,
+        course=course,
+        page_params=full_page_params,
+        db=db,
+        current_admin=current_admin,
+    ))["ranking"]
 
     output = io.BytesIO()
     doc = SimpleDocTemplate(

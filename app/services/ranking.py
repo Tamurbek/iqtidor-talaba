@@ -93,7 +93,8 @@ async def compute_ranking(
         ach_pts, category_points = compute_achievement_points(s_achs)
         counted = [a for a in s_achs if a.file_url]
 
-        gpa_val = s.avg_gpa if s.avg_gpa and s.avg_gpa > 0 else 5.0
+        # Nizom 14.1-modda: hujjat bilan tasdiqlanmagan (bu yerda - mavjud bo'lmagan) GPA baholashga kiritilmaydi
+        gpa_val = s.avg_gpa if s.avg_gpa and s.avg_gpa > 0 else 0.0
         gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
 
         er = latest_exams.get(s.id)
@@ -106,8 +107,8 @@ async def compute_ranking(
             "id": s.id,
             "full_name": s.full_name,
             "hemis_id": s.hemis_id,
-            "faculty": s.faculty or "Amaliy matematika",
-            "direction": s.direction or "Dasturiy injiniring",
+            "faculty": s.faculty or "Noma'lum",
+            "direction": s.direction or "Noma'lum",
             "course": f"{s.course}-kurs" if s.course else "1-kurs",
             "course_num": s.course or 1,
             "gpa": gpa_val,
