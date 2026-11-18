@@ -9,7 +9,7 @@ class MonitoringReport(Base):
     __tablename__ = "monitoring_reports"
 
     id = Column(Integer, primary_key=True, index=True)
-    period = Column(String(20), nullable=False)  # monthly, semester
+    period = Column(String(20), nullable=False)  # monthly, semester, annual
     generated_at = Column(DateTime, default=datetime.utcnow, index=True)
     summary_json = Column(JSON, nullable=False)
     at_risk_count = Column(Integer, nullable=False, default=0)

@@ -28,6 +28,7 @@ from app.schemas.achievement import (
 from app.api.deps import get_current_student, require_permission
 from app.services.ranking import compute_ranking
 from app.core.pagination import PageParams, paginate_query, paginate_sequence, total_pages
+from app.core.role_utils import scoped_faculty
 
 logger = logging.getLogger("iqtidorli_achievements")
 
@@ -123,6 +124,21 @@ async def upload_achievement(
     clean_desc = re.sub(r'<[^>]*>', '', description).strip() if description else None
     if not clean_title:
         raise HTTPException(status_code=400, detail="Yutuq sarlavhasi bo'sh bo'lishi mumkin emas")
+
+    # Nizom 14.4-modda: bir natijani takroran hisoblashga yo'l qo'yilmaydi
+    dup_res = await db.execute(
+        select(StudentAchievement.id).where(
+            StudentAchievement.user_id == student.id,
+            StudentAchievement.achievement_type == achievement_type,
+            func.lower(StudentAchievement.title) == clean_title.lower(),
+            StudentAchievement.status.in_(["pending", "approved"]),
+        )
+    )
+    if dup_res.first() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bu yutuq allaqachon yuklangan. Bir natija takroran hisoblanmaydi (Nizom 14.4-modda)"
+        )
 
     # Sanitize and create secure, collision-free filename
     import uuid
@@ -272,6 +288,17 @@ async def approve_achievement(
             detail="Siz faqat o'z fakultetingiz yutuqlarini ko'rib chiqishingiz mumkin",
         )
 
+    # Nizom 13-modda jadvali: ball indikator bo'yicha belgilangan maksimaldan oshmaydi
+    if achievement.achievement_type == INNOVATION_TYPE_CODE:
+        max_pts = ACHIEVEMENT_SCOPES.get(achievement.scope, ACHIEVEMENT_SCOPES["filial"])["max_points"]
+    else:
+        max_pts = ACHIEVEMENT_CATEGORIES.get(achievement.achievement_type, {}).get("max_points", 0.0)
+    if not (0 < payload.points <= max_pts):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Bu indikator bo'yicha ball 0 dan katta va {max_pts} dan oshmasligi kerak (Nizom 13-modda)"
+        )
+
     achievement.status = "approved"
     achievement.points = float(payload.points)
     achievement.rejection_reason = None
@@ -334,6 +361,7 @@ async def get_students_ranking(
 ):
     # Nizom 13-14-moddalari baholash shkalasi (jami 100 ball):
     # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40)
+    faculty = scoped_faculty(current_admin, faculty)
     full_ranking = await compute_ranking(db, faculty=faculty, direction=direction, course=course)
     ranking, total = paginate_sequence(full_ranking, page_params.page, page_params.page_size)
     return {

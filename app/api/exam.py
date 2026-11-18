@@ -357,13 +357,15 @@ async def get_exam_questions(db: AsyncSession = Depends(get_db), student: User =
     )
     existing = res.scalars().first()
 
-    # Return sanitized question bank
+    # Return sanitized question bank. Options are shuffled per student/attempt
+    # (stable across page refreshes) so the correct answer's position is not predictable.
+    attempt_key = f"{student.id}:{student.exam_started_at.isoformat() if student.exam_started_at else ''}"
     clean_bank = {}
     for section_name, questions in QUESTIONS_DATABASE.items():
         clean_list = []
         for q in questions:
-            # Shuffle options deterministically or preserve order
             opts = list(q["options"])
+            random.Random(f"{attempt_key}:{q['id']}").shuffle(opts)
             clean_list.append({
                 "id": q["id"],
                 "section": q["section"],

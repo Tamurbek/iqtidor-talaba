@@ -17,8 +17,10 @@ from app.services.meetings import (
 
 def period_start(period: str, now: Optional[datetime] = None) -> datetime:
     """28-modda: 'monthly' uchun joriy oy boshi, 'semester' uchun joriy semestr
-    boshi (sentyabr yoki fevral) qaytariladi."""
+    boshi (sentyabr yoki fevral), 'annual' uchun joriy o'quv yili boshi (sentyabr)."""
     now = now or datetime.utcnow()
+    if period == "annual":
+        return datetime(now.year if now.month >= 9 else now.year - 1, 9, 1)
     if period == "semester":
         if now.month >= 9:
             return datetime(now.year, 9, 1)

@@ -12,8 +12,9 @@ from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.models.user import User
 from app.models.role import Role
+from app.models.tutor_assignment import TutorAssignment
 from app.api.deps import get_current_user, get_current_admin, get_current_superadmin
-from app.core.role_utils import get_assigned_roles_for_user
+from app.core.role_utils import get_assigned_roles_for_user, can_be_supervisor
 from app.core.pagination import PageParams, paginate_query, total_pages
 
 logger = logging.getLogger("iqtidorli_users")
@@ -464,6 +465,7 @@ async def get_available_supervisors(
 
     res = await db.execute(
         select(User).where(
+            User.role != "student",
             or_(
                 # Nizom 15-16-modda: faqat professor-o'qituvchi (ilmiy darajasi/unvoni
                 # belgilangan yoki RBAC "supervisor" roli biriktirilgan) ilmiy rahbar
@@ -515,10 +517,36 @@ async def assign_scientific_supervisor(
         raise HTTPException(status_code=404, detail="Talaba topilmadi")
 
     # Agar supervisor_id berilgan bo'lsa, o'sha o'qituvchi ma'lumotlarini tekshirish
+    if student.role != "student":
+        raise HTTPException(status_code=400, detail="Ilmiy rahbar faqat talabaga biriktiriladi")
+
     sup_user = None
     if payload.supervisor_id:
         s_res = await db.execute(select(User).where(User.id == payload.supervisor_id))
         sup_user = s_res.scalar_one_or_none()
+        if not sup_user or not sup_user.is_active or not can_be_supervisor(sup_user):
+            raise HTTPException(status_code=400, detail="Tanlangan foydalanuvchi ilmiy rahbar bo'la olmaydi (Nizom 15-16-modda)")
+
+        # Nizom 10.6-modda: belgilangan me'yordan ortiq talaba biriktirilmaydi
+        if sup_user.supervisor_capacity is not None and student.supervisor_id != sup_user.id:
+            load = (await db.execute(
+                select(func.count(User.id)).where(User.supervisor_id == sup_user.id)
+            )).scalar() or 0
+            if load >= sup_user.supervisor_capacity:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Ilmiy rahbar kvotasi ({sup_user.supervisor_capacity} talaba) to'lgan (Nizom 10.6-modda)"
+                )
+
+        # Nizom 19-modda: ilmiy rahbar va tyutor vazifalari bir kishida birlashmaydi
+        tutor_link = await db.execute(
+            select(TutorAssignment.id).where(
+                TutorAssignment.tutor_id == sup_user.id,
+                TutorAssignment.student_id == student.id,
+            )
+        )
+        if tutor_link.first() is not None:
+            raise HTTPException(status_code=400, detail="Bu o'qituvchi talabaning tyutori, ilmiy rahbar bo'la olmaydi (Nizom 19-modda)")
 
     student.supervisor_id = payload.supervisor_id
     student.supervisor_name = (payload.supervisor_name or (sup_user.full_name if sup_user else "") or "").strip()
@@ -558,6 +586,24 @@ async def get_student_supervisor(
     student = res.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=404, detail="Talaba topilmadi")
+
+    # Nizom 26-modda: shaxsga doir ma'lumotlarga kirish huquqi cheklanadi
+    allowed = (
+        current_user.id == student.id
+        or current_user.id == student.supervisor_id
+        or current_user.is_department_head
+        or (current_user.has_role("faculty_coordinator") and current_user.faculty == student.faculty)
+    )
+    if not allowed:
+        tutor_link = await db.execute(
+            select(TutorAssignment.id).where(
+                TutorAssignment.tutor_id == current_user.id,
+                TutorAssignment.student_id == student.id,
+            )
+        )
+        allowed = tutor_link.first() is not None
+    if not allowed:
+        raise HTTPException(status_code=403, detail="Bu talaba ma'lumotlarini ko'rish huquqingiz yo'q")
 
     return {
         "supervisor_id": student.supervisor_id,

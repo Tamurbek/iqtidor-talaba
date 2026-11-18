@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Demo/test ma'lumotlarini seed qilish - productionda HECH QACHON yoqilmasin
     SEED_DEMO_DATA: bool = os.getenv("SEED_DEMO_DATA", "false").lower() == "true"
 
+    # Nizom 14.2-modda: HEMIS'dagi GPA shkalasi (5 ballik bo'lsa GPA*4; boshqa shkalada 20 ballga mutanosib)
+    GPA_SCALE: float = float(os.getenv("GPA_SCALE", "5"))
+
     def __init__(self, **values):
         super().__init__(**values)
         # Check if asyncpg is installed and we are inside Docker

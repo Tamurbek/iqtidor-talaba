@@ -13,6 +13,7 @@ from app.models.supervisor_request import SupervisorRequest
 from app.models.tutor_assignment import TutorAssignment
 from app.api.deps import get_current_user, get_current_student, get_current_admin
 from app.core.pagination import PageParams, paginate_query, total_pages
+from app.core.role_utils import can_be_supervisor
 
 logger = logging.getLogger("iqtidorli_supervisor_requests")
 
@@ -56,7 +57,7 @@ async def create_supervisor_request(
 
     sup_res = await db.execute(select(User).where(User.id == payload.supervisor_id))
     supervisor = sup_res.scalar_one_or_none()
-    if not supervisor:
+    if not supervisor or not supervisor.is_active or not can_be_supervisor(supervisor):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ilmiy rahbar topilmadi")
 
     existing_res = await db.execute(
@@ -174,7 +175,7 @@ async def accept_supervisor_request(
     req = res.scalar_one_or_none()
     if not req:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="So'rov topilmadi")
-    if not current_user.has_role("supervisor"):
+    if not can_be_supervisor(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu amal faqat ilmiy rahbar uchun mavjud")
     if req.supervisor_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu so'rov sizga tegishli emas")
@@ -256,7 +257,7 @@ async def reject_supervisor_request(
     req = res.scalar_one_or_none()
     if not req:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="So'rov topilmadi")
-    if not current_user.has_role("supervisor"):
+    if not can_be_supervisor(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu amal faqat ilmiy rahbar uchun mavjud")
     if req.supervisor_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu so'rov sizga tegishli emas")

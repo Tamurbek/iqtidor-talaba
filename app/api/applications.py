@@ -14,7 +14,8 @@ from app.models.exam import StudentExamResult
 from app.schemas.application import ApplicationCreate, ApplicationReview, ApplicationResponse, ApplicationListResponse
 from app.api.deps import get_current_student, require_permission
 from app.core.pagination import PageParams, paginate_query, total_pages
-from app.services.ranking import get_tier
+from app.services.ranking import get_tier, gpa_to_points
+from app.core.role_utils import scoped_faculty
 
 logger = logging.getLogger("iqtidorli_applications")
 
@@ -110,11 +111,12 @@ async def submit_application(
     exam_result = exam_res.scalars().first()
     exam_pts = exam_result.total_score if exam_result else 0.0
 
-    gpa_val = student.avg_gpa if student.avg_gpa and student.avg_gpa > 0 else 5.0
-    social_val = student.social_points if student.social_points and student.social_points > 0 else 50.0
+    # Nizom 14.1-modda: tasdiqlanmagan (mavjud bo'lmagan) ma'lumot baholashga kiritilmaydi
+    gpa_val = student.avg_gpa if student.avg_gpa and student.avg_gpa > 0 else 0.0
+    social_val = student.social_points if student.social_points and student.social_points > 0 else 0.0
 
-    # Nizom 1-ilova baholash shkalasi: GPA*4 (max 20) + Imtihon (max 40) + Portfolio (max 40) = 100
-    gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
+    # Nizom 13-modda: GPA*4 (max 20) + Imtihon (max 40) + Portfolio (max 40) = 100
+    gpa_pts = gpa_to_points(gpa_val)
     exam_pts = round(min(40.0, exam_pts), 1)
     # LIMIT CHEKLOVI: ilmiy-ijodiy yutuqlar yig'indisi 40 balldan oshsa ham, maksimal 40 ball hisoblanadi
     scientific_pts = round(min(40.0, ach_points), 1)
@@ -165,6 +167,10 @@ async def get_all_applications(
     db: AsyncSession = Depends(get_db)
 ):
     query = select(ContestApplication).order_by(desc(ContestApplication.id))
+    # Nizom 24-modda: fakultet mas'uli faqat o'z fakulteti arizalarini ko'radi
+    faculty = scoped_faculty(current_admin, None)
+    if faculty is not None:
+        query = query.where(ContestApplication.faculty == faculty)
     result, total = await paginate_query(db, query, page_params.page, page_params.page_size)
     return ApplicationListResponse(
         items=result.scalars().all(),
@@ -186,6 +192,11 @@ async def review_application(
     item = res.scalar_one_or_none()
     if not item:
         raise HTTPException(status_code=404, detail="Ariza topilmadi")
+    if payload.status not in ("approved", "rejected", "under_review"):
+        raise HTTPException(status_code=400, detail="status qiymati noto'g'ri: approved, rejected, under_review")
+    # Nizom 24-modda: fakultet mas'uli faqat o'z fakulteti arizalarini ko'rib chiqadi
+    if not current_admin.is_department_head and current_admin.has_role("faculty_coordinator") and item.faculty != current_admin.faculty:
+        raise HTTPException(status_code=403, detail="Siz faqat o'z fakultetingiz arizalarini ko'rib chiqishingiz mumkin")
 
     item.status = payload.status
     if payload.decision_note:
@@ -251,7 +262,7 @@ async def evaluate_smart_calculator(
     talabaning rasmiy balli emas."""
     # Nizom 1-ilova baholash shkalasi (jami 100 ball):
     # 1. O'zlashtirish ko'rsatkichi (GPA): max 20 ball, GPA * 4
-    gpa_pts = round(min(20.0, (data.gpa or 5.0) * 4.0), 1)
+    gpa_pts = gpa_to_points(data.gpa)
 
     # 2. 1-bosqich masofaviy imtihon: max 40 ball (IQ 20 + Tarix 10 + Chet tili 10)
     exam_pts = round(min(40.0, data.exam_score or 0.0), 1)

@@ -31,6 +31,15 @@ async def _run_generate_monthly_report() -> None:
             logger.exception("[scheduler] oylik monitoring hisoboti generatsiyasi xatolik bilan yakunlandi")
 
 
+async def _run_generate_annual_report() -> None:
+    async with AsyncSessionLocal() as db:
+        try:
+            report = await generate_and_store_report(db, period="annual")
+            logger.info(f"[scheduler] o'quv yili monitoring hisoboti generatsiya qilindi: #{report.id}")
+        except Exception:
+            logger.exception("[scheduler] o'quv yili monitoring hisoboti generatsiyasi xatolik bilan yakunlandi")
+
+
 async def _run_generate_semester_report() -> None:
     async with AsyncSessionLocal() as db:
         try:
@@ -48,26 +57,35 @@ def start_scheduler() -> None:
         replace_existing=True,
         misfire_grace_time=3600,
     )
+    # Nizom 28-modda: hisobotlar davr YAKUNIDA tuziladi — period_start() joriy davr
+    # boshini qaytargani uchun job'lar davrning oxirgi kunida ishga tushadi.
     scheduler.add_job(
         _run_generate_monthly_report,
-        trigger=CronTrigger(day=1, hour=8, minute=0),
+        trigger=CronTrigger(day="last", hour=20, minute=0),
         id="generate_monthly_report",
         replace_existing=True,
         misfire_grace_time=3600,
     )
     scheduler.add_job(
         _run_generate_semester_report,
-        # o'quv yili boshlanishiga mos ikki sana: sentyabr va fevral oyining 15-kuni
-        trigger=CronTrigger(month="2,9", day=15, hour=8, minute=0),
+        # kuzgi semestr yanvar oxirida, bahorgi semestr iyun oxirida yakunlanadi
+        trigger=CronTrigger(month="1,6", day="last", hour=21, minute=0),
         id="generate_semester_report",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    scheduler.add_job(
+        _run_generate_annual_report,
+        trigger=CronTrigger(month=6, day="last", hour=22, minute=0),
+        id="generate_annual_report",
         replace_existing=True,
         misfire_grace_time=3600,
     )
     scheduler.start()
     logger.info(
         "Scheduler ishga tushdi: notify_at_risk_students (har kuni 09:00), "
-        "generate_monthly_report (har oyning 1-kuni), generate_semester_report "
-        "(fevral/sentyabr 15-kuni)."
+        "generate_monthly_report (har oyning oxirgi kuni), generate_semester_report "
+        "(yanvar/iyun oxiri), generate_annual_report (iyun oxiri)."
     )
 
 

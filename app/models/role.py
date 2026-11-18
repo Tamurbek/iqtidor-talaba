@@ -19,6 +19,15 @@ user_roles = Table(
     Column("role_id", Integer, ForeignKey("roles.id", ondelete="CASCADE"), primary_key=True)
 )
 
+# Nizom 24-25-modda: talaba faqat o'z ma'lumotlarini kiritadi, yutuqlarni tekshirish
+# faqat mas'ul bo'lim va kafedra/fakultet mas'ullariga beriladi. Shu sababli talaba
+# rollari huquqlari qat'iy belgilangan va admin paneldan kengaytirilmaydi.
+LOCKED_ROLE_PERMISSIONS = {
+    "student": frozenset(),
+    "starosta": frozenset({"group.view"}),
+}
+
+
 class Role(Base):
     __tablename__ = "roles"
 

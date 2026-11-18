@@ -7,12 +7,24 @@ from typing import List, Optional
 from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.models.role import Role, Permission
+from app.models.role import Role, Permission, LOCKED_ROLE_PERMISSIONS
 from app.models.achievement import StudentAchievement
 from app.models.application import ContestApplication
 from app.services.ranking import compute_achievement_points
 
 router = APIRouter(prefix="/roles", tags=["Dynamic Roles & Starostas"])
+
+
+def _ensure_allowed_permissions(role: Role, perms: List[Permission]) -> None:
+    allowed = LOCKED_ROLE_PERMISSIONS.get(role.code)
+    if allowed is None:
+        return
+    forbidden = sorted(p.code for p in perms if p.code not in allowed)
+    if forbidden:
+        raise HTTPException(
+            status_code=400,
+            detail=f"'{role.name}' roliga quyidagi huquqlarni berib bo'lmaydi (Nizom 24-25-modda): {', '.join(forbidden)}"
+        )
 
 # Schemas
 class RoleCreate(BaseModel):
@@ -400,7 +412,9 @@ async def update_role(
         else:
             if req.permission_ids:
                 perm_res = await db.execute(select(Permission).where(Permission.id.in_(req.permission_ids)))
-                role.permissions = list(perm_res.scalars().all())
+                perms = list(perm_res.scalars().all())
+                _ensure_allowed_permissions(role, perms)
+                role.permissions = perms
             else:
                 role.permissions = []
 
@@ -456,7 +470,9 @@ async def update_role_permissions(
     # Fetch permissions
     if req.permission_ids:
         perm_res = await db.execute(select(Permission).where(Permission.id.in_(req.permission_ids)))
-        role.permissions = list(perm_res.scalars().all())
+        perms = list(perm_res.scalars().all())
+        _ensure_allowed_permissions(role, perms)
+        role.permissions = perms
     else:
         role.permissions = []
 

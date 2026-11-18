@@ -291,7 +291,7 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
 
 
 async def seed_roles_and_permissions(db: AsyncSession):
-    from app.models.role import Role, Permission
+    from app.models.role import Role, Permission, LOCKED_ROLE_PERMISSIONS
 
     # 1. Define standard permissions
     perm_definitions = [
@@ -422,6 +422,17 @@ async def seed_roles_and_permissions(db: AsyncSession):
             for p_code in r_def["permissions"]:
                 if p_code not in current_perm_codes and p_code in existing_perm_codes:
                     role_obj.permissions.append(existing_perm_codes[p_code])
+
+    # Talaba rollaridan Nizomga zid qo'shib qo'yilgan huquqlarni olib tashlash
+    for code, allowed in LOCKED_ROLE_PERMISSIONS.items():
+        role_obj = existing_role_codes.get(code)
+        if role_obj is None:
+            continue
+        extra = [p for p in role_obj.permissions if p.code not in allowed]
+        for p in extra:
+            role_obj.permissions.remove(p)
+        if extra:
+            logger.warning("'%s' rolidan ruxsat etilmagan huquqlar olib tashlandi: %s", code, [p.code for p in extra])
     await db.commit()
 
     # 3. Assign initial roles to existing users if not yet assigned

@@ -10,6 +10,15 @@ from app.models.achievement import (
     INNOVATION_TYPE_CODE,
 )
 from app.models.exam import StudentExamResult
+from app.core.config import settings
+
+
+def gpa_to_points(gpa: Optional[float]) -> float:
+    """Nizom 13-modda (2-band): GPA*4, maks. 20 ball. 14.1: GPA mavjud bo'lmasa ball berilmaydi.
+    14.2: 5 ballikdan boshqa shkalada 20 ballik mezonga mutanosib o'tkaziladi."""
+    if not gpa or gpa <= 0:
+        return 0.0
+    return round(min(20.0, gpa / settings.GPA_SCALE * 20.0), 1)
 
 
 def get_tier(total_score: float) -> dict:
@@ -95,7 +104,7 @@ async def compute_ranking(
 
         # Nizom 14.1-modda: hujjat bilan tasdiqlanmagan (bu yerda - mavjud bo'lmagan) GPA baholashga kiritilmaydi
         gpa_val = s.avg_gpa if s.avg_gpa and s.avg_gpa > 0 else 0.0
-        gpa_pts = round(min(20.0, gpa_val * 4.0), 1)
+        gpa_pts = gpa_to_points(gpa_val)
 
         er = latest_exams.get(s.id)
         exam_score = er.total_score if er else 0.0

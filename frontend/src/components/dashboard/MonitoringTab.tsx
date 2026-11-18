@@ -19,6 +19,7 @@ const REPORTS_PAGE_SIZE = 10
 const periodLabel: Record<string, string> = {
   monthly: 'Oylik',
   semester: 'Semestrlik',
+  annual: "O'quv yili",
 }
 
 const cardStyle: React.CSSProperties = {
@@ -304,6 +305,7 @@ export default function MonitoringTab() {
           >
             <option value="monthly">Oylik</option>
             <option value="semester">Semestrlik</option>
+            <option value="annual">O'quv yili</option>
           </select>
           <button
             type="button"
@@ -355,6 +357,7 @@ export default function MonitoringTab() {
             <option value="">Barcha davrlar</option>
             <option value="monthly">Oylik</option>
             <option value="semester">Semestrlik</option>
+            <option value="annual">O'quv yili</option>
           </select>
         </div>
 

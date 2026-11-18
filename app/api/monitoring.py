@@ -89,7 +89,7 @@ async def trigger_notify_at_risk(
 
 @router.get("/report", response_model=MonitoringReportResponse)
 async def monitoring_report(
-    period: str = Query("monthly", pattern="^(monthly|semester)$"),
+    period: str = Query("monthly", pattern="^(monthly|semester|annual)$"),
     faculty: Optional[str] = None,
     course: Optional[int] = None,
     direction: Optional[str] = None,
@@ -114,7 +114,7 @@ async def monitoring_report(
 
 @router.get("/reports", response_model=PaginatedResponse[StoredMonitoringReportResponse])
 async def monitoring_reports_history(
-    period: Optional[str] = Query(None, pattern="^(monthly|semester)$"),
+    period: Optional[str] = Query(None, pattern="^(monthly|semester|annual)$"),
     page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_admin),

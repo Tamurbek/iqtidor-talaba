@@ -58,7 +58,7 @@ export interface NotifyAtRiskResponse {
 
 export type StudentMonitoringListResponse = PaginatedResponse<StudentMonitoringItem>
 
-export type MonitoringPeriod = 'monthly' | 'semester'
+export type MonitoringPeriod = 'monthly' | 'semester' | 'annual'
 
 // GET /monitoring/report
 export interface MonitoringReportResponse {

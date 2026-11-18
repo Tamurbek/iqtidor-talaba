@@ -20,7 +20,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.add_column('users', sa.Column('exam_started_at', sa.DateTime(), nullable=True))
+    # Some databases already have this column (added outside Alembic); skip if present.
+    columns = {c["name"] for c in sa.inspect(op.get_bind()).get_columns("users")}
+    if "exam_started_at" not in columns:
+        op.add_column('users', sa.Column('exam_started_at', sa.DateTime(), nullable=True))
 
 
 def downgrade() -> None:
