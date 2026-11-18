@@ -17,6 +17,7 @@ from app.models.gifted_application import GiftedApplication
 from app.models.monitoring_report import MonitoringReport
 from app.models.selection_period import SelectionPeriod
 from app.models.semester_report import SemesterReport
+from app.models.compliance import IntegrityViolation, IncentiveProposal
 
 __all__ = [
     "Base", "User", "Role", "Permission", "role_permissions", "user_roles",

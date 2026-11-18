@@ -15,6 +15,7 @@ export type AdminTabKey =
   | 'monitoring'
   | 'gifted-applications'
   | 'semester-reports'
+  | 'compliance'
   | 'profile-security'
 
 // app/schemas/monitoring.py -> GET /monitoring/students
@@ -132,6 +133,8 @@ export interface AdminGiftedApplication {
   score_at_review?: number | null
   tier_at_review?: string | null
   created_at: string
+  revoked_at?: string | null
+  revoke_reason?: string | null
 }
 
 export interface AdminGiftedApplicationListResponse {

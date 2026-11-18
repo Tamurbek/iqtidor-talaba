@@ -235,6 +235,18 @@ export default function AdminSidebar({ activeTab, counts, visibleTabs, mobileOpe
             </button>
           </li>
           )}
+          {visibleTabs.has('compliance') && (
+          <li>
+            <button type="button" onClick={() => onSwitchTab('compliance')} className={linkClass('compliance')} id="admin-side-compliance">
+              <span className="cabinet-menu-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </span>
+              <span>Nazorat va rag'batlantirish</span>
+            </button>
+          </li>
+          )}
           <li>
             <button type="button" onClick={() => onSwitchTab('profile-security')} className={linkClass('profile-security')} id="admin-side-profile">
               <span className="cabinet-menu-icon">

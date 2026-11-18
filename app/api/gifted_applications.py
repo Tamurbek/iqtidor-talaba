@@ -16,6 +16,7 @@ from app.services.notifications import notify
 from app.schemas.gifted_application import (
     GiftedApplicationCreate,
     GiftedApplicationReview,
+    GiftedApplicationRevoke,
     GiftedApplicationResponse,
     GiftedApplicationListResponse,
 )
@@ -221,4 +222,61 @@ async def review_gifted_application(
     )
     await db.commit()
     await db.refresh(item)
+    return item
+
+
+@router.post("/{app_id}/revoke", response_model=GiftedApplicationResponse)
+async def revoke_gifted_status(
+    app_id: int,
+    payload: GiftedApplicationRevoke,
+    current_admin: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Nizom 5, 31-modda: saralash uzluksiz jarayon — qayta baholash natijasida (faollik
+    pasaygan, reja bajarilmagan, ma'lumot tasdiqlanmagan, qoidabuzarlik) iqtidorli maqom
+    sababi ko'rsatilgan holda bekor qilinadi. Talaba keyingi saralash davrida qayta topshira oladi."""
+    item = (await db.execute(select(GiftedApplication).where(GiftedApplication.id == app_id))).scalar_one_or_none()
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ariza topilmadi")
+    if item.status != "approved":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Faqat qabul qilingan (approved) maqomni bekor qilish mumkin")
+
+    allowed = current_admin.is_department_head
+    if not allowed and item.period_id:
+        period = (await db.execute(select(SelectionPeriod).where(SelectionPeriod.id == item.period_id))).scalar_one_or_none()
+        allowed = period is not None and current_admin.id in (period.commission_member_ids or [])
+    if not allowed:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Maqomni faqat mas'ul bo'lim yoki saralash komissiyasi bekor qiladi")
+
+    item.status = "revoked"
+    item.revoked_at = datetime.utcnow()
+    item.revoked_by_id = current_admin.id
+    item.revoke_reason = payload.reason.strip()
+
+    await notify(
+        db,
+        user_id=item.user_id,
+        title="Iqtidorli talaba maqomingiz qayta ko'rib chiqildi",
+        body=f"Maqom bekor qilindi. Sabab: {item.revoke_reason}. Kamchiliklarni bartaraf etib, keyingi saralash davrida qayta ariza topshirishingiz mumkin (Nizom 31-modda).",
+        type="gifted_application",
+        related_entity_type="gifted_application",
+        related_entity_id=item.id,
+        commit=False,
+    )
+    student = (await db.execute(select(User).where(User.id == item.user_id))).scalar_one_or_none()
+    if student is not None and student.supervisor_id:
+        # Nizom 31-modda: zarur hollarda individual reja qayta ko'rib chiqiladi
+        await notify(
+            db,
+            user_id=student.supervisor_id,
+            title=f"{student.full_name}: iqtidorli maqom bekor qilindi — individual rejani qayta ko'rib chiqing",
+            body=item.revoke_reason,
+            type="development_plan",
+            related_entity_type="gifted_application",
+            related_entity_id=item.id,
+            commit=False,
+        )
+    await db.commit()
+    await db.refresh(item)
+    logger.info(f"Gifted status #{item.id} revoked by user #{current_admin.id}")
     return item

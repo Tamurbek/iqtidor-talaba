@@ -93,6 +93,8 @@ export interface GiftedApplication {
   score_at_review?: number | null
   tier_at_review?: string | null
   created_at: string
+  revoked_at?: string | null
+  revoke_reason?: string | null
 }
 
 // Nizom 8, 14.5-modda: saralash davri (GET /selection-periods)

@@ -32,7 +32,13 @@ class GiftedApplicationResponse(BaseModel):
     period_id: Optional[int] = None
     score_at_review: Optional[float] = None
     tier_at_review: Optional[str] = None
+    revoked_at: Optional[datetime] = None
+    revoke_reason: Optional[str] = None
     created_at: datetime
+
+
+class GiftedApplicationRevoke(BaseModel):
+    reason: str = Field(min_length=10, max_length=2000)
 
 
 class GiftedApplicationListResponse(PaginatedResponse[GiftedApplicationResponse]):

@@ -60,6 +60,28 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
     }
   }
 
+  const revoke = async (id: number) => {
+    const reason = window.prompt(
+      "Iqtidorli maqomni bekor qilish sababi (Nizom 5, 31-modda: faollik pasaygan, reja bajarilmagan, ma'lumot tasdiqlanmagan va h.k.):",
+      '',
+    )
+    if (reason === null) return
+    if (reason.trim().length < 10) {
+      showToast("Sababni batafsilroq yozing (kamida 10 belgi)", 'error')
+      return
+    }
+    setBusyId(id)
+    try {
+      const { data } = await client.post<AdminGiftedApplication>(`/gifted-applications/${id}/revoke`, { reason: reason.trim() })
+      onApplicationUpdated(data)
+      showToast('Maqom bekor qilindi, talaba va ilmiy rahbarga xabar yuborildi', 'success')
+    } catch (err) {
+      showToast(extractErrorMessage(err, 'Xatolik yuz berdi'), 'error')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
   const list = applications ?? []
 
   return (
@@ -115,6 +137,8 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
                     <td style={tdStyle}>
                       {app.status === 'approved' ? (
                         <span style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>Qabul qilindi</span>
+                      ) : app.status === 'revoked' ? (
+                        <span title={app.revoke_reason || ''} style={{ background: 'var(--bg-light)', color: 'var(--text-muted)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>Maqom bekor qilingan</span>
                       ) : app.status === 'rejected' ? (
                         <span style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>Rad etilgan</span>
                       ) : (
@@ -142,6 +166,10 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
                             Rad etish
                           </button>
                         </div>
+                      ) : app.status === 'approved' && canManagePeriods ? (
+                        <button type="button" disabled={busyId === app.id} onClick={() => revoke(app.id)} style={{ background: 'var(--bg-light)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', padding: '6px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                          Maqomni bekor qilish
+                        </button>
                       ) : (
                         <span style={{ color: 'var(--text-light)', fontSize: 12 }}>Ko'rib chiqilgan</span>
                       )}

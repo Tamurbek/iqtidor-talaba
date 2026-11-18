@@ -19,6 +19,13 @@ function StatusBadge({ status }: { status: string }) {
       </span>
     )
   }
+  if (status === 'revoked') {
+    return (
+      <span style={{ background: 'var(--bg-light)', color: 'var(--text-muted)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>
+        Maqom bekor qilingan
+      </span>
+    )
+  }
   if (status === 'rejected') {
     return (
       <span style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -49,7 +56,7 @@ export default function GiftedApplicationTab({ application, loading, error, onSu
   }, [])
 
   // Rad etilgan talaba keyingi (yangi) saralash davrida qayta ariza topshira oladi
-  const canApplyAgain = !!application && application.status === 'rejected' && !!period?.is_open && application.period_id !== period.id
+  const canApplyAgain = !!application && (application.status === 'rejected' || application.status === 'revoked') && !!period?.is_open && application.period_id !== period.id
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -115,6 +122,11 @@ export default function GiftedApplicationTab({ application, loading, error, onSu
                 </div>
                 {application.motivation_text && (
                   <p style={{ marginTop: 8, fontSize: 14, color: 'var(--text-dark)' }}>{application.motivation_text}</p>
+                )}
+                {application.revoke_reason && (
+                  <p style={{ marginTop: 8, fontSize: 13, color: 'var(--badge-danger-text)' }}>
+                    <strong>Maqom bekor qilinish sababi:</strong> {application.revoke_reason}
+                  </p>
                 )}
                 {application.decision_note && (
                   <p style={{ marginTop: 8, fontSize: 13, color: 'var(--text-table-header)' }}>

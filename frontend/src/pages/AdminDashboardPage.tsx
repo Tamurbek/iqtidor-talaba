@@ -34,6 +34,7 @@ import TutorTab from '../components/dashboard/TutorTab'
 import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
 import MeetingsTab from '../components/dashboard/MeetingsTab'
 import MonitoringTab from '../components/dashboard/MonitoringTab'
+import ComplianceTab from '../components/admin/ComplianceTab'
 import SemesterReportsTab from '../components/admin/SemesterReportsTab'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
@@ -53,6 +54,7 @@ const VALID_TABS: AdminTabKey[] = [
   'monitoring',
   'gifted-applications',
   'semester-reports',
+  'compliance',
   'profile-security',
 ]
 
@@ -70,6 +72,7 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'tutor-students': 'Mening talabalarim',
   monitoring: 'Monitoring va hisobot',
   'gifted-applications': 'Saralash arizalari',
+  'compliance': "Nazorat va rag'batlantirish",
   'semester-reports': "Semestr hisobotlari",
   'profile-security': 'Mening profilim & Parol',
 }
@@ -126,6 +129,8 @@ export default function AdminDashboardPage() {
   if (caps.canReviewGiftedApplications || isCommissionMember) visibleTabs.add('gifted-applications')
 
   if (caps.canViewSemesterReports) visibleTabs.add('semester-reports')
+
+  if (caps.canViewCompliance) visibleTabs.add('compliance')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
     const fromHash = tabFromHash()
@@ -476,6 +481,13 @@ export default function AdminDashboardPage() {
             <SemesterReportsTab
               canAuthor={caps.isSemesterReportAuthor}
               isCoordinator={!caps.isDeptHeadLevel && caps.canVerifyAchievements}
+              isDeptHead={caps.isDeptHeadLevel}
+              showToast={showToast}
+            />
+          )}
+          {activeTab === 'compliance' && (
+            <ComplianceTab
+              canRecordViolations={caps.isDeptHeadLevel || caps.canVerifyAchievements || (activeRole ?? currentUser?.role) === 'supervisor'}
               isDeptHead={caps.isDeptHeadLevel}
               showToast={showToast}
             />

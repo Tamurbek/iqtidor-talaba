@@ -30,6 +30,7 @@ export interface AdminCapabilities {
   canReviewGiftedApplications: boolean
   canViewSemesterReports: boolean
   isSemesterReportAuthor: boolean
+  canViewCompliance: boolean
 }
 
 /** seed_data.py role_definitions'dagi permissions ro'yxatiga mos keladigan tab huquqlari. */
@@ -56,6 +57,8 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
     canViewMonitoring: deptHead,
     // gifted_applications.review: department_head, faculty_coordinator (seed_data.py)
     canReviewGiftedApplications: coordinatorLevel,
+    // Nizom 7.8, 16.5, 33, 36: rag'batlantirish taklifi va qoidabuzarlik qayd etish (xodimlar)
+    canViewCompliance: isStaffRole(role),
     isSemesterReportAuthor: role === 'supervisor' || role === 'tutor' || role === 'teacher',
     canViewSemesterReports: deptHead || role === 'faculty_coordinator' || role === 'coordinator' || role === 'supervisor' || role === 'tutor' || role === 'teacher',
   }

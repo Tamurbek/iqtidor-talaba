@@ -19,12 +19,16 @@ class GiftedApplication(Base):
 
     motivation_text = Column(Text, nullable=True)
 
-    status = Column(String(50), default="pending")  # pending, approved, rejected
+    status = Column(String(50), default="pending")  # pending, approved, rejected, revoked
     decision_note = Column(Text, nullable=True)
     reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
     # Nizom 8, 14.5-modda: saralash davri va qaror paytidagi ball/daraja
     period_id = Column(Integer, ForeignKey("selection_periods.id", ondelete="SET NULL"), nullable=True, index=True)
     score_at_review = Column(Float, nullable=True)
+    # Nizom 5, 31-modda: iqtidorli maqom qayta baholanib bekor qilinishi mumkin (status="revoked")
+    revoked_at = Column(DateTime, nullable=True)
+    revoked_by_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    revoke_reason = Column(Text, nullable=True)
     tier_at_review = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
