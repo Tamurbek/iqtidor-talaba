@@ -26,7 +26,7 @@ from app.schemas.achievement import (
     AdminAchievementListResponse,
 )
 from app.api.deps import get_current_student, require_permission
-from app.services.ranking import compute_ranking
+from app.services.ranking import compute_ranking, RANKING_DISCLAIMER
 from app.core.pagination import PageParams, paginate_query, paginate_sequence, total_pages
 from app.core.role_utils import scoped_faculty
 
@@ -366,6 +366,7 @@ async def get_students_ranking(
     ranking, total = paginate_sequence(full_ranking, page_params.page, page_params.page_size)
     return {
         "success": True,
+        "disclaimer": RANKING_DISCLAIMER,
         "ranking": ranking,
         "total": total,
         "page": page_params.page,
@@ -387,6 +388,9 @@ RANKING_EXPORT_HEADERS = [
     "Tasdiqlangan yutuqlar soni",
     "Jami reyting bali",
     "Saralash darajasi",
+    # Nizom 13-modda (III bo'lim yakuni): talabalar va biriktirilgan ilmiy rahbarlarning yakuniy ro'yxati
+    "Ilmiy rahbar",
+    "Ilmiy mavzu",
 ]
 
 
@@ -405,6 +409,8 @@ def _ranking_export_rows(ranking_data: list) -> list:
             r["approved_count"],
             r["total_score"],
             r["tier_label"],
+            r.get("supervisor_name") or "Biriktirilmagan",
+            r.get("research_topic") or "",
         ]
         for r in ranking_data
     ]
@@ -445,6 +451,8 @@ async def export_excel_ranking(
 
     for row in _ranking_export_rows(ranking_data):
         ws.append(row)
+    ws.append([])
+    ws.append([RANKING_DISCLAIMER])
 
     for col_cells in ws.columns:
         max_len = max(len(str(c.value)) if c.value is not None else 0 for c in col_cells)
@@ -522,6 +530,8 @@ async def export_pdf_ranking(
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
     ]))
     elements.append(table)
+    elements.append(Spacer(1, 5 * mm))
+    elements.append(Paragraph(RANKING_DISCLAIMER, styles["Italic"]))
 
     doc.build(elements)
     output.seek(0)

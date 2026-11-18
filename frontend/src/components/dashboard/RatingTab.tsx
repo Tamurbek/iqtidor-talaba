@@ -1,6 +1,7 @@
 import type { User } from '../../types/user'
 import type { Achievement, ExamStatus } from '../../types/dashboard'
 import { computeAchievementBreakdown } from '../../types/dashboard'
+import { RANKING_DISCLAIMER } from '../../utils/nizom'
 
 interface Props {
   user: User
@@ -30,7 +31,7 @@ export default function RatingTab({ user, examStatus, achievements, onGoToCalcul
             </span>
             <h2 style={{ fontSize: 22, fontWeight: 800, marginTop: 6 }}>"Iqtidorli talaba" ko'krak nishoni va mukofot reytingi</h2>
             <p style={{ color: '#cbd5e1', fontSize: 13.5, marginTop: 2 }}>
-              G'oliblar bazaviy stipendiyaning 10 baravarigacha moddiy rag'bat va rasmiy ko'krak nishoni bilan taqdirlanadi (VM-59).
+              {RANKING_DISCLAIMER}
             </p>
           </div>
         </div>

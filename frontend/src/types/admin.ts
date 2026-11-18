@@ -168,6 +168,7 @@ export interface RankingItem {
 
 export interface RankingResponse {
   success: boolean
+  disclaimer?: string
   ranking: RankingItem[]
   total: number
   page: number

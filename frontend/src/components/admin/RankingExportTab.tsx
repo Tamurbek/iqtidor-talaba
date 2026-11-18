@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 import AssignSupervisorModal from './AssignSupervisorModal'
 import Pagination from '../common/Pagination'
+import { RANKING_DISCLAIMER } from '../../utils/nizom'
 
 interface Props {
   ranking: RankingItem[] | null
@@ -106,6 +107,7 @@ export default function RankingExportTab({ ranking, loading, error, page, totalP
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-heading)' }}>Filial iqtidorli talabalari umumiy reytingi</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>Nizomning 13-14-moddalari: GPA (20b) + 1-bosqich sinov imtihoni (40b) + Ilmiy-ijodiy yutuqlar, 8 indikator bo'yicha (40b) = Jami 100 ball</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginTop: 4, fontStyle: 'italic' }}>{RANKING_DISCLAIMER}</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <select id="rankingFacultyFilter" aria-label="Fakultet bo'yicha filtr" value={faculty} onChange={(e) => setFaculty(e.target.value)} style={selectStyle}>

@@ -13,6 +13,15 @@ from app.models.exam import StudentExamResult
 from app.core.config import settings
 
 
+# Nizom 32-modda
+RANKING_DISCLAIMER = (
+    "Reyting natijalari rivojlanish yo'nalishlarini belgilash, stipendiya va tanlovlarga tavsiya etish "
+    "hamda rag'batlantirish bo'yicha takliflar tayyorlash uchun foydalaniladi. Reyting o'z-o'zidan "
+    "stipendiya, mukofot yoki boshqa imtiyozni kafolatlamaydi; yakuniy qaror tegishli tartib va "
+    "hujjatlar asosida qabul qilinadi (Nizom 32-modda)."
+)
+
+
 def gpa_to_points(gpa: Optional[float]) -> float:
     """Nizom 13-modda (2-band): GPA*4, maks. 20 ball. 14.1: GPA mavjud bo'lmasa ball berilmaydi.
     14.2: 5 ballikdan boshqa shkalada 20 ballik mezonga mutanosib o'tkaziladi."""
