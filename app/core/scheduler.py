@@ -6,6 +6,7 @@ from apscheduler.triggers.cron import CronTrigger
 from app.core.database import AsyncSessionLocal
 from app.services.monitoring import notify_at_risk_students, generate_and_store_report
 from app.services.semester_reports import remind_semester_reports
+from app.services.audit import purge_old_audit_logs
 
 logger = logging.getLogger("iqtidorli_app")
 
@@ -39,6 +40,14 @@ async def _run_remind_semester_reports() -> None:
             logger.info(f"[scheduler] semestr hisoboti eslatmalari yuborildi: {sent}")
         except Exception:
             logger.exception("[scheduler] semestr hisoboti eslatmasi xatolik bilan yakunlandi")
+
+
+async def _run_purge_audit_logs() -> None:
+    try:
+        removed = await purge_old_audit_logs()
+        logger.info(f"[scheduler] eski audit yozuvlari o'chirildi: {removed}")
+    except Exception:
+        logger.exception("[scheduler] audit jurnalini tozalash xatolik bilan yakunlandi")
 
 
 async def _run_generate_annual_report() -> None:
@@ -89,6 +98,13 @@ def start_scheduler() -> None:
         # Nizom 30-modda: semestr yakunidan oldin ilmiy rahbar/tyutorlarga eslatma
         trigger=CronTrigger(month="1,6", day=15, hour=9, minute=30),
         id="remind_semester_reports",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    scheduler.add_job(
+        _run_purge_audit_logs,
+        trigger=CronTrigger(day=1, hour=3, minute=0),
+        id="purge_audit_logs",
         replace_existing=True,
         misfire_grace_time=3600,
     )

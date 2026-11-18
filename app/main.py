@@ -1,4 +1,5 @@
 import os
+import time
 import asyncio
 import logging
 from contextlib import asynccontextmanager
@@ -13,6 +14,7 @@ from app.core.database import engine, AsyncSessionLocal
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services.seed_data import seed_initial_data, seed_roles_and_permissions
 from app.api import api_router
+from app.services import audit
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -61,10 +63,13 @@ app = FastAPI(
     redoc_url="/api/redoc"
 )
 
-# Global Security Headers Middleware
+# Global Security Headers Middleware (+ Nizom 26-modda: o'zgartiruvchi so'rovlar audit jurnali)
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
+    started = time.perf_counter()
     response = await call_next(request)
+    if audit.should_audit(request):
+        audit.record(request, response.status_code, started)
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-XSS-Protection"] = "1; mode=block"
