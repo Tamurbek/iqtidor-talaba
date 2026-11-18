@@ -198,6 +198,18 @@ export default function MonitoringTab() {
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Rejasi yo'q</div>
             <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-heading)' }}>{summary.students_without_plan}</div>
           </div>
+          <div style={statCardStyle}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>O'rtacha GPA</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-heading)' }}>{summary.avg_gpa ?? '—'}</div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Nashrlar / tanlov arizalari</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-heading)' }}>{summary.total_publications} / {summary.total_contest_applications}</div>
+          </div>
+          <div style={statCardStyle}>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Ma'lumoti eskirgan (90+ kun)</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: summary.students_with_stale_data ? 'var(--badge-warning-text)' : 'var(--text-heading)' }}>{summary.students_with_stale_data}</div>
+          </div>
         </div>
       )}
 
@@ -261,6 +273,9 @@ export default function MonitoringTab() {
                   <th style={{ padding: '8px 10px' }}>Oxirgi uchrashuv</th>
                   <th style={{ padding: '8px 10px' }}>Reja bajarilishi</th>
                   <th style={{ padding: '8px 10px' }}>Faollik balli</th>
+                  <th style={{ padding: '8px 10px' }}>GPA</th>
+                  <th style={{ padding: '8px 10px' }}>Nashr / yutuq / tanlov</th>
+                  <th style={{ padding: '8px 10px' }}>Oxirgi yangilanish</th>
                   <th style={{ padding: '8px 10px' }}>Holat</th>
                 </tr>
               </thead>
@@ -275,6 +290,12 @@ export default function MonitoringTab() {
                     <td style={{ padding: '8px 10px' }}>{formatDate(s.last_meeting_date)}</td>
                     <td style={{ padding: '8px 10px' }}>{s.plan_completion_pct != null ? `${s.plan_completion_pct}%` : 'Rejasi yo\'q'}</td>
                     <td style={{ padding: '8px 10px', fontWeight: 700 }}>{s.activity_score}</td>
+                    <td style={{ padding: '8px 10px' }}>{s.gpa ?? '—'}</td>
+                    <td style={{ padding: '8px 10px' }}>{s.publications_count} / {s.approved_achievements} / {s.contest_applications}</td>
+                    <td style={{ padding: '8px 10px', color: s.data_stale ? 'var(--badge-warning-text)' : undefined }}>
+                      {formatDate(s.last_data_update)}
+                      {s.data_stale && <div style={{ fontSize: 11 }}>dolzarb emas</div>}
+                    </td>
                     <td style={{ padding: '8px 10px' }}>
                       {s.is_at_risk ? (
                         <span style={{ padding: '3px 10px', borderRadius: 999, fontSize: 11.5, fontWeight: 700, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }}>

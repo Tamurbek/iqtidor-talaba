@@ -14,6 +14,7 @@ export type AdminTabKey =
   | 'tutor-students'
   | 'monitoring'
   | 'gifted-applications'
+  | 'semester-reports'
   | 'profile-security'
 
 // app/schemas/monitoring.py -> GET /monitoring/students
@@ -34,7 +35,14 @@ export interface StudentMonitoringItem {
   plan_overdue: boolean
   activity_score: number
   is_at_risk: boolean
+  gpa?: number | null
+  approved_achievements: number
+  publications_count: number
+  contest_applications: number
+  last_data_update?: string | null
+  data_stale: boolean
   meetings_in_period?: number | null
+  achievements_in_period?: number | null
 }
 
 // GET /monitoring/summary
@@ -44,10 +52,15 @@ export interface MonitoringSummary {
   avg_activity_score: number
   avg_plan_completion_pct: number
   students_without_plan: number
+  avg_gpa?: number | null
+  total_publications: number
+  total_contest_applications: number
+  students_with_stale_data: number
   generated_at: string
   period_start?: string | null
   avg_meetings_in_period?: number | null
   students_without_meeting_in_period?: number | null
+  achievements_in_period?: number | null
 }
 
 // POST /monitoring/notify-at-risk

@@ -5,6 +5,7 @@ from apscheduler.triggers.cron import CronTrigger
 
 from app.core.database import AsyncSessionLocal
 from app.services.monitoring import notify_at_risk_students, generate_and_store_report
+from app.services.semester_reports import remind_semester_reports
 
 logger = logging.getLogger("iqtidorli_app")
 
@@ -29,6 +30,15 @@ async def _run_generate_monthly_report() -> None:
             logger.info(f"[scheduler] oylik monitoring hisoboti generatsiya qilindi: #{report.id}")
         except Exception:
             logger.exception("[scheduler] oylik monitoring hisoboti generatsiyasi xatolik bilan yakunlandi")
+
+
+async def _run_remind_semester_reports() -> None:
+    async with AsyncSessionLocal() as db:
+        try:
+            sent = await remind_semester_reports(db)
+            logger.info(f"[scheduler] semestr hisoboti eslatmalari yuborildi: {sent}")
+        except Exception:
+            logger.exception("[scheduler] semestr hisoboti eslatmasi xatolik bilan yakunlandi")
 
 
 async def _run_generate_annual_report() -> None:
@@ -75,6 +85,14 @@ def start_scheduler() -> None:
         misfire_grace_time=3600,
     )
     scheduler.add_job(
+        _run_remind_semester_reports,
+        # Nizom 30-modda: semestr yakunidan oldin ilmiy rahbar/tyutorlarga eslatma
+        trigger=CronTrigger(month="1,6", day=15, hour=9, minute=30),
+        id="remind_semester_reports",
+        replace_existing=True,
+        misfire_grace_time=3600,
+    )
+    scheduler.add_job(
         _run_generate_annual_report,
         trigger=CronTrigger(month=6, day="last", hour=22, minute=0),
         id="generate_annual_report",
@@ -85,7 +103,7 @@ def start_scheduler() -> None:
     logger.info(
         "Scheduler ishga tushdi: notify_at_risk_students (har kuni 09:00), "
         "generate_monthly_report (har oyning oxirgi kuni), generate_semester_report "
-        "(yanvar/iyun oxiri), generate_annual_report (iyun oxiri)."
+        "(yanvar/iyun oxiri), generate_annual_report (iyun oxiri), remind_semester_reports (yanvar/iyun 15)."
     )
 
 

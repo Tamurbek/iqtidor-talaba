@@ -34,6 +34,7 @@ import TutorTab from '../components/dashboard/TutorTab'
 import DevelopmentPlanTab from '../components/dashboard/DevelopmentPlanTab'
 import MeetingsTab from '../components/dashboard/MeetingsTab'
 import MonitoringTab from '../components/dashboard/MonitoringTab'
+import SemesterReportsTab from '../components/admin/SemesterReportsTab'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
@@ -51,6 +52,7 @@ const VALID_TABS: AdminTabKey[] = [
   'tutor-students',
   'monitoring',
   'gifted-applications',
+  'semester-reports',
   'profile-security',
 ]
 
@@ -68,6 +70,7 @@ const TAB_TITLES: Record<AdminTabKey, string> = {
   'tutor-students': 'Mening talabalarim',
   monitoring: 'Monitoring va hisobot',
   'gifted-applications': 'Saralash arizalari',
+  'semester-reports': "Semestr hisobotlari",
   'profile-security': 'Mening profilim & Parol',
 }
 
@@ -121,6 +124,8 @@ export default function AdminDashboardPage() {
       .catch(() => setIsCommissionMember(false))
   }, [currentUser])
   if (caps.canReviewGiftedApplications || isCommissionMember) visibleTabs.add('gifted-applications')
+
+  if (caps.canViewSemesterReports) visibleTabs.add('semester-reports')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
     const fromHash = tabFromHash()
@@ -465,6 +470,14 @@ export default function AdminDashboardPage() {
               }
               showToast={showToast}
               canManagePeriods={caps.isDeptHeadLevel}
+            />
+          )}
+          {activeTab === 'semester-reports' && (
+            <SemesterReportsTab
+              canAuthor={caps.isSemesterReportAuthor}
+              isCoordinator={!caps.isDeptHeadLevel && caps.canVerifyAchievements}
+              isDeptHead={caps.isDeptHeadLevel}
+              showToast={showToast}
             />
           )}
           {activeTab === 'profile-security' && (

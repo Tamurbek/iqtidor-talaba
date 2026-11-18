@@ -28,6 +28,8 @@ export interface AdminCapabilities {
   canViewTutorStudents: boolean
   canViewMonitoring: boolean
   canReviewGiftedApplications: boolean
+  canViewSemesterReports: boolean
+  isSemesterReportAuthor: boolean
 }
 
 /** seed_data.py role_definitions'dagi permissions ro'yxatiga mos keladigan tab huquqlari. */
@@ -54,5 +56,7 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
     canViewMonitoring: deptHead,
     // gifted_applications.review: department_head, faculty_coordinator (seed_data.py)
     canReviewGiftedApplications: coordinatorLevel,
+    isSemesterReportAuthor: role === 'supervisor' || role === 'tutor' || role === 'teacher',
+    canViewSemesterReports: deptHead || role === 'faculty_coordinator' || role === 'coordinator' || role === 'supervisor' || role === 'tutor' || role === 'teacher',
   }
 }

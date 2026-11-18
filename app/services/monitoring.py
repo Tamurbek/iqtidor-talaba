@@ -8,7 +8,14 @@ from app.models.user import User
 from app.models.meeting import Meeting
 from app.models.development_plan import DevelopmentPlan
 from app.models.monitoring_report import MonitoringReport
+from app.models.achievement import StudentAchievement
+from app.models.application import ContestApplication
 from app.services.notifications import notify
+# Nizom 29-modda: nashrlar (ilmiy maqola, tezis, patent) hisoblanadigan yutuq turlari
+PUBLICATION_TYPES = ("scopus_wos", "oak_maqola", "konferensiya", "patent")
+# Platformadagi ma'lumot shu muddatdan ortiq yangilanmasa, dolzarb emas deb belgilanadi
+DATA_STALE_DAYS = 90
+
 from app.services.meetings import (
     MONTHLY_MEETING_WINDOW_DAYS,
     notify_overdue_monthly_meetings,
@@ -123,6 +130,37 @@ async def get_students_monitoring_data(
     for plan in plans_res.scalars().all():
         latest_plan_by_student.setdefault(plan.student_id, plan)
 
+    # Nizom 29-modda: nashrlar, tanlovlardagi ishtirok, loyiha natijalari va ma'lumotlar dolzarbligi
+    range_start = period_start(period) if period else None
+    ach_rows = (await db.execute(
+        select(
+            StudentAchievement.user_id,
+            StudentAchievement.achievement_type,
+            StudentAchievement.status,
+            StudentAchievement.created_at,
+        ).where(StudentAchievement.user_id.in_(student_ids))
+    )).all()
+    approved_by_student: Dict[int, int] = {}
+    publications_by_student: Dict[int, int] = {}
+    approved_in_period_by_student: Dict[int, int] = {}
+    last_upload_by_student: Dict[int, datetime] = {}
+    for uid, a_type, a_status, created in ach_rows:
+        if created and (uid not in last_upload_by_student or created > last_upload_by_student[uid]):
+            last_upload_by_student[uid] = created
+        if a_status != "approved":
+            continue
+        approved_by_student[uid] = approved_by_student.get(uid, 0) + 1
+        if a_type in PUBLICATION_TYPES:
+            publications_by_student[uid] = publications_by_student.get(uid, 0) + 1
+        if range_start and created and created >= range_start:
+            approved_in_period_by_student[uid] = approved_in_period_by_student.get(uid, 0) + 1
+
+    contest_counts = dict((await db.execute(
+        select(ContestApplication.user_id, func.count(ContestApplication.id))
+        .where(ContestApplication.user_id.in_(student_ids))
+        .group_by(ContestApplication.user_id)
+    )).all())
+
     now = datetime.utcnow()
     results: List[Dict] = []
     for s in students:
@@ -136,6 +174,16 @@ async def get_students_monitoring_data(
         plan = latest_plan_by_student.get(s.id)
         plan_completion_pct = compute_plan_completion_percentage(plan)
         plan_overdue = bool(plan and plan.end_date and plan.end_date < now and plan.status != "completed")
+
+        update_candidates = [
+            d for d in (
+                last_upload_by_student.get(s.id),
+                plan.updated_at if plan else None,
+                last_meeting_date,
+            ) if d
+        ]
+        last_data_update = max(update_candidates) if update_candidates else None
+        data_stale = last_data_update is None or (now - last_data_update).days > DATA_STALE_DAYS
 
         is_at_risk = has_overseer and (meeting_overdue or plan_overdue)
         activity_score = compute_activity_score(days_since_last_meeting, plan_completion_pct, plan_overdue)
@@ -157,7 +205,16 @@ async def get_students_monitoring_data(
             "plan_overdue": plan_overdue,
             "activity_score": activity_score,
             "is_at_risk": is_at_risk,
-            **({"meetings_in_period": meetings_in_period_by_student.get(s.id, 0)} if period else {}),
+            "gpa": s.avg_gpa or None,
+            "approved_achievements": approved_by_student.get(s.id, 0),
+            "publications_count": publications_by_student.get(s.id, 0),
+            "contest_applications": contest_counts.get(s.id, 0),
+            "last_data_update": last_data_update,
+            "data_stale": data_stale,
+            **({
+                "meetings_in_period": meetings_in_period_by_student.get(s.id, 0),
+                "achievements_in_period": approved_in_period_by_student.get(s.id, 0),
+            } if period else {}),
         })
 
     return results
@@ -192,6 +249,7 @@ async def get_monitoring_summary(
     total = len(data)
     at_risk_count = sum(1 for item in data if item["is_at_risk"])
     plan_values = [item["plan_completion_pct"] for item in data if item["plan_completion_pct"] is not None]
+    gpas = [item["gpa"] for item in data if item["gpa"]]
 
     summary = {
         "total_students": total,
@@ -199,6 +257,10 @@ async def get_monitoring_summary(
         "avg_activity_score": round(sum(item["activity_score"] for item in data) / total, 1) if total else 0.0,
         "avg_plan_completion_pct": round(sum(plan_values) / len(plan_values), 1) if plan_values else 0.0,
         "students_without_plan": sum(1 for item in data if item["plan_completion_pct"] is None),
+        "avg_gpa": round(sum(gpas) / len(gpas), 2) if gpas else None,
+        "total_publications": sum(item["publications_count"] for item in data),
+        "total_contest_applications": sum(item["contest_applications"] for item in data),
+        "students_with_stale_data": sum(1 for item in data if item["data_stale"]),
         "generated_at": datetime.utcnow(),
     }
 
@@ -208,6 +270,7 @@ async def get_monitoring_summary(
         summary["period_start"] = range_start
         summary["avg_meetings_in_period"] = round(sum(meetings_values) / total, 1) if total else 0.0
         summary["students_without_meeting_in_period"] = sum(1 for v in meetings_values if v == 0)
+        summary["achievements_in_period"] = sum(item.get("achievements_in_period", 0) for item in data)
 
     return summary
 

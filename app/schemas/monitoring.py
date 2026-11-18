@@ -20,7 +20,15 @@ class StudentMonitoringItem(BaseModel):
     plan_overdue: bool
     activity_score: float
     is_at_risk: bool
+    # Nizom 29-modda
+    gpa: Optional[float] = None
+    approved_achievements: int = 0
+    publications_count: int = 0
+    contest_applications: int = 0
+    last_data_update: Optional[datetime] = None
+    data_stale: bool = False
     meetings_in_period: Optional[int] = None
+    achievements_in_period: Optional[int] = None
 
 
 class MonitoringSummaryResponse(BaseModel):
@@ -29,10 +37,15 @@ class MonitoringSummaryResponse(BaseModel):
     avg_activity_score: float
     avg_plan_completion_pct: float
     students_without_plan: int
+    avg_gpa: Optional[float] = None
+    total_publications: int = 0
+    total_contest_applications: int = 0
+    students_with_stale_data: int = 0
     generated_at: datetime
     period_start: Optional[datetime] = None
     avg_meetings_in_period: Optional[float] = None
     students_without_meeting_in_period: Optional[int] = None
+    achievements_in_period: Optional[int] = None
 
 
 class NotifyAtRiskResponse(BaseModel):
