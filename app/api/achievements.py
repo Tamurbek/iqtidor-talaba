@@ -44,6 +44,8 @@ async def upload_achievement(
     scope: Optional[str] = Form(None),
     title: str = Form(...),
     description: Optional[str] = Form(None),
+    co_author_count: Optional[int] = Form(None),
+    author_share: Optional[float] = Form(None),
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     student: User = Depends(get_current_student)
@@ -64,6 +66,22 @@ async def upload_achievement(
             )
     else:
         scope = None
+
+    # Nizom 14.3-modda: hammualliflikda mualliflik hissasi
+    if co_author_count is not None:
+        if not 1 <= co_author_count <= 50:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Mualliflar soni 1 dan 50 gacha bo'lishi kerak")
+        if co_author_count == 1:
+            author_share = 100.0
+        elif author_share is None:
+            author_share = round(100.0 / co_author_count, 1)
+    if author_share is not None:
+        if not 0 < author_share <= 100:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Mualliflik hissasi 0 dan katta va 100% dan oshmasligi kerak")
+        if co_author_count is None:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Mualliflik hissasi bilan birga mualliflar sonini ham kiriting")
+        if co_author_count > 1 and author_share >= 100:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Hammualliflikda talabaning hissasi 100% bo'la olmaydi")
 
     # Anti-spam check: prevent excessive pending submissions
     res_pending = await db.execute(
@@ -163,6 +181,8 @@ async def upload_achievement(
         suggested_pts = ACHIEVEMENT_SCOPES[scope]["per_item"]
     else:
         suggested_pts = ACHIEVEMENT_CATEGORIES[achievement_type]["per_item"]
+    if suggested_pts is not None and author_share is not None:
+        suggested_pts = round(suggested_pts * author_share / 100.0, 2)
 
     new_achievement = StudentAchievement(
         user_id=student.id,
@@ -175,6 +195,8 @@ async def upload_achievement(
         description=clean_desc,
         file_url=file_url,
         points=suggested_pts,
+        co_author_count=co_author_count,
+        author_share=author_share,
         status="pending"
     )
 
@@ -193,6 +215,8 @@ async def upload_achievement(
             "file_url": new_achievement.file_url,
             "status": new_achievement.status,
             "points": new_achievement.points,
+            "co_author_count": new_achievement.co_author_count,
+            "author_share": new_achievement.author_share,
             "created_at": new_achievement.created_at.strftime("%d.%m.%Y %H:%M")
         }
     }
@@ -220,6 +244,8 @@ async def get_my_achievements(
                 "points": a.points,
                 "status": a.status,
                 "rejection_reason": a.rejection_reason,
+                "co_author_count": a.co_author_count,
+                "author_share": a.author_share,
                 "created_at": a.created_at.strftime("%d.%m.%Y") if a.created_at else ""
             }
             for a in achievements

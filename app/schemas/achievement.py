@@ -27,6 +27,8 @@ class AchievementResponse(AchievementBase):
     points: float
     status: str
     rejection_reason: Optional[str] = None
+    co_author_count: Optional[int] = None
+    author_share: Optional[float] = None
     created_at: datetime
 
     class Config:

@@ -39,4 +39,7 @@ class StudentAchievement(Base):
     points = Column(Float, default=0.0)
     status = Column(String(50), default="pending")  # pending, approved, rejected
     rejection_reason = Column(Text, nullable=True)
+    # Nizom 14.3-modda: hammualliflikda talabaning mualliflik hissasi inobatga olinadi
+    co_author_count = Column(Integer, nullable=True)  # jami mualliflar soni (talaba bilan)
+    author_share = Column(Float, nullable=True)  # talabaning hissasi, % (1-100)
     created_at = Column(DateTime, default=datetime.utcnow)

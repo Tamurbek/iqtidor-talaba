@@ -18,6 +18,9 @@ const ACHIEVEMENT_TYPES = [
   { value: 'boshqa', label: "Boshqa tasdiqlangan yutuq (stipendiya, diplom, sertifikat) [maks. 4 ball]" },
 ]
 
+// Nizom 14.3-modda: hammualliflikda mualliflik hissasi hisobga olinadigan indikatorlar
+const AUTHORED_TYPES = new Set(['scopus_wos', 'oak_maqola', 'konferensiya', 'patent', INNOVATION_TYPE_CODE])
+
 interface UploadResponse {
   success: boolean
   message: string
@@ -30,6 +33,9 @@ export default function UploadTab({ onUploaded }: Props) {
   const [scope, setScope] = useState<string>('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [coAuthorCount, setCoAuthorCount] = useState('1')
+  const [authorShare, setAuthorShare] = useState('')
+  const isAuthored = AUTHORED_TYPES.has(achType)
   const [file, setFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -53,6 +59,10 @@ export default function UploadTab({ onUploaded }: Props) {
     if (achType === INNOVATION_TYPE_CODE) formData.append('scope', scope)
     formData.append('title', title)
     if (description) formData.append('description', description)
+    if (isAuthored) {
+      formData.append('co_author_count', coAuthorCount || '1')
+      if (Number(coAuthorCount) > 1 && authorShare) formData.append('author_share', authorShare)
+    }
     formData.append('file', file)
 
     try {
@@ -62,6 +72,8 @@ export default function UploadTab({ onUploaded }: Props) {
       formRef.current?.reset()
       setTitle('')
       setDescription('')
+      setCoAuthorCount('1')
+      setAuthorShare('')
       setFile(null)
       setAchType(ACHIEVEMENT_TYPES[0].value)
       setScope('')
@@ -125,8 +137,40 @@ export default function UploadTab({ onUploaded }: Props) {
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>* Hammualliflikdagi ishlar mualliflar soniga nisbatan proporsional hisoblanadi.</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>* Hammualliflikdagi ishlar talabaning mualliflik hissasiga mutanosib hisoblanadi (Nizom 14.3-modda).</p>
           </div>
+
+          {isAuthored && (
+            <div style={{ marginBottom: 18, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13.5, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Mualliflar soni (siz bilan)
+                <input
+                  type="number"
+                  min={1}
+                  max={50}
+                  required
+                  value={coAuthorCount}
+                  onChange={(e) => setCoAuthorCount(e.target.value)}
+                  style={{ width: 160, padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14 }}
+                />
+              </label>
+              {Number(coAuthorCount) > 1 && (
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 13.5, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                  Mualliflik hissangiz, %
+                  <input
+                    type="number"
+                    min={1}
+                    max={99}
+                    step="0.1"
+                    value={authorShare}
+                    onChange={(e) => setAuthorShare(e.target.value)}
+                    placeholder={`teng ulush: ${(100 / Number(coAuthorCount)).toFixed(1)}`}
+                    style={{ width: 200, padding: '11px 14px', borderRadius: 8, border: '1px solid #cbd5e1', fontSize: 14 }}
+                  />
+                </label>
+              )}
+            </div>
+          )}
 
           {achType === INNOVATION_TYPE_CODE && (
             <div style={{ marginBottom: 18 }}>

@@ -97,6 +97,8 @@ export interface AdminAchievement {
   rejection_reason?: string | null
   created_at: string
   group_name?: string | null
+  co_author_count?: number | null
+  author_share?: number | null
 }
 
 // GET /gifted-applications/all (Nizom 7.1/10-modda)

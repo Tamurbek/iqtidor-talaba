@@ -231,6 +231,11 @@ export default function AchievementsApprovalTab({
                     {item.description && (
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{item.description}</div>
                     )}
+                    {item.co_author_count != null && item.co_author_count > 1 && (
+                      <div style={{ fontSize: 12, color: 'var(--badge-info-text)', marginTop: 4 }}>
+                        Hammualliflik: {item.co_author_count} muallif, talaba hissasi {item.author_share}% (Nizom 14.3)
+                      </div>
+                    )}
                   </td>
                   <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                     {item.file_url ? (

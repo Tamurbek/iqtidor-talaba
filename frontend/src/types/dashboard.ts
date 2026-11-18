@@ -50,6 +50,8 @@ export interface Achievement {
   status: 'pending' | 'approved' | 'rejected' | string
   rejection_reason?: string | null
   created_at: string
+  co_author_count?: number | null
+  author_share?: number | null
 }
 
 export interface Application {
