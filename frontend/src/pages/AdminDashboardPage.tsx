@@ -436,6 +436,7 @@ export default function AdminDashboardPage() {
           {activeTab === 'tutor-students' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <TutorTab user={currentUser} />
+              <DevelopmentPlanTab user={currentUser} mode="tutor" />
               <MeetingsTab user={currentUser} mode="tutor" />
             </div>
           )}

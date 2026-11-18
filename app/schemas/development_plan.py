@@ -34,6 +34,8 @@ class DevelopmentPlanResponse(BaseModel):
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     status: str
+    student_agreed_at: Optional[datetime] = None
+    tutor_agreed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -202,6 +202,8 @@ export interface DevelopmentPlan {
   start_date?: string | null
   end_date?: string | null
   status: 'draft' | 'active' | 'completed' | string
+  student_agreed_at?: string | null
+  tutor_agreed_at?: string | null
   created_at: string
   updated_at?: string | null
 }

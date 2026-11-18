@@ -10,8 +10,8 @@ const PAGE_SIZE = 10
 
 interface Props {
   user: User
-  /** Ilmiy rahbar/professor kabinetida ko'rinishi uchun (Nizom 16.1-16.4-modda: tasdiqlash/o'zgartirish). */
-  mode?: 'student' | 'supervisor'
+  /** supervisor: Nizom 16.1-16.4 (tasdiqlash/o'zgartirish); tutor: Nizom 18 (rejani kelishish). */
+  mode?: 'student' | 'supervisor' | 'tutor'
 }
 
 const cardStyle: React.CSSProperties = {
@@ -25,6 +25,29 @@ const statusLabel: Record<string, { text: string; color: string; bg: string }> =
   draft: { text: 'Loyiha (tasdiqlanmagan)', color: 'var(--badge-warning-text)', bg: 'var(--badge-warning-bg)' },
   active: { text: 'Faol', color: 'var(--badge-success-text)', bg: 'var(--badge-success-bg)' },
   completed: { text: 'Yakunlangan', color: 'var(--text-muted)', bg: 'var(--bg-light)' },
+}
+
+function AgreementBadges({ plan }: { plan: DevelopmentPlan }) {
+  const item = (label: string, at?: string | null) => (
+    <span
+      style={{
+        fontSize: 11.5,
+        fontWeight: 600,
+        padding: '3px 9px',
+        borderRadius: 999,
+        color: at ? 'var(--badge-success-text)' : 'var(--badge-warning-text)',
+        background: at ? 'var(--badge-success-bg)' : 'var(--badge-warning-bg)',
+      }}
+    >
+      {label}: {at ? `kelishilgan (${new Date(at).toLocaleDateString('uz-UZ')})` : 'kelishilmagan'}
+    </span>
+  )
+  return (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+      {item('Talaba', plan.student_agreed_at)}
+      {item('Tyutor', plan.tutor_agreed_at)}
+    </div>
+  )
 }
 
 function emptyTask(): DevelopmentTask {
@@ -49,12 +72,14 @@ export default function DevelopmentPlanTab({ user, mode = 'student' }: Props) {
   const [tasks, setTasks] = useState<DevelopmentTask[]>([emptyTask()])
 
   const isSupervisor = mode === 'supervisor'
+  const isTutor = mode === 'tutor'
+  const isStaff = isSupervisor || isTutor
 
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      if (isSupervisor) {
+      if (isStaff) {
         const { data } = await client.get<PaginatedResponse<DevelopmentPlanWithStudent>>('/development-plans', {
           params: { page, page_size: PAGE_SIZE },
         })
@@ -70,7 +95,7 @@ export default function DevelopmentPlanTab({ user, mode = 'student' }: Props) {
     } finally {
       setLoading(false)
     }
-  }, [isSupervisor, page])
+  }, [isStaff, page])
 
   useEffect(() => {
     load()
@@ -128,11 +153,37 @@ export default function DevelopmentPlanTab({ user, mode = 'student' }: Props) {
     }
   }
 
+  const handleAgree = async (planId: number) => {
+    setEditingId(planId)
+    setError(null)
+    setMessage(null)
+    try {
+      await client.post(`/development-plans/${planId}/agree`)
+      setMessage('Reja bilan kelishganingiz qayd etildi')
+      await load()
+    } catch (err) {
+      setError(extractErrorMessage(err, 'Kelishuvni qayd etishda xatolik yuz berdi'))
+    } finally {
+      setEditingId(null)
+    }
+  }
+
+  const agreeButton = (planId: number) => (
+    <button
+      type="button"
+      disabled={editingId === planId}
+      onClick={() => handleAgree(planId)}
+      style={{ padding: '7px 14px', border: 'none', background: '#0070f3', color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
+    >
+      Reja bilan kelishdim
+    </button>
+  )
+
   if (loading) {
     return <div style={cardStyle}>Yuklanmoqda...</div>
   }
 
-  if (isSupervisor) {
+  if (isStaff) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {error && (
@@ -143,7 +194,9 @@ export default function DevelopmentPlanTab({ user, mode = 'student' }: Props) {
         )}
         {supervisedPlans.length === 0 ? (
           <div style={{ ...cardStyle, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14, padding: 40 }}>
-            Hozircha talabalaringizdan individual rivojlanish rejasi kelib tushmagan
+            {isTutor
+              ? "Biriktirilgan talabalaringizda hozircha individual rivojlanish rejasi yo'q"
+              : 'Hozircha talabalaringizdan individual rivojlanish rejasi kelib tushmagan'}
           </div>
         ) : (
           <div style={cardStyle}>
@@ -168,12 +221,21 @@ export default function DevelopmentPlanTab({ user, mode = 'student' }: Props) {
                         ))}
                       </ul>
                     )}
-                    {p.status !== 'completed' && (
+                    <AgreementBadges plan={p} />
+                    {isTutor && p.status !== 'completed' && !p.tutor_agreed_at && (
+                      <div style={{ marginTop: 12 }}>{agreeButton(p.id)}</div>
+                    )}
+                    {isSupervisor && p.status === 'draft' && !p.student_agreed_at && (
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
+                        Talaba reja bilan kelishgach tasdiqlash mumkin bo'ladi (Nizom 18-modda)
+                      </div>
+                    )}
+                    {isSupervisor && p.status !== 'completed' && (
                       <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                         {p.status === 'draft' && (
                           <button
                             type="button"
-                            disabled={editingId === p.id}
+                            disabled={editingId === p.id || !p.student_agreed_at}
                             onClick={() => handleStatusChange(p.id, 'active')}
                             style={{ padding: '7px 14px', border: 'none', background: '#059669', color: '#fff', borderRadius: 8, fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}
                           >
@@ -305,6 +367,10 @@ export default function DevelopmentPlanTab({ user, mode = 'student' }: Props) {
                         <li key={i}>{t.title}{t.deadline ? ` — ${new Date(t.deadline).toLocaleDateString('uz-UZ')}` : ''}</li>
                       ))}
                     </ul>
+                  )}
+                  <AgreementBadges plan={p} />
+                  {p.status !== 'completed' && !p.student_agreed_at && (
+                    <div style={{ marginTop: 12 }}>{agreeButton(p.id)}</div>
                   )}
                   <div style={{ fontSize: 11.5, color: 'var(--text-muted)', marginTop: 8 }}>
                     Yaratilgan: {new Date(p.created_at).toLocaleDateString('uz-UZ')}

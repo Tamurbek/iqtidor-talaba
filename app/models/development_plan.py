@@ -15,5 +15,8 @@ class DevelopmentPlan(Base):
     start_date = Column(DateTime, nullable=True)
     end_date = Column(DateTime, nullable=True)
     status = Column(String(20), default="draft", index=True)  # draft, active, completed
+    # Nizom 18-modda: reja talaba tomonidan ilmiy rahbar va tyutor bilan kelishiladi
+    student_agreed_at = Column(DateTime, nullable=True)
+    tutor_agreed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

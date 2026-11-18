@@ -1,14 +1,16 @@
 import logging
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_
 
 from app.core.database import get_db
 from app.core.pagination import PageParams, paginate_query, total_pages
 from app.models.user import User
 from app.models.development_plan import DevelopmentPlan
+from app.models.tutor_assignment import TutorAssignment
 from app.schemas.development_plan import (
     DevelopmentPlanCreate,
     DevelopmentPlanUpdate,
@@ -33,6 +35,20 @@ VALID_STATUSES = {"draft", "active", "completed"}
 
 def _is_student_user(user: User) -> bool:
     return user.has_role("student") or user.has_role("starosta")
+
+
+def _is_plan_admin(user: User) -> bool:
+    return user.role == "admin" or user.has_role("super_admin") or user.has_role("department_head")
+
+
+async def _is_assigned_tutor(db: AsyncSession, tutor_id: int, student_id: int) -> bool:
+    res = await db.execute(
+        select(TutorAssignment.id).where(
+            TutorAssignment.tutor_id == tutor_id,
+            TutorAssignment.student_id == student_id,
+        )
+    )
+    return res.first() is not None
 
 
 @router.post("", response_model=DevelopmentPlanResponse)
@@ -75,6 +91,8 @@ async def create_development_plan(
         start_date=payload.start_date,
         end_date=payload.end_date,
         status="draft",
+        # Talaba o'zi tuzgan reja bilan kelishgan hisoblanadi (Nizom 18-modda)
+        student_agreed_at=datetime.utcnow() if _is_student_user(current_user) else None,
     )
     db.add(plan)
     await db.flush()
@@ -122,11 +140,16 @@ async def get_supervised_development_plans(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ilmiy rahbar o'ziga biriktirilgan barcha talabalarning rejalarini ko'radi."""
+    """Ilmiy rahbar o'ziga biriktirilgan, tyutor esa o'ziga biriktirilgan talabalarning
+    rejalarini ko'radi (Nizom 17.3, 18-modda)."""
+    tutor_students = select(TutorAssignment.student_id).where(TutorAssignment.tutor_id == current_user.id)
     query = (
         select(DevelopmentPlan, User.full_name, User.hemis_id, User.group_name)
         .join(User, User.id == DevelopmentPlan.student_id)
-        .where(DevelopmentPlan.supervisor_id == current_user.id)
+        .where(or_(
+            DevelopmentPlan.supervisor_id == current_user.id,
+            DevelopmentPlan.student_id.in_(tutor_students),
+        ))
         .order_by(DevelopmentPlan.created_at.desc())
     )
     res, total = await paginate_query(db, query, page_params.page, page_params.page_size)
@@ -155,14 +178,18 @@ async def get_student_development_plans(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Ilmiy rahbar (yoki admin) o'z talabasining rejalarini ko'radi."""
+    """Ilmiy rahbar, tyutor (yoki admin) o'z talabasining rejalarini ko'radi."""
     student_res = await db.execute(select(User).where(User.id == student_id))
     student = student_res.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Talaba topilmadi")
 
-    is_owner_supervisor = student.supervisor_id == current_user.id
-    if not is_owner_supervisor and not (current_user.role == "admin" or current_user.has_role("super_admin") or current_user.has_role("department_head")):
+    allowed = (
+        student.supervisor_id == current_user.id
+        or _is_plan_admin(current_user)
+        or await _is_assigned_tutor(db, current_user.id, student.id)
+    )
+    if not allowed:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu talabaning rejalarini ko'rishga ruxsatingiz yo'q")
 
     res = await db.execute(
@@ -188,12 +215,20 @@ async def update_development_plan(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reja topilmadi")
 
     is_owner_supervisor = plan.supervisor_id == current_user.id
-    if not is_owner_supervisor and not (current_user.role == "admin" or current_user.has_role("super_admin") or current_user.has_role("department_head")):
+    if not is_owner_supervisor and not _is_plan_admin(current_user):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu rejani o'zgartirishga ruxsatingiz yo'q")
 
     if payload.status is not None and payload.status not in VALID_STATUSES:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"status qiymati noto'g'ri: {', '.join(VALID_STATUSES)}")
 
+    # Nizom 18-modda: reja talaba bilan kelishilmaguncha faollashtirilmaydi
+    if payload.status == "active" and plan.status != "active" and not plan.student_agreed_at:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Rejani faollashtirishdan oldin talaba u bilan kelishishi kerak (Nizom 18-modda)",
+        )
+
+    content_changed = any(v is not None for v in (payload.goal, payload.tasks, payload.start_date, payload.end_date))
     if payload.goal is not None:
         plan.goal = payload.goal.strip()
     if payload.tasks is not None:
@@ -204,6 +239,10 @@ async def update_development_plan(
         plan.end_date = payload.end_date
     if payload.status is not None:
         plan.status = payload.status
+    # Mazmun o'zgarsa (va reja hali faollashmagan bo'lsa) kelishuv qaytadan olinadi
+    if content_changed and plan.status == "draft":
+        plan.student_agreed_at = None
+        plan.tutor_agreed_at = None
 
     await notify(
         db,
@@ -219,4 +258,47 @@ async def update_development_plan(
     await db.commit()
     await db.refresh(plan)
 
+    return DevelopmentPlanResponse.model_validate(plan)
+
+
+@router.post("/{plan_id}/agree", response_model=DevelopmentPlanResponse)
+async def agree_development_plan(
+    plan_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Nizom 18-modda: talaba rejani ilmiy rahbar va tyutor bilan kelishadi —
+    talaba o'z rejasini, biriktirilgan tyutor esa talabasining rejasini kelishadi."""
+    res = await db.execute(select(DevelopmentPlan).where(DevelopmentPlan.id == plan_id))
+    plan = res.scalar_one_or_none()
+    if not plan:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reja topilmadi")
+    if plan.status == "completed":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Yakunlangan reja bo'yicha kelishuv talab etilmaydi")
+
+    if plan.student_id == current_user.id:
+        if plan.student_agreed_at:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Siz bu reja bilan allaqachon kelishgansiz")
+        plan.student_agreed_at = datetime.utcnow()
+        who = "Talaba"
+    elif await _is_assigned_tutor(db, current_user.id, plan.student_id):
+        if plan.tutor_agreed_at:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Siz bu reja bilan allaqachon kelishgansiz")
+        plan.tutor_agreed_at = datetime.utcnow()
+        who = "Tyutor"
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Bu rejani kelishish huquqingiz yo'q")
+
+    await notify(
+        db,
+        user_id=plan.supervisor_id,
+        title=f"{who} ({current_user.full_name}) individual rivojlanish rejasi bilan kelishdi",
+        body=plan.goal,
+        type="development_plan",
+        related_entity_type="development_plan",
+        related_entity_id=plan.id,
+        commit=False,
+    )
+    await db.commit()
+    await db.refresh(plan)
     return DevelopmentPlanResponse.model_validate(plan)
