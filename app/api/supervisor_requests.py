@@ -34,6 +34,11 @@ class SupervisorRequestReject(BaseModel):
     reason: Optional[str] = None
 
 
+QUOTA_NOT_SET_DETAIL = (
+    "Bu ilmiy rahbar uchun ilmiy rahbarlik kvotasi mas'ul komissiya tomonidan hali belgilanmagan (Nizom 10.5-modda)"
+)
+
+
 async def _accepted_count(db: AsyncSession, supervisor_id: int) -> int:
     res = await db.execute(
         select(func.count(User.id)).where(User.supervisor_id == supervisor_id)
@@ -59,6 +64,16 @@ async def create_supervisor_request(
     supervisor = sup_res.scalar_one_or_none()
     if not supervisor or not supervisor.is_active or not can_be_supervisor(supervisor):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ilmiy rahbar topilmadi")
+
+    # Nizom 10.5-10.6, 10.8-modda: kvota belgilanmagan yoki to'lgan rahbarga so'rov yuborilmaydi —
+    # talaba boshqa ilmiy rahbarni tanlaydi
+    if supervisor.supervisor_capacity is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=QUOTA_NOT_SET_DETAIL)
+    if await _accepted_count(db, supervisor.id) >= supervisor.supervisor_capacity:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Bu ilmiy rahbarning kvotasi to'lgan. Boshqa ilmiy rahbarni tanlang (Nizom 10.6, 10.8-modda)",
+        )
 
     existing_res = await db.execute(
         select(SupervisorRequest).where(
@@ -182,6 +197,8 @@ async def accept_supervisor_request(
     if req.status != "pending":
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu so'rov allaqachon ko'rib chiqilgan")
 
+    if current_user.supervisor_capacity is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=QUOTA_NOT_SET_DETAIL)
     if current_user.supervisor_capacity is not None:
         current_count = await _accepted_count(db, current_user.id)
         if current_count >= current_user.supervisor_capacity:
@@ -289,8 +306,17 @@ async def set_supervisor_capacity(
     supervisor = res.scalar_one_or_none()
     if not supervisor:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foydalanuvchi topilmadi")
+    if not can_be_supervisor(supervisor):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Bu foydalanuvchi ilmiy rahbar emas")
     if payload.capacity is not None and payload.capacity < 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Kvota manfiy bo'lishi mumkin emas")
+    if payload.capacity is not None:
+        load = await _accepted_count(db, supervisor.id)
+        if payload.capacity < load:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Kvota hozir biriktirilgan talabalar sonidan ({load}) kam bo'lishi mumkin emas",
+            )
 
     supervisor.supervisor_capacity = payload.capacity
     await db.commit()

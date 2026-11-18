@@ -14,7 +14,15 @@ ROLE_CODE_TO_NAME = {
     "jury_expert": "Hakamlar hay'ati / Ekspert",
     "supervisor": "Ilmiy rahbar",
     "tutor": "Tyutor",
+    "dean": "Fakultet dekani",
+    "department_chair": "Kafedra mudiri",
 }
+
+# Nizom 24, 34-modda: o'z fakulteti/kafedrasi doirasida ma'lumotlarni tekshiruvchi mas'ullar
+FACULTY_STAFF_ROLES = ("faculty_coordinator", "coordinator", "dean", "department_chair")
+
+# Admin formasidagi eski kodlar -> RBAC tizim roli kodi
+ROLE_ALIASES = {"coordinator": "faculty_coordinator"}
 
 class User(Base):
     __tablename__ = "users"
@@ -108,6 +116,11 @@ class User(Base):
     @property
     def is_starosta(self) -> bool:
         return self.has_role("starosta")
+
+    @property
+    def is_faculty_staff(self) -> bool:
+        """Fakultet koordinatori, dekan yoki kafedra mudiri (mas'ul bo'lim emas)."""
+        return not self.is_department_head and any(self.has_role(r) for r in FACULTY_STAFF_ROLES)
 
     @property
     def is_department_head(self) -> bool:

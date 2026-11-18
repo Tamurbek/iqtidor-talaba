@@ -363,6 +363,20 @@ async def seed_roles_and_permissions(db: AsyncSession):
             "permissions": ["achievements.view", "achievements.verify", "contests.review", "gifted_applications.review", "reports.view", "starostas.view"]
         },
         {
+            "code": "dean",
+            "name": "Fakultet dekani",
+            "description": "Nizom 34-modda: fakultetda iqtidorli talabalarni aniqlash, ilmiy rahbarlarni biriktirish, ma'lumotlar ishonchliligini tekshirish va hisobot uchun mas'ul",
+            "is_system": True,
+            "permissions": ["achievements.view", "achievements.verify", "contests.review", "gifted_applications.review", "reports.view", "starostas.view"]
+        },
+        {
+            "code": "department_chair",
+            "name": "Kafedra mudiri",
+            "description": "Nizom 24, 34-modda: kafedra yo'nalishi doirasida ma'lumotlarni tekshiruvchi va ilmiy rahbarlarni tavsiya etuvchi mas'ul",
+            "is_system": True,
+            "permissions": ["achievements.view", "achievements.verify", "reports.view", "starostas.view"]
+        },
+        {
             "code": "jury_expert",
             "name": "Hakamlar hay'ati / Ekspert",
             "description": "2-bosqich taqdimot va ijodiy ishlarni baholovchi komissiya a'zosi",
@@ -422,6 +436,16 @@ async def seed_roles_and_permissions(db: AsyncSession):
             for p_code in r_def["permissions"]:
                 if p_code not in current_perm_codes and p_code in existing_perm_codes:
                     role_obj.permissions.append(existing_perm_codes[p_code])
+
+    # Legacy "coordinator" asosiy roli bilan yaratilgan xodimlar RBAC rolisiz qolgan — tuzatish
+    coord_role = existing_role_codes.get("faculty_coordinator")
+    legacy = (await db.execute(select(User).where(User.role == "coordinator"))).scalars().all()
+    for u in legacy:
+        u.role = "faculty_coordinator"
+        if coord_role is not None and coord_role not in u.roles:
+            u.roles.append(coord_role)
+    if legacy:
+        logger.warning("Legacy 'coordinator' rolidagi %d ta foydalanuvchi faculty_coordinator ga o'tkazildi", len(legacy))
 
     # Talaba rollaridan Nizomga zid qo'shib qo'yilgan huquqlarni olib tashlash
     for code, allowed in LOCKED_ROLE_PERMISSIONS.items():

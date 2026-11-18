@@ -195,7 +195,7 @@ async def review_application(
     if payload.status not in ("approved", "rejected", "under_review"):
         raise HTTPException(status_code=400, detail="status qiymati noto'g'ri: approved, rejected, under_review")
     # Nizom 24-modda: fakultet mas'uli faqat o'z fakulteti arizalarini ko'rib chiqadi
-    if not current_admin.is_department_head and current_admin.has_role("faculty_coordinator") and item.faculty != current_admin.faculty:
+    if current_admin.is_faculty_staff and item.faculty != current_admin.faculty:
         raise HTTPException(status_code=403, detail="Siz faqat o'z fakultetingiz arizalarini ko'rib chiqishingiz mumkin")
 
     item.status = payload.status

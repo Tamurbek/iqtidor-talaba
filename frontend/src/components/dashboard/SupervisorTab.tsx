@@ -186,7 +186,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
         <div style={cardStyle}>
           <h3 style={{ margin: '0 0 6px', fontSize: 16, color: 'var(--text-heading)' }}>Ilmiy rahbarlik kvotasi (10.5-modda)</h3>
           <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-muted)' }}>
-            Har bir professor-o'qituvchi biriktirilishi mumkin bo'lgan talabalar sonini belgilang. Bo'sh qoldirilsa, kvota cheklanmaydi.
+            Har bir professor-o'qituvchi biriktirilishi mumkin bo'lgan talabalar sonini belgilang. Kvota belgilanmaguncha rahbarga so'rov yuborilmaydi va talaba biriktirilmaydi (10.5-10.6-modda).
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {supervisors.map((s) => (
@@ -310,7 +310,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                     <button
                       key={s.id}
                       type="button"
-                      disabled={s.is_full}
+                      disabled={s.is_full || s.capacity == null}
                       onClick={() => setSelectedId(String(s.id))}
                       style={{
                         display: 'flex',
@@ -320,10 +320,10 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                         gap: 6,
                         padding: '16px 12px',
                         border: isSelected ? '2px solid var(--badge-success-text)' : '1px solid var(--border-color)',
-                        background: isSelected ? 'var(--badge-success-bg)' : s.is_full ? 'var(--bg-light)' : 'var(--bg-white)',
+                        background: isSelected ? 'var(--badge-success-bg)' : s.is_full || s.capacity == null ? 'var(--bg-light)' : 'var(--bg-white)',
                         borderRadius: 12,
-                        cursor: s.is_full ? 'not-allowed' : 'pointer',
-                        opacity: s.is_full ? 0.6 : 1,
+                        cursor: s.is_full || s.capacity == null ? 'not-allowed' : 'pointer',
+                        opacity: s.is_full || s.capacity == null ? 0.6 : 1,
                         font: 'inherit',
                       }}
                     >
@@ -354,8 +354,8 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-dark)', lineHeight: 1.3 }}>{s.full_name}</div>
                       <div style={{ fontSize: 12, color: 'var(--badge-success-text)', fontWeight: 600 }}>{s.degree || "O'qituvchi"}</div>
                       {s.department && <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{s.department}</div>}
-                      <div style={{ fontSize: 11, color: s.is_full ? 'var(--badge-danger-text)' : 'var(--text-light)', marginTop: 2 }}>
-                        {s.is_full ? "Kvota to'lgan" : s.capacity ? `${s.current_load}/${s.capacity} talaba` : `${s.current_load} talaba`}
+                      <div style={{ fontSize: 11, color: s.is_full || s.capacity == null ? 'var(--badge-danger-text)' : 'var(--text-light)', marginTop: 2 }}>
+                        {s.capacity == null ? 'Kvota belgilanmagan' : s.is_full ? "Kvota to'lgan" : `${s.current_load}/${s.capacity} talaba`}
                       </div>
                     </button>
                   )

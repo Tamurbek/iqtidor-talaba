@@ -39,7 +39,16 @@ function RoleBadge({ role }: { role: string }) {
     case 'department_head':
       return <span style={roleBadge('#e0e7ff', '#4338ca')}>Bo'lim boshlig'i</span>
     case 'coordinator':
+    case 'faculty_coordinator':
       return <span style={roleBadge('var(--badge-info-bg)', 'var(--badge-info-text)')}>Fakultet koordinatori</span>
+    case 'dean':
+      return <span style={roleBadge('var(--badge-info-bg)', 'var(--badge-info-text)')}>Fakultet dekani</span>
+    case 'department_chair':
+      return <span style={roleBadge('var(--badge-info-bg)', 'var(--badge-info-text)')}>Kafedra mudiri</span>
+    case 'supervisor':
+      return <span style={roleBadge('#e0e7ff', '#4338ca')}>Ilmiy rahbar</span>
+    case 'tutor':
+      return <span style={roleBadge('#e0e7ff', '#4338ca')}>Tyutor</span>
     case 'starosta':
       return <span style={roleBadge('var(--badge-warning-bg)', 'var(--badge-warning-text)')}>Guruh sardori</span>
     case 'jury_expert':

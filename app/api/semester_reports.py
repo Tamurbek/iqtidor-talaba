@@ -38,7 +38,7 @@ def _author_roles(user: User) -> List[str]:
 
 
 def _is_coordinator(user: User) -> bool:
-    return user.has_role("faculty_coordinator") and not user.is_department_head
+    return user.is_faculty_staff
 
 
 async def _with_names(db: AsyncSession, reports: List[SemesterReport]) -> List[SemesterReportResponse]:
@@ -155,7 +155,7 @@ async def submit_faculty_summary(
     current_user: User = Depends(get_current_user),
 ):
     """Fakultet koordinatori o'z fakulteti hisobotlarini umumlashtirib mas'ul bo'limga yuboradi."""
-    if not current_user.has_role("faculty_coordinator") or not current_user.faculty:
+    if not current_user.is_faculty_staff or not current_user.faculty:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Umumlashtirilgan hisobotni fakultet mas'uli yuboradi (Nizom 30-modda)")
     semester = payload.semester or current_semester()
 
@@ -183,7 +183,7 @@ async def submit_faculty_summary(
         )
     )).scalar_one_or_none()
     if report is None:
-        report = SemesterReport(kind="faculty_summary", author_id=current_user.id, author_role="faculty_coordinator", semester=semester)
+        report = SemesterReport(kind="faculty_summary", author_id=current_user.id, author_role="faculty_coordinator", semester=semester)  # fakultet mas'uli (koordinator/dekan/kafedra)
         db.add(report)
     report.faculty = current_user.faculty
     report.content = payload.content.strip()

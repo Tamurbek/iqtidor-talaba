@@ -46,6 +46,6 @@ def can_be_supervisor(user: User) -> bool:
 def scoped_faculty(user: User, requested: str | None) -> str | None:
     """Nizom 24-modda: fakultet mas'uli faqat o'z fakulteti doirasidagi ma'lumotlarni
     ko'radi; mas'ul bo'lim (department head) va boshqa rollar uchun so'ralgan filtr qoladi."""
-    if not user.is_department_head and user.has_role("faculty_coordinator"):
+    if user.is_faculty_staff:
         return user.faculty
     return requested

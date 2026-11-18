@@ -14,7 +14,11 @@ const cancelBtnStyle: React.CSSProperties = { padding: '10px 16px', border: '1px
 const errorBoxStyle: React.CSSProperties = { padding: 12, borderRadius: 8, marginBottom: 14, fontSize: 13, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)' }
 
 const ROLE_OPTIONS_ADD: { value: string; label: string }[] = [
-  { value: 'coordinator', label: 'Fakultet koordinatori' },
+  { value: 'faculty_coordinator', label: 'Fakultet koordinatori' },
+  { value: 'dean', label: 'Fakultet dekani' },
+  { value: 'department_chair', label: 'Kafedra mudiri' },
+  { value: 'supervisor', label: 'Ilmiy rahbar (professor-o\'qituvchi)' },
+  { value: 'tutor', label: 'Tyutor' },
   { value: 'department_head', label: "Iqtidorli bo'lim boshlig'i" },
   { value: 'admin', label: 'Administrator (Super admin)' },
   { value: 'jury_expert', label: "Hakamlar hay'ati / Ekspert" },
@@ -25,7 +29,11 @@ const ROLE_OPTIONS_ADD: { value: string; label: string }[] = [
 const ROLE_OPTIONS_EDIT: { value: string; label: string }[] = [
   { value: 'admin', label: 'Administrator (Super admin)' },
   { value: 'department_head', label: "Iqtidorli bo'lim boshlig'i" },
-  { value: 'coordinator', label: 'Fakultet koordinatori' },
+  { value: 'faculty_coordinator', label: 'Fakultet koordinatori' },
+  { value: 'dean', label: 'Fakultet dekani' },
+  { value: 'department_chair', label: 'Kafedra mudiri' },
+  { value: 'supervisor', label: 'Ilmiy rahbar' },
+  { value: 'tutor', label: 'Tyutor' },
   { value: 'starosta', label: 'Guruh sardori' },
   { value: 'jury_expert', label: 'Hakam / Ekspert' },
   { value: 'student', label: 'Talaba' },
@@ -80,7 +88,7 @@ export function AddUserModal({ onClose, onSaved }: BaseModalProps) {
   const [fullName, setFullName] = useState('')
   const [login, setLogin] = useState('')
   const [password, setPassword] = useState('')
-  const [role, setRole] = useState('coordinator')
+  const [role, setRole] = useState('faculty_coordinator')
   const [faculty, setFaculty] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)

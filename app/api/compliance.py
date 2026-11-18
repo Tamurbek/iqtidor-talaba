@@ -43,7 +43,7 @@ async def _names(db: AsyncSession, ids) -> dict:
 
 
 def _is_coordinator(user: User) -> bool:
-    return user.has_role("faculty_coordinator") and not user.is_department_head
+    return user.is_faculty_staff
 
 
 # ==============================================================================

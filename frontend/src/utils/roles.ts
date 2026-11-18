@@ -37,15 +37,19 @@ export interface AdminCapabilities {
 export function getAdminCapabilities(role: string | undefined | null): AdminCapabilities {
   const deptHead = isDeptHeadLevel(role)
   // achievements.verify / starostas.view: department_head, faculty_coordinator (legacy: coordinator)
-  const coordinatorLevel = deptHead || role === 'faculty_coordinator' || role === 'coordinator'
+  // Nizom 24, 34: fakultet/kafedra mas'ullari (koordinator, dekan, kafedra mudiri)
+  const facultyStaff = role === 'faculty_coordinator' || role === 'coordinator' || role === 'dean' || role === 'department_chair'
+  const coordinatorLevel = deptHead || facultyStaff
+  // contests.review / gifted_applications.review kafedra mudiriga berilmaydi (seed_data.py)
+  const facultyReviewer = deptHead || (facultyStaff && role !== 'department_chair')
   // contests.review / reports.view: coordinatorLevel + jury_expert
-  const reviewerLevel = coordinatorLevel || role === 'jury_expert'
+  const reviewerLevel = facultyReviewer || role === 'jury_expert'
 
   return {
     isDeptHeadLevel: deptHead,
     canVerifyAchievements: coordinatorLevel,
     canReviewContests: reviewerLevel,
-    canViewReports: reviewerLevel,
+    canViewReports: coordinatorLevel || role === 'jury_expert',
     canViewStarostas: coordinatorLevel,
     canManageStarostas: deptHead,
     canManageRoles: deptHead,
@@ -56,10 +60,10 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
     // app/api/deps.py:get_current_admin bilan bir xil: backend ham faqat shu darajani qo'yadi
     canViewMonitoring: deptHead,
     // gifted_applications.review: department_head, faculty_coordinator (seed_data.py)
-    canReviewGiftedApplications: coordinatorLevel,
+    canReviewGiftedApplications: facultyReviewer,
     // Nizom 7.8, 16.5, 33, 36: rag'batlantirish taklifi va qoidabuzarlik qayd etish (xodimlar)
     canViewCompliance: isStaffRole(role),
     isSemesterReportAuthor: role === 'supervisor' || role === 'tutor' || role === 'teacher',
-    canViewSemesterReports: deptHead || role === 'faculty_coordinator' || role === 'coordinator' || role === 'supervisor' || role === 'tutor' || role === 'teacher',
+    canViewSemesterReports: coordinatorLevel || role === 'supervisor' || role === 'tutor' || role === 'teacher',
   }
 }

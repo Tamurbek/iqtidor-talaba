@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
-from app.models.user import User
+from app.models.user import User, ROLE_ALIASES
 from app.models.role import Role
 from app.models.tutor_assignment import TutorAssignment
 from app.api.deps import get_current_user, get_current_admin, get_current_superadmin
@@ -23,12 +23,24 @@ router = APIRouter(prefix="/users", tags=["Users Management & Profile"])
 
 TWO_DAYS_SECONDS = 48 * 3600
 
+async def _resolve_role(db: AsyncSession, raw: str):
+    """Rol kodini normallashtiradi (legacy "coordinator" -> "faculty_coordinator") va
+    mavjud tizim roliga mosligini tekshiradi."""
+    code = ROLE_ALIASES.get(raw.strip(), raw.strip())
+    role_obj = (await db.execute(select(Role).where(Role.code == code))).scalar_one_or_none()
+    if role_obj is None and code != "admin":
+        raise HTTPException(status_code=400, detail=f"Noma'lum rol: {raw}")
+    if role_obj is None:
+        role_obj = (await db.execute(select(Role).where(Role.code == "super_admin"))).scalar_one_or_none()
+    return code, role_obj
+
+
 # Schemas
 class UserCreateRequest(BaseModel):
     login: str = Field(..., min_length=3, max_length=50)  # hemis_id / username
     full_name: str = Field(..., min_length=3, max_length=255)
     password: str = Field(..., min_length=6, max_length=72)
-    role: str = Field(default="coordinator")  # admin, coordinator, department_head, jury_expert, student
+    role: str = Field(default="faculty_coordinator")  # tizim roli kodi (roles.code) yoki "admin"
     faculty: Optional[str] = None
     direction: Optional[str] = None
     group_name: Optional[str] = None
@@ -259,6 +271,8 @@ async def create_user(
             detail=f"'{login_str}' logini allaqachon mavjud. Iltimos, boshqa login tanlang."
         )
 
+    role_code, role_obj = await _resolve_role(db, req.role)
+
     # Sanitize name
     clean_name = re.sub(r'<[^>]*>', '', req.full_name).strip()
 
@@ -266,15 +280,14 @@ async def create_user(
         hemis_id=login_str,
         full_name=clean_name,
         hashed_password=get_password_hash(req.password),
-        role=req.role,
+        role=role_code,
         faculty=req.faculty.strip() if req.faculty else None,
         direction=req.direction.strip() if req.direction else None,
         group_name=req.group_name.strip() if req.group_name else None,
         is_active=True
     )
 
-    # If role matches existing Dynamic Role, assign it
-    role_obj = (await db.execute(select(Role).where(Role.code == req.role))).scalar_one_or_none()
+    # Asosiy rolga mos RBAC roli biriktiriladi (aks holda foydalanuvchi huquqsiz qoladi)
     if role_obj:
         new_user.roles.append(role_obj)
 
@@ -313,9 +326,8 @@ async def update_user(
         user.full_name = re.sub(r'<[^>]*>', '', req.full_name).strip()
 
     if req.role and req.role.strip():
-        user.role = req.role.strip()
-        # Sync dynamic role
-        role_obj = (await db.execute(select(Role).where(Role.code == req.role.strip()))).scalar_one_or_none()
+        new_role, role_obj = await _resolve_role(db, req.role)
+        user.role = new_role
         if role_obj and role_obj not in user.roles:
             user.roles.append(role_obj)
 
@@ -527,7 +539,9 @@ async def assign_scientific_supervisor(
         if not sup_user or not sup_user.is_active or not can_be_supervisor(sup_user):
             raise HTTPException(status_code=400, detail="Tanlangan foydalanuvchi ilmiy rahbar bo'la olmaydi (Nizom 15-16-modda)")
 
-        # Nizom 10.6-modda: belgilangan me'yordan ortiq talaba biriktirilmaydi
+        # Nizom 10.5-10.6-modda: kvota komissiya tomonidan belgilanadi va undan ortiq talaba biriktirilmaydi
+        if sup_user.supervisor_capacity is None and student.supervisor_id != sup_user.id:
+            raise HTTPException(status_code=400, detail="Ilmiy rahbar kvotasi belgilanmagan. Avval kvotani belgilang (Nizom 10.5-modda)")
         if sup_user.supervisor_capacity is not None and student.supervisor_id != sup_user.id:
             load = (await db.execute(
                 select(func.count(User.id)).where(User.supervisor_id == sup_user.id)
@@ -592,7 +606,7 @@ async def get_student_supervisor(
         current_user.id == student.id
         or current_user.id == student.supervisor_id
         or current_user.is_department_head
-        or (current_user.has_role("faculty_coordinator") and current_user.faculty == student.faculty)
+        or (current_user.is_faculty_staff and current_user.faculty == student.faculty)
     )
     if not allowed:
         tutor_link = await db.execute(
