@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Float
 from datetime import datetime
 from app.core.database import Base
 
@@ -23,4 +23,8 @@ class GiftedApplication(Base):
     decision_note = Column(Text, nullable=True)
     reviewed_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     reviewed_at = Column(DateTime, nullable=True)
+    # Nizom 8, 14.5-modda: saralash davri va qaror paytidagi ball/daraja
+    period_id = Column(Integer, ForeignKey("selection_periods.id", ondelete="SET NULL"), nullable=True, index=True)
+    score_at_review = Column(Float, nullable=True)
+    tier_at_review = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

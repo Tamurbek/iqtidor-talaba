@@ -15,6 +15,7 @@ from app.api.tutor import router as tutor_router
 from app.api.meetings import router as meetings_router
 from app.api.monitoring import router as monitoring_router
 from app.api.gifted_applications import router as gifted_applications_router
+from app.api.selection_periods import router as selection_periods_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth_router)
@@ -33,4 +34,5 @@ api_router.include_router(tutor_router)
 api_router.include_router(meetings_router)
 api_router.include_router(monitoring_router)
 api_router.include_router(gifted_applications_router)
+api_router.include_router(selection_periods_router)
 

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import client from '../../api/client'
-import type { GiftedApplication } from '../../types/dashboard'
+import type { GiftedApplication, SelectionPeriod } from '../../types/dashboard'
 import { extractErrorMessage } from '../../types/dashboard'
 
 interface Props {
@@ -39,6 +39,17 @@ export default function GiftedApplicationTab({ application, loading, error, onSu
   const [motivation, setMotivation] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [period, setPeriod] = useState<SelectionPeriod | null>(null)
+
+  useEffect(() => {
+    client
+      .get<SelectionPeriod | null>('/selection-periods/current')
+      .then(({ data }) => setPeriod(data))
+      .catch(() => setPeriod(null))
+  }, [])
+
+  // Rad etilgan talaba keyingi (yangi) saralash davrida qayta ariza topshira oladi
+  const canApplyAgain = !!application && application.status === 'rejected' && !!period?.is_open && application.period_id !== period.id
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,13 +80,33 @@ export default function GiftedApplicationTab({ application, loading, error, onSu
           </p>
         </div>
 
+        <div
+          style={{
+            padding: 12,
+            borderRadius: 10,
+            marginBottom: 16,
+            fontSize: 13,
+            background: period?.is_open ? 'var(--badge-success-bg)' : 'var(--badge-warning-bg)',
+            color: period?.is_open ? 'var(--badge-success-text)' : 'var(--badge-warning-text)',
+          }}
+        >
+          {period ? (
+            <>
+              <strong>{period.title}</strong>: {new Date(period.start_date).toLocaleDateString('uz-UZ')} — {new Date(period.end_date).toLocaleDateString('uz-UZ')}
+              {period.is_open ? ' (arizalar qabul qilinmoqda)' : ' (hali boshlanmagan)'}
+            </>
+          ) : (
+            "Hozirda saralash davri ochiq emas. Arizalar direktor buyrug'i bilan tasdiqlangan jadval bo'yicha qabul qilinadi (Nizom 8-modda)."
+          )}
+        </div>
+
         {error && (
           <div style={{ padding: 14, borderRadius: 10, background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', fontSize: 13.5, marginBottom: 16 }}>{error}</div>
         )}
 
         {loading ? (
           <div style={{ padding: 28, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</div>
-        ) : application ? (
+        ) : application && !canApplyAgain ? (
           <div style={{ border: '1px solid var(--border-light)', borderRadius: 12, padding: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
               <div>
@@ -111,7 +142,7 @@ export default function GiftedApplicationTab({ application, loading, error, onSu
             )}
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !period?.is_open}
               style={{ alignSelf: 'flex-start', background: '#f2721c', color: '#ffffff', border: 'none', padding: '10px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: submitting ? 'default' : 'pointer', opacity: submitting ? 0.7 : 1 }}
             >
               {submitting ? 'Yuborilmoqda...' : 'Arizani yuborish'}

@@ -4,6 +4,7 @@ import type { AdminGiftedApplication } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 import Pagination from '../common/Pagination'
+import SelectionPeriodsPanel from './SelectionPeriodsPanel'
 
 interface Props {
   applications: AdminGiftedApplication[] | null
@@ -16,6 +17,7 @@ interface Props {
   onPageChange: (page: number) => void
   onApplicationUpdated: (app: AdminGiftedApplication) => void
   showToast: ShowToast
+  canManagePeriods: boolean
 }
 
 const thStyle: React.CSSProperties = { padding: '14px 20px' }
@@ -30,16 +32,20 @@ function formatDate(value: string | null | undefined): string {
   return `${dd}.${mm}.${d.getFullYear()}`
 }
 
-export default function GiftedApplicationsReviewTab({ applications, loading, error, page, totalPages, total, pageSize, onPageChange, onApplicationUpdated, showToast }: Props) {
+export default function GiftedApplicationsReviewTab({ applications, loading, error, page, totalPages, total, pageSize, onPageChange, onApplicationUpdated, showToast, canManagePeriods }: Props) {
   const [busyId, setBusyId] = useState<number | null>(null)
   const [rowHighlight, setRowHighlight] = useState<Record<number, string>>({})
 
   const review = async (id: number, status: 'approved' | 'rejected') => {
     const note =
       status === 'approved'
-        ? window.prompt("Qabul qilish bo'yicha izoh (ixtiyoriy):", 'Nizom talablariga muvofiq iqtidorli talaba sifatida saralashga qabul qilindi')
-        : window.prompt('Rad etish sababini kiriting:', '')
+        ? window.prompt('Komissiya xulosasi (Nizom 14.5-modda):', 'Nizom talablariga muvofiq iqtidorli talaba sifatida saralashga qabul qilindi')
+        : window.prompt('Komissiya xulosasi — rad etish sababi:', '')
     if (note === null) return
+    if (!note.trim()) {
+      showToast('Komissiya xulosasini kiriting', 'error')
+      return
+    }
 
     setBusyId(id)
     try {
@@ -58,6 +64,7 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
 
   return (
     <div id="tab-content-gifted-applications" className="tab-pane" style={{ display: 'block', marginTop: 0 }}>
+      <SelectionPeriodsPanel canManage={canManagePeriods} showToast={showToast} />
       <div style={{ background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <div>
@@ -77,17 +84,18 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
                 <th style={thStyle}>Fakultet / yo'nalish</th>
                 <th style={thStyle}>Motivatsiya</th>
                 <th style={thStyle}>Holati</th>
+                <th style={thStyle}>Ball (qaror paytida)</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>Qaror</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
+                  <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={5} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
+                  <td colSpan={6} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               ) : list.length > 0 ? (
                 list.map((app) => (
@@ -113,6 +121,17 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
                         <span style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', padding: '4px 10px', borderRadius: 6, fontSize: 12, fontWeight: 700 }}>Ko'rib chiqilmoqda</span>
                       )}
                     </td>
+                    <td style={{ ...tdStyle, fontSize: 13 }}>
+                      {app.score_at_review != null ? (
+                        <>
+                          <div style={{ fontWeight: 700, color: 'var(--text-dark)' }}>{app.score_at_review} / 100</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{app.tier_at_review}</div>
+                        </>
+                      ) : (
+                        <span style={{ color: 'var(--text-light)' }}>—</span>
+                      )}
+                      {app.decision_note && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{app.decision_note}</div>}
+                    </td>
                     <td style={{ ...tdStyle, textAlign: 'center' }}>
                       {app.status === 'pending' ? (
                         <div style={{ display: 'inline-flex', gap: 8 }}>
@@ -131,7 +150,7 @@ export default function GiftedApplicationsReviewTab({ applications, loading, err
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>
+                  <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>
                     Hozircha saralashga topshirilgan arizalar mavjud emas.
                   </td>
                 </tr>

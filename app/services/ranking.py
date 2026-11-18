@@ -73,6 +73,27 @@ def compute_achievement_points(achievements: list[StudentAchievement]) -> tuple[
     return total, category_totals
 
 
+async def compute_student_total(db: AsyncSession, student: User) -> tuple[float, dict]:
+    """Bitta talabaning joriy umumiy bali va saralash darajasi (compute_ranking bilan bir xil formula)."""
+    ach_res = await db.execute(
+        select(StudentAchievement).where(
+            StudentAchievement.user_id == student.id,
+            StudentAchievement.status == "approved",
+        )
+    )
+    ach_pts, _ = compute_achievement_points(list(ach_res.scalars().all()))
+    exam_res = await db.execute(
+        select(StudentExamResult)
+        .where(StudentExamResult.user_id == student.id)
+        .order_by(desc(StudentExamResult.id))
+        .limit(1)
+    )
+    er = exam_res.scalars().first()
+    exam_score = er.total_score if er else 0.0
+    total = round(min(100.0, gpa_to_points(student.avg_gpa) + exam_score + ach_pts), 1)
+    return total, get_tier(total)
+
+
 async def compute_ranking(
     db: AsyncSession,
     faculty: Optional[str] = None,

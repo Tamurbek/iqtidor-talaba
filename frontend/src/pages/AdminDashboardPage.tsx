@@ -111,7 +111,16 @@ export default function AdminDashboardPage() {
   if (caps.canManageSupervisorRequests) visibleTabs.add('supervisor-requests')
   if (caps.canViewTutorStudents) visibleTabs.add('tutor-students')
   if (caps.canViewMonitoring) visibleTabs.add('monitoring')
-  if (caps.canReviewGiftedApplications) visibleTabs.add('gifted-applications')
+  // Nizom 8-modda: saralash komissiyasi a'zosi (rolidan qat'i nazar) arizalarni ko'radi
+  const [isCommissionMember, setIsCommissionMember] = useState(false)
+  useEffect(() => {
+    if (!currentUser) return
+    client
+      .get<number[]>('/selection-periods/my-commission')
+      .then(({ data }) => setIsCommissionMember(data.length > 0))
+      .catch(() => setIsCommissionMember(false))
+  }, [currentUser])
+  if (caps.canReviewGiftedApplications || isCommissionMember) visibleTabs.add('gifted-applications')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
     const fromHash = tabFromHash()
@@ -455,6 +464,7 @@ export default function AdminDashboardPage() {
                 giftedApplications.setResponse((prev) => (prev ? { ...prev, items: prev.items.map((a) => (a.id === app.id ? app : a)) } : prev))
               }
               showToast={showToast}
+              canManagePeriods={caps.isDeptHeadLevel}
             />
           )}
           {activeTab === 'profile-security' && (

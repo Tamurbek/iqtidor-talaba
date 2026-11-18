@@ -113,6 +113,9 @@ export interface AdminGiftedApplication {
   decision_note?: string | null
   reviewed_by_id?: number | null
   reviewed_at?: string | null
+  period_id?: number | null
+  score_at_review?: number | null
+  tier_at_review?: string | null
   created_at: string
 }
 

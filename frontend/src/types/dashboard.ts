@@ -87,7 +87,33 @@ export interface GiftedApplication {
   decision_note?: string | null
   reviewed_by_id?: number | null
   reviewed_at?: string | null
+  period_id?: number | null
+  score_at_review?: number | null
+  tier_at_review?: string | null
   created_at: string
+}
+
+// Nizom 8, 14.5-modda: saralash davri (GET /selection-periods)
+export interface CommissionMember {
+  id: number
+  full_name: string
+  role?: string | null
+}
+
+export interface SelectionPeriod {
+  id: number
+  title: string
+  academic_year: string
+  order_number?: string | null
+  start_date: string
+  end_date: string
+  quota?: number | null
+  commission_member_ids: number[]
+  commission_members: CommissionMember[]
+  is_open: boolean
+  applications_count: number
+  approved_count: number
+  created_at?: string | null
 }
 
 export interface ExamStatus {

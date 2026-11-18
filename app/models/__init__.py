@@ -15,6 +15,7 @@ from app.models.tutor_assignment import TutorAssignment
 from app.models.meeting import Meeting
 from app.models.gifted_application import GiftedApplication
 from app.models.monitoring_report import MonitoringReport
+from app.models.selection_period import SelectionPeriod
 
 __all__ = [
     "Base", "User", "Role", "Permission", "role_permissions", "user_roles",
