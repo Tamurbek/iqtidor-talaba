@@ -134,6 +134,19 @@ function escapeHtml(str: string): string {
 
 const FORGOT_TOTAL_SECONDS = 8
 
+type HemisPortal = 'student' | 'employee'
+
+const HEMIS_ERRORS: Record<string, string> = {
+  state: "Xavfsizlik tekshiruvidan o'tmadi yoki sessiya eskirdi. Qaytadan urinib ko'ring.",
+  denied: 'HEMIS orqali kirish bekor qilindi.',
+  portal: 'Bu HEMIS portali orqali kirish sozlanmagan.',
+  hemis: "HEMIS bilan bog'lanishda xatolik yuz berdi. Keyinroq urinib ko'ring.",
+  not_registered: "Sizning HEMIS akkauntingiz tizimda ro'yxatdan o'tmagan. Administrator bilan bog'laning.",
+  inactive: 'Ushbu foydalanuvchi akkaunti faolsizlantirilgan',
+}
+
+const hemisLoginUrl = (portal: HemisPortal) => `${client.defaults.baseURL}/auth/hemis/${portal}/login`
+
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login, loginWithToken } = useAuth()
@@ -160,6 +173,43 @@ export default function LoginPage() {
   const [eimzoHemisId, setEimzoHemisId] = useState('')
   const [eimzoAlert, setEimzoAlert] = useState<{ message: string; type: AlertType } | null>(null)
   const [eimzoSubmitting, setEimzoSubmitting] = useState(false)
+
+  const [hemisPortals, setHemisPortals] = useState<Record<HemisPortal, boolean>>({ student: false, employee: false })
+
+  useEffect(() => {
+    client.get<Record<HemisPortal, boolean>>('/auth/hemis/portals')
+      .then(({ data }) => setHemisPortals(data))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    // HEMIS'da redirect URI sifatida /login ro'yxatdan o'tgan bo'lsa, code/state shu yerga keladi
+    if (params.get('state') && (params.get('code') || params.get('error'))) {
+      window.location.replace(`${client.defaults.baseURL}/auth/hemis/callback${window.location.search}`)
+      return
+    }
+    const hemisStatus = params.get('hemis')
+    const hemisError = params.get('hemis_error')
+    if (!hemisStatus && !hemisError) return
+    window.history.replaceState(null, '', window.location.pathname)
+
+    if (hemisError) {
+      setAlert({ message: HEMIS_ERRORS[hemisError] || 'HEMIS orqali kirishda xatolik yuz berdi', type: 'error' })
+      return
+    }
+    setSubmitting(true)
+    client.post<Token>('/auth/hemis/session')
+      .then(({ data }) => {
+        loginWithToken(data.access_token, data.user)
+        setAlert({ message: `Xush kelibsiz, ${data.user.full_name}! Yo'naltirilmoqda...`, type: 'success' })
+        setTimeout(() => navigate(data.user.role === 'admin' ? '/admin' : '/dashboard'), 800)
+      })
+      .catch((err) => {
+        setAlert({ message: extractErrorMessage(err, 'HEMIS orqali kirishda xatolik yuz berdi'), type: 'error' })
+        setSubmitting(false)
+      })
+  }, [loginWithToken, navigate])
 
   useEffect(() => {
     document.body.classList.add('login-body')
@@ -465,6 +515,16 @@ export default function LoginPage() {
       <div className="login-divider">
         <span>yoki</span>
       </div>
+
+      {(['student', 'employee'] as HemisPortal[]).filter((p) => hemisPortals[p]).map((p) => (
+        <a key={p} href={hemisLoginUrl(p)} className="btn-eimzo-login" style={{ marginBottom: 10, textDecoration: 'none' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M22 10 12 5 2 10l10 5 10-5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+          <span>{p === 'student' ? 'HEMIS orqali kirish (talaba)' : 'HEMIS orqali kirish (xodim)'}</span>
+        </a>
+      ))}
 
       <button type="button" className="btn-eimzo-login" id="btnEimzoLogin" onClick={openEimzoModal}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

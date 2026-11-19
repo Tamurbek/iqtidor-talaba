@@ -50,9 +50,9 @@ services:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       REDIS_URL: redis://redis:6379/0
       # uvicorn --root-path: Swagger, OpenAPI servers va redirect URL lari subpath bilan chiqadi
-      UVICORN_ROOT_PATH: ${APP_BASE_PATH:-/iqtidorli-talaba}
-      COOKIE_PATH: ${APP_BASE_PATH:-/iqtidorli-talaba}
-      COOKIE_SECURE: "true"
+      UVICORN_ROOT_PATH: ${APP_BASE_PATH-/iqtidorli-talaba}
+      COOKIE_PATH: ${APP_BASE_PATH-/iqtidorli-talaba}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
       TZ: Asia/Tashkent
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8092}:8000"
@@ -70,7 +70,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_BASE_PATH: ${APP_BASE_PATH:-/iqtidorli-talaba}/
+        VITE_BASE_PATH: ${APP_BASE_PATH-/iqtidorli-talaba}/
     image: iqtidorli_frontend:latest
     container_name: iqtidorli_frontend
     restart: always
@@ -78,6 +78,20 @@ services:
       - "127.0.0.1:${FRONTEND_PORT:-5179}:80"
     depends_on:
       - web
+
+  # Faqat lokal: serverda host nginx bor. .env da COMPOSE_PROFILES=local bo'lsa ishga tushadi.
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: iqtidorli_nginx
+    restart: unless-stopped
+    profiles: ["local"]
+    ports:
+      - "127.0.0.1:${NGINX_PORT:-8088}:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d:ro
+    depends_on:
+      - web
+      - frontend
 
 volumes:
   postgres_data:

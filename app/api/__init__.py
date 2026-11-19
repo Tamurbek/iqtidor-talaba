@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.api.auth import router as auth_router
+from app.api.hemis_oauth import router as hemis_oauth_router
 from app.api.news import router as news_router
 from app.api.announcements import router as announcements_router
 from app.api.documents import router as documents_router
@@ -22,6 +23,7 @@ from app.api.audit_logs import router as audit_logs_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth_router)
+api_router.include_router(hemis_oauth_router)
 api_router.include_router(news_router)
 api_router.include_router(announcements_router)
 api_router.include_router(documents_router)
