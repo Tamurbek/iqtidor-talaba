@@ -50,6 +50,9 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-iqtidorli_db}
       - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-talaba_user}:${POSTGRES_PASSWORD:-talaba_pass_2026}@db:5432/${POSTGRES_DB:-iqtidorli_db}
       - REDIS_URL=redis://redis:6379/0
+      - ADMIN_LOGIN=${ADMIN_LOGIN:-}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - ADMIN_FULL_NAME=${ADMIN_FULL_NAME:-Tizim administratori}
       - SECRET_KEY=${SECRET_KEY:-super-secret-key-for-iqtidorli-talabalar-change-in-production}
     depends_on:
       db:

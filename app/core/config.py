@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # Demo/test ma'lumotlarini seed qilish - productionda HECH QACHON yoqilmasin
     SEED_DEMO_DATA: bool = os.getenv("SEED_DEMO_DATA", "false").lower() == "true"
 
+    # Birinchi admin: ikkalasi berilsa va bunday login bazada bo'lmasa, startda yaratiladi
+    ADMIN_LOGIN: str = os.getenv("ADMIN_LOGIN", "")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
+    ADMIN_FULL_NAME: str = os.getenv("ADMIN_FULL_NAME", "Tizim administratori")
+
     # Nizom 14.2-modda: HEMIS'dagi GPA shkalasi (5 ballik bo'lsa GPA*4; boshqa shkalada 20 ballga mutanosib)
     GPA_SCALE: float = float(os.getenv("GPA_SCALE", "5"))
 

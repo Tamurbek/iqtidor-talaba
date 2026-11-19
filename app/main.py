@@ -8,11 +8,13 @@ from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import inspect as sa_inspect
 
 from app.core.config import settings
 from app.core.database import engine, AsyncSessionLocal
+from app.models import Base
 from app.core.scheduler import start_scheduler, shutdown_scheduler
-from app.services.seed_data import seed_initial_data, seed_roles_and_permissions
+from app.services.seed_data import seed_initial_data, seed_roles_and_permissions, seed_admin
 from app.api import api_router
 from app.services import audit
 
@@ -23,10 +25,23 @@ logger = logging.getLogger("iqtidorli_app")
 # to WARNING; pin this logger's own level so its INFO messages still show.
 logger.setLevel(logging.INFO)
 
-def _run_migrations() -> None:
+def _alembic_cfg() -> AlembicConfig:
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    alembic_cfg = AlembicConfig(os.path.join(os.path.dirname(base_dir), "alembic.ini"))
-    command.upgrade(alembic_cfg, "head")
+    return AlembicConfig(os.path.join(os.path.dirname(base_dir), "alembic.ini"))
+
+
+async def _run_migrations() -> None:
+    # Baseline migratsiya bo'sh (mavjud bazaga stamp qilingan), shuning uchun
+    # toza bazada jadvallar modellardan yaratilib, head'ga stamp qilinadi.
+    async with engine.begin() as conn:
+        fresh = not await conn.run_sync(lambda c: sa_inspect(c).has_table("users"))
+        if fresh:
+            await conn.run_sync(Base.metadata.create_all)
+    if fresh:
+        logger.info("Toza baza: jadvallar yaratildi, alembic head'ga stamp qilinmoqda.")
+        await asyncio.to_thread(command.stamp, _alembic_cfg(), "head")
+    else:
+        await asyncio.to_thread(command.upgrade, _alembic_cfg(), "head")
 
 
 @asynccontextmanager
@@ -34,11 +49,13 @@ async def lifespan(app: FastAPI):
     # Startup: apply pending Alembic migrations, then seed data.
     logger.info("Applying database migrations...")
     try:
-        await asyncio.to_thread(_run_migrations)
+        await _run_migrations()
 
         async with AsyncSessionLocal() as session:
             # Roles/permissions are real RBAC configuration, always required.
             await seed_roles_and_permissions(session)
+        async with AsyncSessionLocal() as session:
+            await seed_admin(session, settings.ADMIN_LOGIN, settings.ADMIN_PASSWORD, settings.ADMIN_FULL_NAME)
         if settings.SEED_DEMO_DATA:
             async with AsyncSessionLocal() as session:
                 await seed_initial_data(session)

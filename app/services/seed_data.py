@@ -290,6 +290,33 @@ Bellashuvda filialning turli yo'nalishlaridan 16 ta jamoa ishtirok etib, g'olib 
         logger.info("Student achievements seeded successfully.")
 
 
+async def seed_admin(db: AsyncSession, login: str, password: str, full_name: str):
+    from app.models.role import Role
+
+    if not login or not password:
+        logger.info("ADMIN_LOGIN/ADMIN_PASSWORD berilmagan - admin seed o'tkazib yuborildi.")
+        return
+    existing = (await db.execute(select(User).where(User.hemis_id == login))).scalar_one_or_none()
+    if existing:
+        logger.info("Admin '%s' allaqachon mavjud - o'zgartirilmadi.", login)
+        return
+
+    super_admin = (await db.execute(select(Role).where(Role.code == "super_admin"))).scalar_one_or_none()
+    admin = User(
+        hemis_id=login,
+        full_name=full_name,
+        hashed_password=get_password_hash(password),
+        role="admin",
+        faculty="Boshqaruv",
+        is_active=True,
+    )
+    if super_admin:
+        admin.roles.append(super_admin)
+    db.add(admin)
+    await db.commit()
+    logger.info("Admin '%s' yaratildi.", login)
+
+
 async def seed_roles_and_permissions(db: AsyncSession):
     from app.models.role import Role, Permission, LOCKED_ROLE_PERMISSIONS
 
