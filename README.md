@@ -54,7 +54,7 @@ Production `jbnuu.uz/iqtidorli-talaba` subpath ostida ishlaydi:
 
 | Servis | Host porti | Host nginx yo'li |
 |---|---|---|
-| frontend (React build + nginx) | `127.0.0.1:5179` | `/iqtidorli-talaba/` |
+| frontend (React build + nginx) | `127.0.0.1:5181` | `/iqtidorli-talaba/` |
 | web (FastAPI) | `127.0.0.1:8092` | `/iqtidorli-talaba/api/`, `/iqtidorli-talaba/static/` |
 | db (PostgreSQL), redis | — | — |
 

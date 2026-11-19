@@ -1,5 +1,5 @@
 # Production: jbnuu.uz/iqtidorli-talaba
-#   frontend -> 127.0.0.1:5179   (host nginx: /iqtidorli-talaba/)
+#   frontend -> 127.0.0.1:5181   (host nginx: /iqtidorli-talaba/)
 #   backend  -> 127.0.0.1:8092   (host nginx: /iqtidorli-talaba/api/ va /iqtidorli-talaba/static/)
 # Portlar faqat 127.0.0.1 ga ochiladi - tashqaridan faqat host nginx orqali kiriladi.
 # Barcha sirlar .env faylidan olinadi (.env.example ga qarang).
@@ -75,7 +75,7 @@ services:
     container_name: iqtidorli_frontend
     restart: always
     ports:
-      - "127.0.0.1:${FRONTEND_PORT:-5179}:80"
+      - "127.0.0.1:${FRONTEND_PORT:-5181}:80"
     depends_on:
       - web
 

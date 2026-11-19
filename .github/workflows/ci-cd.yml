@@ -74,7 +74,7 @@ jobs:
             cd ${{ vars.DEPLOY_PATH || '/var/www/iqtidorli-talaba' }}
 
             PREV_COMMIT=$(git rev-parse HEAD)
-            FRONTEND_HEALTH_URL="http://127.0.0.1:${{ vars.FRONTEND_PORT || '5179' }}/"
+            FRONTEND_HEALTH_URL="http://127.0.0.1:${{ vars.FRONTEND_PORT || '5181' }}/"
             BACKEND_HEALTH_URL="http://127.0.0.1:${{ vars.BACKEND_PORT || '8092' }}/api/v1/news"
 
             rollback() {
