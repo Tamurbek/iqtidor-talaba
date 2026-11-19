@@ -97,7 +97,7 @@ function tabFromHash(): AdminTabKey | null {
 }
 
 export default function AdminDashboardPage() {
-  const { currentUser, isLoading, logout, updateCurrentUser, loginWithToken, activeRole, setActiveRole } = useAuth()
+  const { currentUser, isLoading, logout, updateCurrentUser, activeRole, setActiveRole } = useAuth()
   const navigate = useNavigate()
 
   const caps = getAdminCapabilities(activeRole ?? currentUser?.role)
@@ -241,19 +241,6 @@ export default function AdminDashboardPage() {
 
   // Login o'zgarsa, localStorage'dagi Bearer token (sub = eski login) yaroqsiz bo'lib qoladi.
   // Backend javobda yangi access_token qaytaradi — sessiyani uzmasdan uni almashtiramiz.
-  const handleLoginChanged = useCallback((accessToken: string | undefined, updatedUser: { login: string; full_name: string }) => {
-    if (accessToken && currentUser) {
-      loginWithToken(accessToken, { ...currentUser, hemis_id: updatedUser.login, full_name: updatedUser.full_name })
-      showToast('Login muvaffaqiyatli yangilandi.', 'success')
-      return
-    }
-    showToast('Login o\'zgartirildi. Iltimos, yangi login bilan qayta kiring.', 'info')
-    window.setTimeout(async () => {
-      await logout()
-      navigate('/login')
-    }, 1500)
-  }, [showToast, logout, navigate, loginWithToken, currentUser])
-
   const handleLogout = async () => {
     if (!window.confirm('Haqiqatan ham boshqaruv panelidan chiqishni xohlaysizmi?')) return
     await logout()
@@ -501,7 +488,7 @@ export default function AdminDashboardPage() {
             />
           )}
           {activeTab === 'profile-security' && (
-            <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} onLoginChanged={handleLoginChanged} />
+            <ProfileTab showToast={showToast} onProfileUpdated={updateCurrentUser} />
           )}
           </main>
         </div>

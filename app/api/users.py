@@ -1,16 +1,13 @@
-import os
 import re
 import logging
 from typing import List, Optional
-from datetime import timedelta
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, or_, func
 from pydantic import BaseModel, Field
 
-from app.core.config import settings
 from app.core.database import get_db
-from app.core.security import verify_password, get_password_hash, create_access_token
+from app.core.security import verify_password, get_password_hash
 from app.models.user import User, ROLE_ALIASES
 from app.models.role import Role
 from app.models.tutor_assignment import TutorAssignment
@@ -24,7 +21,6 @@ logger = logging.getLogger("iqtidorli_users")
 
 router = APIRouter(prefix="/users", tags=["Users Management & Profile"])
 
-TWO_DAYS_SECONDS = 48 * 3600
 
 # HEMIS'da akkaunti bo'lmaydigan foydalanuvchilar: faqat ular uchun lokal parol
 PASSWORD_ROLES = ("admin", "super_admin", "jury_expert")
@@ -108,52 +104,25 @@ async def get_my_profile(db: AsyncSession = Depends(get_db), current_user: User 
 @router.put("/me")
 async def update_my_profile(
     req: UpdateMyProfileRequest,
-    request: Request,
-    response: Response,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Update current user's profile details (full_name, login name)."""
-    login_changed = False
+    """F.I.SH.ni yangilash. Login (HEMIS ID) o'zgarmaydi; HEMIS foydalanuvchilarining
+    ma'lumotlari HEMIS'dan keladi, shuning uchun faqat lokal (parolli) akkauntlar tahrirlaydi."""
+    if req.login and req.login.strip() and req.login.strip() != current_user.hemis_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Loginni o'zgartirib bo'lmaydi")
+    if not current_user.hashed_password:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Profil ma'lumotlari HEMIS'dan olinadi va tahrirlanmaydi")
 
     if req.full_name and req.full_name.strip():
-        # Sanitize HTML tags
         clean_name = re.sub(r'<[^>]*>', '', req.full_name).strip()
         if clean_name:
             current_user.full_name = clean_name
 
-    if req.login and req.login.strip():
-        new_login = req.login.strip()
-        if new_login != current_user.hemis_id:
-            # Check unique
-            dup = (await db.execute(select(User).where(User.hemis_id == new_login))).scalar_one_or_none()
-            if dup:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Ushbu login nomi tizimda allaqachon mavjud. Boshqa login tanlang."
-                )
-            current_user.hemis_id = new_login
-            login_changed = True
-
     await db.commit()
     await db.refresh(current_user)
 
-    # If login changed, re-issue JWT cookie so user session remains valid
-    if login_changed:
-        expires_delta = timedelta(days=2)
-        new_token = create_access_token(subject=current_user.hemis_id, expires_delta=expires_delta)
-        is_secure = request.url.scheme == "https" or os.getenv("COOKIE_SECURE", "false").lower() in ("true", "1", "yes")
-        response.set_cookie(
-            key="access_token",
-            value=f"Bearer {new_token}",
-            httponly=True,
-            secure=is_secure,
-            max_age=TWO_DAYS_SECONDS,
-            samesite="lax",
-            path=settings.COOKIE_PATH,
-        )
-
-    result = {
+    return {
         "success": True,
         "message": "Profil ma'lumotlari muvaffaqiyatli saqlandi",
         "user": {
@@ -162,9 +131,6 @@ async def update_my_profile(
             "full_name": current_user.full_name
         }
     }
-    if login_changed:
-        result["access_token"] = new_token
-    return result
 
 
 @router.post("/me/change-password")
@@ -174,6 +140,8 @@ async def change_my_password(
     current_user: User = Depends(get_current_user)
 ):
     """Change password for current logged-in user (requires current password)."""
+    if not current_user.hashed_password:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="HEMIS orqali kiruvchi foydalanuvchilar parolni o'zgartira olmaydi")
     if req.new_password != req.confirm_password:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

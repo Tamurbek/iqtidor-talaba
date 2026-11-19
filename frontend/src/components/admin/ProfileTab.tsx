@@ -7,8 +7,7 @@ import type { ShowToast } from './AdminToasts'
 
 interface Props {
   showToast: ShowToast
-  onProfileUpdated: (patch: { full_name: string; hemis_id: string }) => void
-  onLoginChanged: (accessToken: string | undefined, updatedUser: { login: string; full_name: string }) => void
+  onProfileUpdated: (patch: { full_name: string }) => void
 }
 
 type PasswordField = 'current' | 'new' | 'confirm'
@@ -18,6 +17,7 @@ const loadMyProfile = () => client.get<MyProfile>('/users/me').then(({ data }) =
 const cardStyle: React.CSSProperties = { background: 'var(--bg-white)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 26, boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }
 const labelStyle: React.CSSProperties = { display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }
 const inputStyle: React.CSSProperties = { width: '100%', boxSizing: 'border-box', padding: '10px 14px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 14, background: 'var(--bg-white)', color: 'var(--text-dark)' }
+const readOnlyStyle: React.CSSProperties = { ...inputStyle, background: 'var(--bg-light)', color: 'var(--text-muted)' }
 const passInputStyle: React.CSSProperties = { ...inputStyle, padding: '10px 44px 10px 14px' }
 const eyeBtnStyle: React.CSSProperties = { position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }
 
@@ -38,19 +38,19 @@ function EyeIcon({ visible }: { visible: boolean }) {
 interface ProfileInfoFormProps {
   profile: MyProfile
   showToast: ShowToast
-  onSaved: (user: UpdateMyProfileResponse['user'], loginChanged: boolean, accessToken?: string) => void
+  onSaved: (user: UpdateMyProfileResponse['user']) => void
 }
 
 function ProfileInfoForm({ profile, showToast, onSaved }: ProfileInfoFormProps) {
   const [fullName, setFullName] = useState(profile.full_name)
-  const [login, setLogin] = useState(profile.login)
+  const editable = profile.has_password !== false
   const [savingProfile, setSavingProfile] = useState(false)
 
   const handleUpdateMyProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const payload = { full_name: fullName.trim(), login: login.trim() }
-    if (!payload.full_name || !payload.login) {
-      showToast("F.I.SH. va loginni kiritish majburiy!", 'warning')
+    const payload = { full_name: fullName.trim() }
+    if (!payload.full_name) {
+      showToast("F.I.SH.ni kiritish majburiy!", 'warning')
       return
     }
 
@@ -58,7 +58,7 @@ function ProfileInfoForm({ profile, showToast, onSaved }: ProfileInfoFormProps) 
     try {
       const { data: res } = await client.put<UpdateMyProfileResponse>('/users/me', payload)
       showToast(res.message || 'Profil muvaffaqiyatli saqlandi!', 'success')
-      onSaved(res.user, res.user.login !== profile.login, res.access_token)
+      onSaved(res.user)
     } catch (err) {
       showToast(extractErrorMessage(err, 'Profilni saqlashda xatolik yuz berdi'), 'error')
     } finally {
@@ -72,34 +72,38 @@ function ProfileInfoForm({ profile, showToast, onSaved }: ProfileInfoFormProps) 
         <label htmlFor="myProfileFullName" style={labelStyle}>
           F.I.SH. (To'liq ism-familiya)
         </label>
-        <input type="text" id="myProfileFullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={inputStyle} />
+        <input type="text" id="myProfileFullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required disabled={!editable} style={editable ? inputStyle : readOnlyStyle} />
       </div>
 
       <div style={{ marginBottom: 16 }}>
         <label htmlFor="myProfileLogin" style={labelStyle}>
           Tizimga kirish logini (HEMIS ID / Username)
         </label>
-        <input type="text" id="myProfileLogin" value={login} onChange={(e) => setLogin(e.target.value)} required aria-describedby="myProfileLoginHint" style={{ ...inputStyle, fontFamily: 'monospace' }} />
-        <p id="myProfileLoginHint" style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: '5px 0 0' }}>
-          Loginni o'zgartirsangiz, keyingi kirishlarda yangi login bilan kirasiz.
-        </p>
+        <input type="text" id="myProfileLogin" value={profile.login} disabled style={{ ...readOnlyStyle, fontFamily: 'monospace' }} />
+        {!editable && (
+          <p style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: '5px 0 0' }}>
+            Ma'lumotlar HEMIS'dan olinadi va bu yerda tahrirlanmaydi.
+          </p>
+        )}
       </div>
 
       <div style={{ marginBottom: 22 }}>
         <label htmlFor="myProfileRoles" style={labelStyle}>
           Tizimdagi lavozim / huquq
         </label>
-        <input type="text" id="myProfileRoles" value={profile.role_names.join(', ')} disabled style={{ ...inputStyle, border: '1px solid var(--border-color)', background: 'var(--bg-light)', color: 'var(--text-muted)' }} />
+        <input type="text" id="myProfileRoles" value={profile.role_names.join(', ')} disabled style={readOnlyStyle} />
       </div>
 
+      {editable && (
       <button type="submit" id="btnSaveProfile" disabled={savingProfile} style={{ width: '100%', background: 'var(--primary-color)', color: '#ffffff', border: 'none', padding: 12, borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
         {savingProfile ? 'Saqlanmoqda...' : "Ma'lumotlarni saqlash"}
       </button>
+      )}
     </form>
   )
 }
 
-export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged }: Props) {
+export default function ProfileTab({ showToast, onProfileUpdated }: Props) {
   const profile = useApiResource(loadMyProfile, "Profil ma'lumotlarini yuklashda xatolik yuz berdi")
 
   const [currentPassword, setCurrentPassword] = useState('')
@@ -153,7 +157,7 @@ export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged
             </div>
             <div>
               <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-heading)', margin: 0 }}>Shaxsiy profil ma'lumotlari</h3>
-              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '3px 0 0' }}>F.I.SH. va tizimga kirish loginini tahrirlash</p>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '3px 0 0' }}>F.I.SH., login va tizimdagi lavozim</p>
             </div>
           </div>
 
@@ -165,10 +169,9 @@ export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged
             <ProfileInfoForm
               profile={data}
               showToast={showToast}
-              onSaved={(user, loginChanged, accessToken) => {
-                profile.setData((prev) => (prev ? { ...prev, full_name: user.full_name, login: user.login } : prev))
-                onProfileUpdated({ full_name: user.full_name, hemis_id: user.login })
-                if (loginChanged) onLoginChanged(accessToken, { login: user.login, full_name: user.full_name })
+              onSaved={(user) => {
+                profile.setData((prev) => (prev ? { ...prev, full_name: user.full_name } : prev))
+                onProfileUpdated({ full_name: user.full_name })
               }}
             />
           ) : null}

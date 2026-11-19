@@ -390,7 +390,6 @@ export interface UpdateMyProfileResponse {
   success: boolean
   message: string
   user: { id: number; login: string; full_name: string }
-  access_token?: string
 }
 
 // POST /documents/upload-file
