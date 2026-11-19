@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import client from '../api/client'
 import type { NewsItem } from '../types/content'
+import { BASE_PATH, withBase } from '../utils/basePath'
 
 export default function NewsDetailPage() {
   const { newsId } = useParams<{ newsId: string }>()
@@ -32,7 +33,7 @@ export default function NewsDetailPage() {
   return (
     <div className="container" style={{ padding: '40px 20px 80px', maxWidth: 900 }}>
       <div style={{ marginBottom: 20 }}>
-        <a href="/#yangiliklar" style={{ color: 'var(--text-muted)', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <a href={`${BASE_PATH}/#yangiliklar`} style={{ color: 'var(--text-muted)', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -70,7 +71,7 @@ export default function NewsDetailPage() {
 
         {news.image_url && (
           <div style={{ borderRadius: 14, overflow: 'hidden', marginBottom: 28, maxHeight: 480 }}>
-            <img src={news.image_url} alt={news.title} style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
+            <img src={withBase(news.image_url)} alt={news.title} style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
           </div>
         )}
 

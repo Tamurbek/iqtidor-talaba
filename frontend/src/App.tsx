@@ -10,10 +10,11 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import NewsDetailPage from './pages/NewsDetailPage'
+import { BASE_PATH } from './utils/basePath'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={BASE_PATH || undefined}>
       <ThemeProvider>
         <AuthProvider>
           <Routes>

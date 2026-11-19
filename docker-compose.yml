@@ -1,4 +1,8 @@
-version: '3.8'
+# Production: jbnuu.uz/iqtidorli-talaba
+#   frontend -> 127.0.0.1:5179   (host nginx: /iqtidorli-talaba/)
+#   backend  -> 127.0.0.1:8092   (host nginx: /iqtidorli-talaba/api/ va /iqtidorli-talaba/static/)
+# Portlar faqat 127.0.0.1 ga ochiladi - tashqaridan faqat host nginx orqali kiriladi.
+# Barcha sirlar .env faylidan olinadi (.env.example ga qarang).
 
 services:
   db:
@@ -6,18 +10,19 @@ services:
     container_name: iqtidorli_postgres
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-talaba_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-talaba_pass_2026}
-      POSTGRES_DB: ${POSTGRES_DB:-iqtidorli_db}
-    ports:
-      - "5436:5432"
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER .env da berilishi shart}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD .env da berilishi shart}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB .env da berilishi shart}
+      TZ: Asia/Tashkent
+    # Tashqi port ochilmaydi. Hostdan psql kerak bo'lsa:
+    #   docker compose exec db psql -U "$POSTGRES_USER" "$POSTGRES_DB"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U talaba_user -d iqtidorli_db"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -34,26 +39,27 @@ services:
 
   web:
     build: .
+    image: iqtidorli_web:latest
     container_name: iqtidorli_fastapi
     restart: always
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    volumes:
-      - .:/app
-    expose:
-      - "8000"
+    env_file: .env
     environment:
-      - IN_DOCKER=1
-      - POSTGRES_USER=${POSTGRES_USER:-talaba_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-talaba_pass_2026}
-      - POSTGRES_SERVER=db
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB:-iqtidorli_db}
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-talaba_user}:${POSTGRES_PASSWORD:-talaba_pass_2026}@db:5432/${POSTGRES_DB:-iqtidorli_db}
-      - REDIS_URL=redis://redis:6379/0
-      - ADMIN_LOGIN=${ADMIN_LOGIN:-}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
-      - ADMIN_FULL_NAME=${ADMIN_FULL_NAME:-Tizim administratori}
-      - SECRET_KEY=${SECRET_KEY:-super-secret-key-for-iqtidorli-talabalar-change-in-production}
+      IN_DOCKER: "1"
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: "5432"
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      # uvicorn --root-path: Swagger, OpenAPI servers va redirect URL lari subpath bilan chiqadi
+      UVICORN_ROOT_PATH: ${APP_BASE_PATH:-/iqtidorli-talaba}
+      COOKIE_PATH: ${APP_BASE_PATH:-/iqtidorli-talaba}
+      COOKIE_SECURE: "true"
+      TZ: Asia/Tashkent
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-8092}:8000"
+    volumes:
+      # Yuklangan fayllar (yutuqlar, yangiliklar rasmlari, hujjatlar) konteyner
+      # qayta qurilganda yo'qolmasligi uchun
+      - uploads_data:/app/app/static/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -61,33 +67,19 @@ services:
         condition: service_healthy
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_BASE_PATH: ${APP_BASE_PATH:-/iqtidorli-talaba}/
+    image: iqtidorli_frontend:latest
     container_name: iqtidorli_frontend
     restart: always
-    command: npm run dev -- --host 0.0.0.0
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    expose:
-      - "5173"
-    environment:
-      - VITE_API_BASE_URL=/api/v1
-    depends_on:
-      - web
-
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: iqtidorli_nginx
-    restart: always
     ports:
-      - "${NGINX_PORT:-8088}:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./app/static:/app/static:ro
+      - "127.0.0.1:${FRONTEND_PORT:-5179}:80"
     depends_on:
       - web
-      - frontend
 
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:

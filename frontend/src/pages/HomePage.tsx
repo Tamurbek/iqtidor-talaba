@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import client from '../api/client'
 import type { NewsItem, NewsListResponse, Announcement, DocumentItem, DocumentListResponse } from '../types/content'
+import { withBase } from '../utils/basePath'
 
 export default function HomePage() {
   const location = useLocation()
@@ -58,7 +59,7 @@ export default function HomePage() {
           <div className="hero-visual">
             <div className="hero-shape-decorator"></div>
             <div className="hero-image-wrapper">
-              <img src="/static/images/hero-students.png" alt="O'zMU Jizzax filiali iqtidorli yoshlari" />
+              <img src={withBase('/static/images/hero-students.png')} alt="O'zMU Jizzax filiali iqtidorli yoshlari" />
             </div>
           </div>
         </div>
@@ -165,7 +166,7 @@ export default function HomePage() {
                   </svg>
                 </Link>
                 <a
-                  href="/static/docs/Iqtidor_tanlovi_nizomi.docx"
+                  href={withBase('/static/docs/Iqtidor_tanlovi_nizomi.docx')}
                   download
                   style={{
                     background: 'rgba(255,255,255,0.15)',
@@ -216,7 +217,7 @@ export default function HomePage() {
                 }}
               >
                 <img
-                  src="/static/images/nizom_image1.png"
+                  src={withBase('/static/images/nizom_image1.png')}
                   alt="Iqtidorli talaba ko'krak nishoni"
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
@@ -471,7 +472,7 @@ export default function HomePage() {
                 </div>
                 <div className="doc-right">
                   <span className="doc-date">{doc.published_date}</span>
-                  <a href={doc.file_url} download className="doc-download-btn" title="Yuklab olish">
+                  <a href={withBase(doc.file_url)} download className="doc-download-btn" title="Yuklab olish">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                       <polyline points="7 10 12 15 17 10"></polyline>
@@ -510,7 +511,7 @@ export default function HomePage() {
             {/* Big left card */}
             {newsItems.length > 0 && (
               <div className="news-card-big">
-                <img src={newsItems[0].image_url ?? ''} alt={newsItems[0].title} className="news-big-img" />
+                <img src={withBase(newsItems[0].image_url) ?? ''} alt={newsItems[0].title} className="news-big-img" />
                 <div className="news-big-overlay">
                   <span className="news-badge-date">{newsItems[0].published_date}</span>
                   <h3 className="news-big-title">{newsItems[0].title}</h3>
@@ -525,7 +526,7 @@ export default function HomePage() {
             <div className="news-right-column">
               {newsItems.length > 1 && (
                 <div className="news-card-horizontal">
-                  <img src={newsItems[1].image_url ?? ''} alt={newsItems[1].title} />
+                  <img src={withBase(newsItems[1].image_url) ?? ''} alt={newsItems[1].title} />
                   <div className="news-horiz-overlay">
                     <span className="news-badge-date">{newsItems[1].published_date}</span>
                     <h4 className="news-horiz-title">{newsItems[1].title}</h4>
@@ -540,7 +541,7 @@ export default function HomePage() {
 
               {newsItems.length > 2 && (
                 <div className="news-card-horizontal">
-                  <img src={newsItems[2].image_url ?? ''} alt={newsItems[2].title} />
+                  <img src={withBase(newsItems[2].image_url) ?? ''} alt={newsItems[2].title} />
                   <div className="news-horiz-overlay">
                     <span className="news-badge-date">{newsItems[2].published_date}</span>
                     <h4 className="news-horiz-title">{newsItems[2].title}</h4>
@@ -568,7 +569,7 @@ export default function HomePage() {
             {/* Main announcement card (Big left) */}
             {announcements.length > 0 && (
               <div className="main-announce-card">
-                <img src={announcements[0].image_url ?? ''} alt={announcements[0].title} />
+                <img src={withBase(announcements[0].image_url) ?? ''} alt={announcements[0].title} />
                 <div className="main-announce-body">
                   <h3 className="main-announce-title">{announcements[0].title}</h3>
                 </div>
@@ -579,7 +580,7 @@ export default function HomePage() {
             <div className="sub-announcements-grid">
               {announcements.slice(1, 5).map((item) => (
                 <div className="sub-announce-card" key={item.id}>
-                  <img src={item.image_url ?? ''} alt={item.title} />
+                  <img src={withBase(item.image_url) ?? ''} alt={item.title} />
                   <div className="sub-announce-body">
                     <h4 className="sub-announce-title">{item.title}</h4>
                   </div>

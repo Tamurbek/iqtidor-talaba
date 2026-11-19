@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   collapsed: boolean
@@ -13,7 +14,7 @@ export default function SidebarBrand({ collapsed, onToggleCollapse }: Props) {
     <div className="sidebar-brand-row">
       {!collapsed && (
         <Link to="/" className="sidebar-brand-logo" title="O'zMU Jizzax Filiali - Iqtidorli talabalar">
-          <img src="/static/images/logo.png" alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
+          <img src={withBase('/static/images/logo.png')} alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
         </Link>
       )}
 

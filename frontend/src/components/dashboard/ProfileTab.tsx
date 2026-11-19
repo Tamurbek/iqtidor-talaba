@@ -1,5 +1,6 @@
 import type { User } from '../../types/user'
 import type { MeResponse } from '../../types/dashboard'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   currentUser: User
@@ -20,7 +21,7 @@ export default function ProfileTab({ currentUser, me, loading, error }: Props) {
       <div style={{ background: 'linear-gradient(135deg, var(--primary-color) 0%, #1e5ba3 100%)', borderRadius: 20, padding: 32, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, boxShadow: '0 10px 30px rgba(11, 59, 112, 0.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           {currentUser.image_url ? (
-            <img src={currentUser.image_url} alt={fullName} style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(255,255,255,0.8)', boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }} />
+            <img src={withBase(currentUser.image_url)} alt={fullName} style={{ width: 84, height: 84, borderRadius: '50%', objectFit: 'cover', border: '4px solid rgba(255,255,255,0.8)', boxShadow: '0 4px 14px rgba(0,0,0,0.2)' }} />
           ) : (
             <div style={{ width: 84, height: 84, borderRadius: '50%', background: 'var(--bg-white)', color: 'var(--text-heading)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '4px solid rgba(255,255,255,0.4)', fontSize: 32, fontWeight: 800 }}>
               {fullName ? fullName[0] : 'T'}

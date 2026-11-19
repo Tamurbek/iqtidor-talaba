@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_password, create_access_token
 from app.core.rate_limiter import BruteForceProtector
@@ -45,10 +46,17 @@ async def login(
 
     # 2. Check if user already exists in local DB (also support 'admin' alias)
     if login_str.lower() == "admin":
-        result = await db.execute(select(User).where((User.hemis_id == "admin") | (User.role == "admin")).order_by(User.id))
+        # Bir nechta admin bo'lishi mumkin (masalan ADMIN_LOGIN bilan yaratilgan + demo admin),
+        # shuning uchun scalar_one_or_none() emas: aynan "admin" loginli bo'lsa o'sha, aks holda birinchisi.
+        result = await db.execute(
+            select(User)
+            .where((User.hemis_id == "admin") | (User.role == "admin"))
+            .order_by((User.hemis_id != "admin"), User.id)
+        )
+        local_user = result.scalars().first()
     else:
         result = await db.execute(select(User).where(User.hemis_id == login_str))
-    local_user = result.scalar_one_or_none()
+        local_user = result.scalar_one_or_none()
 
     # Staff / Admin / Coordinator login (Instant internal credential verification)
     if local_user and local_user.role != "student":
@@ -105,7 +113,8 @@ async def login(
         httponly=True,
         secure=is_secure,
         max_age=TWO_DAYS_SECONDS,
-        samesite="lax"
+        samesite="lax",
+        path=settings.COOKIE_PATH,
     )
 
     if hemis_token_str:
@@ -115,7 +124,8 @@ async def login(
             httponly=True,
             secure=is_secure,
             max_age=TWO_DAYS_SECONDS,
-            samesite="lax"
+            samesite="lax",
+            path=settings.COOKIE_PATH,
         )
 
     user_response = UserResponse.model_validate(user)
@@ -129,8 +139,8 @@ async def login(
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie(key="access_token")
-    response.delete_cookie(key="hemis_token")
+    response.delete_cookie(key="access_token", path=settings.COOKIE_PATH)
+    response.delete_cookie(key="hemis_token", path=settings.COOKIE_PATH)
     return {"message": "Tizimdan muvaffaqiyatli chiqildi"}
 
 
@@ -341,7 +351,8 @@ async def verify_eimzo_login(
         httponly=True,
         secure=is_secure,
         max_age=TWO_DAYS_SECONDS,
-        samesite="lax"
+        samesite="lax",
+        path=settings.COOKIE_PATH,
     )
 
     # Success: clear failed counter
@@ -520,7 +531,8 @@ async def sign_and_verify_eimzo(
         httponly=True,
         secure=is_secure,
         max_age=TWO_DAYS_SECONDS,
-        samesite="lax"
+        samesite="lax",
+        path=settings.COOKIE_PATH,
     )
 
     # Success: clear failed counter

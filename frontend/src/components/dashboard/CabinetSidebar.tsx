@@ -2,6 +2,7 @@ import type { User } from '../../types/user'
 import type { StudentTabKey } from '../../types/dashboard'
 import SidebarBrand from './SidebarBrand'
 import { useSidebarCollapse } from '../../hooks/useSidebarCollapse'
+import { BASE_PATH, withBase } from '../../utils/basePath'
 
 interface Props {
   user: User
@@ -38,7 +39,7 @@ export default function CabinetSidebar({
 
         <div className="cabinet-user-box">
           {user.image_url ? (
-            <img src={user.image_url} alt={user.full_name} className="cabinet-user-avatar" />
+            <img src={withBase(user.image_url)} alt={user.full_name} className="cabinet-user-avatar" />
           ) : (
             <div className="cabinet-user-avatar-placeholder">{user.full_name ? user.full_name[0] : 'T'}</div>
           )}
@@ -237,7 +238,7 @@ export default function CabinetSidebar({
         </ul>
 
         <div className="cabinet-sidebar-footer">
-          <a href="/" className="cabinet-footer-btn">
+          <a href={`${BASE_PATH}/`} className="cabinet-footer-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               <polyline points="9 22 9 12 15 12 15 22"></polyline>

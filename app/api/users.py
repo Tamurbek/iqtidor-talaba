@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc, or_, func
 from pydantic import BaseModel, Field
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.security import verify_password, get_password_hash, create_access_token
 from app.models.user import User, ROLE_ALIASES
@@ -139,7 +140,8 @@ async def update_my_profile(
             httponly=True,
             secure=is_secure,
             max_age=TWO_DAYS_SECONDS,
-            samesite="lax"
+            samesite="lax",
+            path=settings.COOKIE_PATH,
         )
 
     result = {

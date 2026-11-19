@@ -2,6 +2,7 @@ import type { User } from '../../types/user'
 import type { Achievement, ExamStatus } from '../../types/dashboard'
 import { computeAchievementBreakdown } from '../../types/dashboard'
 import { RANKING_DISCLAIMER } from '../../utils/nizom'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   user: User
@@ -23,7 +24,7 @@ export default function RatingTab({ user, examStatus, achievements, onGoToCalcul
       <div style={{ background: 'linear-gradient(135deg, #072950 0%, var(--primary-color) 100%)', borderRadius: 20, padding: 28, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20, boxShadow: '0 10px 30px rgba(7, 41, 80, 0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-white)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.25)', flexShrink: 0, padding: 4, overflow: 'hidden' }}>
-            <img src="/static/images/nizom_image1.png" alt="Iqtidorli talaba ko'krak nishoni" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src={withBase('/static/images/nizom_image1.png')} alt="Iqtidorli talaba ko'krak nishoni" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div>
             <span style={{ background: 'rgba(16, 185, 129, 0.3)', color: '#34d399', padding: '3px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, textTransform: 'uppercase' }}>

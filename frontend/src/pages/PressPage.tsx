@@ -1,3 +1,5 @@
+import { withBase } from '../utils/basePath'
+
 export default function PressPage() {
   return (
     <div className="press-page">
@@ -7,7 +9,7 @@ export default function PressPage() {
         <div className="press-layout-grid">
           {/* Left big poster */}
           <div className="press-big-poster">
-            <img src="/static/images/press-main.png" alt="Huquq bilimdonlari umummilliy konstitutsiya imtihoni" />
+            <img src={withBase('/static/images/press-main.png')} alt="Huquq bilimdonlari umummilliy konstitutsiya imtihoni" />
           </div>
 
           {/* Right items list */}
@@ -15,7 +17,7 @@ export default function PressPage() {
             {/* Item 1: Talant Shou */}
             <article className="press-item-card">
               <div className="press-item-thumb">
-                <img src="/static/images/press-item-1.png" alt="Talant shou" />
+                <img src={withBase('/static/images/press-item-1.png')} alt="Talant shou" />
               </div>
               <div className="press-item-info">
                 <div className="press-item-date">
@@ -35,7 +37,7 @@ export default function PressPage() {
             {/* Item 2: Media loyihalar */}
             <article className="press-item-card">
               <div className="press-item-thumb">
-                <img src="/static/images/press-item-2.png" alt="Talaba-yoshlar media tanlovi" />
+                <img src={withBase('/static/images/press-item-2.png')} alt="Talaba-yoshlar media tanlovi" />
               </div>
               <div className="press-item-info">
                 <div className="press-item-date">
@@ -55,7 +57,7 @@ export default function PressPage() {
             {/* Item 3: Ijodiy startaplar */}
             <article className="press-item-card">
               <div className="press-item-thumb">
-                <img src="/static/images/press-item-3.png" alt="Ijodiy startaplar tanlovi" />
+                <img src={withBase('/static/images/press-item-3.png')} alt="Ijodiy startaplar tanlovi" />
               </div>
               <div className="press-item-info">
                 <div className="press-item-date">
@@ -75,7 +77,7 @@ export default function PressPage() {
             {/* Item 4: QVZ */}
             <article className="press-item-card">
               <div className="press-item-thumb">
-                <img src="/static/images/press-item-4.png" alt="QVZ Quvnoqlar va zukkolar" />
+                <img src={withBase('/static/images/press-item-4.png')} alt="QVZ Quvnoqlar va zukkolar" />
               </div>
               <div className="press-item-info">
                 <div className="press-item-date">

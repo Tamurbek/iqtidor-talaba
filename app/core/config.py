@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # Nizom 14.2-modda: HEMIS'dagi GPA shkalasi (5 ballik bo'lsa GPA*4; boshqa shkalada 20 ballga mutanosib)
     GPA_SCALE: float = float(os.getenv("GPA_SCALE", "5"))
 
+    # Auth cookie'lari shu yo'l bilan cheklanadi, aks holda jbnuu.uz domenidagi boshqa
+    # tizimlarga ham yuboriladi (va ularning bir xil nomli cookie'lari bilan to'qnashadi).
+    COOKIE_PATH: str = os.getenv("COOKIE_PATH", "/")
+
     def __init__(self, **values):
         super().__init__(**values)
         # Check if asyncpg is installed and we are inside Docker

@@ -1,3 +1,5 @@
+import { withBase } from '../utils/basePath'
+
 export default function Footer() {
   return (
     <footer className="site-footer" id="aloqa">
@@ -6,7 +8,7 @@ export default function Footer() {
           {/* Col 1: About */}
           <div className="footer-col">
             <h4 className="footer-column-title">Biz haqimizda</h4>
-            <img src="/static/images/logo-footer.png" alt="O'zMU Jizzax filiali" className="footer-about-logo" />
+            <img src={withBase('/static/images/logo-footer.png')} alt="O'zMU Jizzax filiali" className="footer-about-logo" />
             <p className="footer-about-text">
               O'zbekiston Milliy universiteti Jizzax filiali iqtidorli talabalarning ilmiy-tadqiqot faoliyatini tashkil etish va qo'llab-quvvatlash bo'limi.
             </p>

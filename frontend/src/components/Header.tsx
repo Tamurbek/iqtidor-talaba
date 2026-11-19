@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { BASE_PATH, withBase } from '../utils/basePath'
 
 const ACTIVE_PAGE_BY_PATH: Record<string, string> = {
   '/': 'about',
@@ -27,12 +28,12 @@ export default function Header() {
     <header className="site-header">
       <div className="container header-inner">
         <Link to="/" className="brand-logo" title="O'zMU Jizzax Filiali - Iqtidorli talabalar" onClick={closeMenu}>
-          <img src="/static/images/logo.png" alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
+          <img src={withBase('/static/images/logo.png')} alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
         </Link>
 
         <nav>
           <ul className={`nav-menu ${menuOpen ? 'is-open' : ''}`}>
-            <li><a href="/#haqida" id="nav-about" className={`nav-link ${activePage === 'about' ? 'active' : ''}`} onClick={closeMenu}>Iqtidorli talabalar</a></li>
+            <li><a href={`${BASE_PATH}/#haqida`} id="nav-about" className={`nav-link ${activePage === 'about' ? 'active' : ''}`} onClick={closeMenu}>Iqtidorli talabalar</a></li>
             <li><Link to="/talabalar-akademiyasi" id="nav-academy" className={`nav-link ${activePage === 'academy' ? 'active' : ''}`} onClick={closeMenu}>Talabalar akademiyasi</Link></li>
             <li><Link to="/tanlovlar" id="nav-contests" className={`nav-link ${activePage === 'contests' ? 'active' : ''}`} onClick={closeMenu}>Tanlovlar</Link></li>
             <li><Link to="/matbuot-xizmati" id="nav-press" className={`nav-link ${activePage === 'press' ? 'active' : ''}`} onClick={closeMenu}>Matbuot xizmati</Link></li>

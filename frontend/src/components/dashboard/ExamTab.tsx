@@ -9,6 +9,7 @@ import type {
   ExamSubmitResponse,
 } from '../../types/dashboard'
 import { extractErrorMessage } from '../../types/dashboard'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   user: User
@@ -306,7 +307,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <img src="/static/images/ozmu-emblem.png" alt="O'zMU Jizzax filiali" style={{ height: 50 }} />
+                        <img src={withBase('/static/images/ozmu-emblem.png')} alt="O'zMU Jizzax filiali" style={{ height: 50 }} />
                         <div>
                           <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9.5, fontWeight: 600, letterSpacing: 0.6, textTransform: 'uppercase', color: '#746B55' }}>
                             O'zbekiston Respublikasi Oliy ta'lim, fan va innovatsiyalar vazirligi
@@ -322,7 +323,7 @@ export default function ExamTab({ user, examStatus, examStatusLoading, onExamSub
                           <div style={{ fontFamily: "'EB Garamond', serif", fontWeight: 600, fontSize: 15, color: '#0B2545' }}>{certNumber}</div>
                         </div>
                         <div style={{ background: 'var(--bg-white)', border: `1px solid ${CERT_GOLD}`, borderRadius: 6, padding: '4px 8px', display: 'flex', alignItems: 'center' }}>
-                          <img src="/static/images/logo.png" alt="Iqtidorli talabalar platformasi" style={{ height: 34 }} />
+                          <img src={withBase('/static/images/logo.png')} alt="Iqtidorli talabalar platformasi" style={{ height: 34 }} />
                         </div>
                       </div>
                     </div>

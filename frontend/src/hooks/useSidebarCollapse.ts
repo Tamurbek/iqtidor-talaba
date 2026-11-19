@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const STORAGE_KEY = 'sidebar_collapsed'
+const STORAGE_KEY = 'iqtidor_sidebar_collapsed'
 
 export function useSidebarCollapse() {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(STORAGE_KEY) === '1')

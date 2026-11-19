@@ -1,12 +1,13 @@
 import axios from 'axios'
 import type { NotificationListResponse } from '../types/notification'
+import { BASE_PATH } from '../utils/basePath'
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || `${BASE_PATH}/api/v1`,
 })
 
 client.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
+  const token = localStorage.getItem('iqtidor_access_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
@@ -16,10 +17,10 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && localStorage.getItem('access_token')) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('current_user')
-      localStorage.removeItem('active_role')
+    if (error.response?.status === 401 && localStorage.getItem('iqtidor_access_token')) {
+      localStorage.removeItem('iqtidor_access_token')
+      localStorage.removeItem('iqtidor_current_user')
+      localStorage.removeItem('iqtidor_active_role')
       window.dispatchEvent(new Event('auth:unauthorized'))
     }
     return Promise.reject(error)
