@@ -32,10 +32,34 @@ class Settings(BaseSettings):
 
     # Auth cookie'lari shu yo'l bilan cheklanadi, aks holda jbnuu.uz domenidagi boshqa
     # tizimlarga ham yuboriladi (va ularning bir xil nomli cookie'lari bilan to'qnashadi).
-    COOKIE_PATH: str = os.getenv("COOKIE_PATH", "/")
+    COOKIE_PATH: str = os.getenv("COOKIE_PATH") or "/"
+
+    # HEMIS OAuth 2.0 (SSO). Xodimlar hemis.*, talabalar student.* portali orqali kiradi.
+    # Bitta mijoz (client) ikkala portal uchun ishlatiladi; client_id bo'sh bo'lsa SSO o'chiq.
+    HEMIS_OAUTH_BASE_URL: str = os.getenv("HEMIS_OAUTH_BASE_URL", "https://hemis.jbnuu.uz")
+    HEMIS_OAUTH_STUDENT_BASE_URL: str = os.getenv("HEMIS_OAUTH_STUDENT_BASE_URL", "https://student.jbnuu.uz")
+    HEMIS_OAUTH_AUTHORIZE_PATH: str = os.getenv("HEMIS_OAUTH_AUTHORIZE_PATH", "/oauth/authorize")
+    HEMIS_OAUTH_TOKEN_PATH: str = os.getenv("HEMIS_OAUTH_TOKEN_PATH", "/oauth/access-token")
+    HEMIS_OAUTH_USERINFO_PATH: str = os.getenv(
+        "HEMIS_OAUTH_USERINFO_PATH",
+        "/oauth/api/user?fields=id,uuid,type,roles,name,login,picture,university_id,departments",
+    )
+    HEMIS_OAUTH_STUDENT_USERINFO_PATH: str = os.getenv(
+        "HEMIS_OAUTH_STUDENT_USERINFO_PATH",
+        "/oauth/api/user?fields=id,uuid,type,name,login,picture,university_id,group,faculty,level,semester,specialty",
+    )
+    HEMIS_OAUTH_CLIENT_ID: str = os.getenv("HEMIS_OAUTH_CLIENT_ID", "")
+    HEMIS_OAUTH_CLIENT_SECRET: str = os.getenv("HEMIS_OAUTH_CLIENT_SECRET", "")
+    # HEMIS admin panelidagi "URL manzil" bilan bitma-bit mos bo'lishi shart
+    HEMIS_OAUTH_REDIRECT_URI: str = os.getenv(
+        "HEMIS_OAUTH_REDIRECT_URI", "https://jbnuu.uz/iqtidorli-talaba/login"
+    )
 
     def __init__(self, **values):
         super().__init__(**values)
+        # APP_BASE_PATH bo'sh (lokal, ildizda) bo'lsa COOKIE_PATH ham bo'sh keladi
+        if not self.COOKIE_PATH:
+            self.COOKIE_PATH = "/"
         # Check if asyncpg is installed and we are inside Docker
         has_asyncpg = False
         try:
