@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.user import User
-from app.core.security import get_password_hash
 
 logger = logging.getLogger("hemis_service")
 
 HEMIS_BASE_URL = "https://student.jbnuu.uz/rest/v1"
+HEMIS_REST_ROOT = HEMIS_BASE_URL.rsplit("/v1", 1)[0]
 TIMEOUT = 10.0  # seconds
 
 class HemisService:
@@ -172,23 +172,37 @@ class HemisService:
             logger.error(f"HEMIS token refresh error: {e}")
             return None
 
+    @staticmethod
+    async def verify_employee_login(login_str: str, password: str) -> bool:
+        """Xodim login-parolini HEMIS'da tekshiradi: POST /rest/ver1/tutor/auth/login.
+        Token kerak emas, faqat muvaffaqiyat natijasi olinadi."""
+        url = f"{HEMIS_REST_ROOT}/ver1/tutor/auth/login"
+        try:
+            async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+                res = await client.post(url, json={"login": login_str, "password": password}, headers={"accept": "application/json"})
+                data = res.json()
+                ok = res.status_code == 200 and bool(data.get("success")) and bool((data.get("data") or {}).get("token"))
+                if not ok:
+                    logger.warning(f"HEMIS employee login failed for {login_str}: {res.status_code} {data.get('error')}")
+                return ok
+        except Exception as e:
+            logger.error(f"HEMIS connection error during employee login: {e}")
+            return False
+
     @classmethod
     async def sync_student_login(
         cls,
-        login_str: str,
+        user: User,
         password: str,
         db: AsyncSession
     ) -> Optional[Tuple[User, str]]:
         """
-        Authenticates against live HEMIS API:
-        1. Calls HEMIS login.
-        2. Fetches zero-PII profile, GPA, and social activity points.
-        3. Creates or updates User record in database.
-        4. Saves 2-day session tokens.
-        5. Returns (user, hemis_token).
+        Admin import qilgan talaba uchun (mavjudligi oldindan tekshirilgan):
+        1. HEMIS'da login-parolni tekshiradi.
+        2. Zero-PII profil, ijtimoiy faollik va stipendiyani olib, yozuvni yangilaydi.
+        3. 2 kunlik HEMIS tokenlarini saqlaydi va (user, hemis_token) qaytaradi.
         """
-        # Try live HEMIS first
-        tokens = await cls.login(login_str, password)
+        tokens = await cls.login(user.hemis_id, password)
         if not tokens:
             return None
 
@@ -196,54 +210,28 @@ class HemisService:
         refresh_token = tokens["refresh_token"]
 
         profile = await cls.get_profile(token)
-        if not profile:
+        if not profile or profile["hemis_id"] != user.hemis_id:
             return None
 
-        # Fetch social activity score
         social_pts, _ = await cls.get_social_activity(token)
         scholarship_data = await cls.get_scholarship(token)
         scholarship_name = scholarship_data.get("stipend_type") if scholarship_data else None
 
-        # Find or create user
-        res = await db.execute(select(User).where(User.hemis_id == profile["hemis_id"]))
-        user = res.scalar_one_or_none()
-
-        if not user:
-            user = User(
-                hemis_id=profile["hemis_id"],
-                full_name=profile["full_name"],
-                hashed_password=get_password_hash(password),
-                role="student",
-                faculty=profile["faculty"],
-                direction=profile["direction"],
-                group_name=profile["group_name"],
-                course=profile["course"],
-                image_url=profile["image_url"],
-                education_type=profile["education_type"],
-                payment_form=profile["payment_form"],
-                avg_gpa=profile["avg_gpa"],
-                social_points=social_pts,
-                scholarship_name=scholarship_name,
-                hemis_token=token,
-                hemis_refresh_token=refresh_token
-            )
-            db.add(user)
-        else:
-            # Update academic & session fields (ZERO-PII preserved)
-            user.full_name = profile["full_name"]
-            user.faculty = profile["faculty"]
-            user.direction = profile["direction"]
-            user.group_name = profile["group_name"]
-            user.course = profile["course"]
-            user.image_url = profile["image_url"]
-            user.education_type = profile["education_type"]
-            user.payment_form = profile["payment_form"]
-            user.avg_gpa = profile["avg_gpa"]
-            user.social_points = social_pts
-            if scholarship_name:
-                user.scholarship_name = scholarship_name
-            user.hemis_token = token
-            user.hemis_refresh_token = refresh_token
+        # Update academic & session fields (ZERO-PII preserved)
+        user.full_name = profile["full_name"]
+        user.faculty = profile["faculty"]
+        user.direction = profile["direction"]
+        user.group_name = profile["group_name"]
+        user.course = profile["course"]
+        user.image_url = profile["image_url"]
+        user.education_type = profile["education_type"]
+        user.payment_form = profile["payment_form"]
+        user.avg_gpa = profile["avg_gpa"]
+        user.social_points = social_pts
+        if scholarship_name:
+            user.scholarship_name = scholarship_name
+        user.hemis_token = token
+        user.hemis_refresh_token = refresh_token
 
         await db.commit()
         await db.refresh(user)

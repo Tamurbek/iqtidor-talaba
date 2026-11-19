@@ -17,12 +17,18 @@ from app.models.tutor_assignment import TutorAssignment
 from app.api.deps import get_current_user, get_current_admin, get_current_superadmin
 from app.core.role_utils import get_assigned_roles_for_user, can_be_supervisor
 from app.core.pagination import PageParams, paginate_query, total_pages
+from app.services.tutor_groups import link_hemis_tutor_groups
+from app.services.hemis_roles import HEMIS_MANAGED_ROLES
 
 logger = logging.getLogger("iqtidorli_users")
 
 router = APIRouter(prefix="/users", tags=["Users Management & Profile"])
 
 TWO_DAYS_SECONDS = 48 * 3600
+
+# HEMIS'da akkaunti bo'lmaydigan foydalanuvchilar: faqat ular uchun lokal parol
+PASSWORD_ROLES = ("admin", "super_admin", "jury_expert")
+HEMIS_ROLE_DETAIL = "Bu rol HEMIS'dagi lavozimdan avtomatik belgilanadi, uni qo'lda berib yoki olib bo'lmaydi"
 
 async def _resolve_role(db: AsyncSession, raw: str):
     """Rol kodini normallashtiradi (legacy "coordinator" -> "faculty_coordinator") va
@@ -40,7 +46,8 @@ async def _resolve_role(db: AsyncSession, raw: str):
 class UserCreateRequest(BaseModel):
     login: str = Field(..., min_length=3, max_length=50)  # hemis_id / username
     full_name: str = Field(..., min_length=3, max_length=255)
-    password: str = Field(..., min_length=6, max_length=72)
+    # Faqat PASSWORD_ROLES uchun; talaba va xodimlar HEMIS orqali kiradi
+    password: Optional[str] = Field(None, min_length=6, max_length=72)
     role: str = Field(default="faculty_coordinator")  # tizim roli kodi (roles.code) yoki "admin"
     faculty: Optional[str] = None
     direction: Optional[str] = None
@@ -92,7 +99,9 @@ async def get_my_profile(db: AsyncSession = Depends(get_db), current_user: User 
         "image_url": current_user.image_url,
         "is_active": current_user.is_active,
         "is_department_head": current_user.is_department_head,
-        "is_starosta": current_user.is_starosta
+        "is_starosta": current_user.is_starosta,
+        # Talaba va xodimlarda parol yo'q (HEMIS orqali kiradi)
+        "has_password": bool(current_user.hashed_password),
     }
 
 
@@ -274,6 +283,10 @@ async def create_user(
         )
 
     role_code, role_obj = await _resolve_role(db, req.role)
+    if role_code in HEMIS_MANAGED_ROLES:
+        raise HTTPException(status_code=400, detail=HEMIS_ROLE_DETAIL)
+    if role_code in PASSWORD_ROLES and not req.password:
+        raise HTTPException(status_code=400, detail="Administrator va ekspert uchun boshlang'ich parol kiritilishi shart")
 
     # Sanitize name
     clean_name = re.sub(r'<[^>]*>', '', req.full_name).strip()
@@ -281,7 +294,7 @@ async def create_user(
     new_user = User(
         hemis_id=login_str,
         full_name=clean_name,
-        hashed_password=get_password_hash(req.password),
+        hashed_password=get_password_hash(req.password) if role_code in PASSWORD_ROLES else None,
         role=role_code,
         faculty=req.faculty.strip() if req.faculty else None,
         direction=req.direction.strip() if req.direction else None,
@@ -294,6 +307,9 @@ async def create_user(
         new_user.roles.append(role_obj)
 
     db.add(new_user)
+    await db.flush()
+    # Tyutor bo'lsa, HEMIS'dagi guruhlari darhol biriktiriladi
+    await link_hemis_tutor_groups(db, tutor=new_user)
     await db.commit()
     await db.refresh(new_user)
 
@@ -329,6 +345,8 @@ async def update_user(
 
     if req.role and req.role.strip():
         new_role, role_obj = await _resolve_role(db, req.role)
+        if new_role != user.role and (new_role in HEMIS_MANAGED_ROLES or user.role in HEMIS_MANAGED_ROLES):
+            raise HTTPException(status_code=400, detail=HEMIS_ROLE_DETAIL)
         user.role = new_role
         if role_obj and role_obj not in user.roles:
             user.roles.append(role_obj)
@@ -348,6 +366,8 @@ async def update_user(
             raise HTTPException(status_code=400, detail="O'z profilingizni faolsizlantira olmaysiz")
         user.is_active = req.is_active
 
+    await db.flush()
+    await link_hemis_tutor_groups(db, tutor=user)
     await db.commit()
     await db.refresh(user)
 
@@ -368,6 +388,9 @@ async def reset_user_password(
     user = (await db.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")
+
+    if not any(user.has_role(r) for r in PASSWORD_ROLES):
+        raise HTTPException(status_code=400, detail="Talaba va xodimlar HEMIS orqali kiradi, ular uchun parol o'rnatilmaydi")
 
     if len(req.new_password) < 6:
         raise HTTPException(status_code=400, detail="Parol kamida 6 ta belgidan iborat bo'lishi kerak")
@@ -397,12 +420,13 @@ async def assign_additional_roles(
     if not user:
         raise HTTPException(status_code=404, detail="Foydalanuvchi topilmadi")
 
-    if req.role_ids:
-        role_res = await db.execute(select(Role).where(Role.id.in_(req.role_ids)))
-        user.roles = list(role_res.scalars().all())
-    else:
-        user.roles = []
+    requested = list((await db.execute(select(Role).where(Role.id.in_(req.role_ids)))).scalars().all()) if req.role_ids else []
+    # HEMIS rollari so'rovdan qat'i nazar o'zgarmaydi: faqat HEMIS'da yo'q rollar boshqariladi
+    current_managed = [r for r in user.roles if r.code in HEMIS_MANAGED_ROLES]
+    user.roles = [r for r in requested if r.code not in HEMIS_MANAGED_ROLES] + current_managed
 
+    await db.flush()
+    await link_hemis_tutor_groups(db, tutor=user)
     await db.commit()
     await db.refresh(user)
 

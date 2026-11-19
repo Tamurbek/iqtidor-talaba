@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     HEMIS_OAUTH_TOKEN_PATH: str = os.getenv("HEMIS_OAUTH_TOKEN_PATH", "/oauth/access-token")
     HEMIS_OAUTH_USERINFO_PATH: str = os.getenv(
         "HEMIS_OAUTH_USERINFO_PATH",
-        "/oauth/api/user?fields=id,uuid,type,roles,name,login,picture,university_id,departments",
+        "/oauth/api/user?fields=id,uuid,type,roles,name,login,picture,university_id,departments,employee_id_number",
     )
     HEMIS_OAUTH_STUDENT_USERINFO_PATH: str = os.getenv(
         "HEMIS_OAUTH_STUDENT_USERINFO_PATH",
@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     HEMIS_OAUTH_REDIRECT_URI: str = os.getenv(
         "HEMIS_OAUTH_REDIRECT_URI", "https://jbnuu.uz/iqtidorli-talaba/login"
     )
+
+    # HEMIS Backend API (talaba/xodim ro'yxatlari). Token HEMIS admin panelida admin foydalanuvchiga
+    # "API User" roli berilganda olinadi; bo'sh bo'lsa import o'chiq.
+    HEMIS_API_URL: str = os.getenv("HEMIS_API_URL", "https://student.jbnuu.uz/rest/v1")
+    HEMIS_API_TOKEN: str = os.getenv("HEMIS_API_TOKEN", "")
 
     def __init__(self, **values):
         super().__init__(**values)

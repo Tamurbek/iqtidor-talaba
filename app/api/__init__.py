@@ -20,6 +20,7 @@ from app.api.selection_periods import router as selection_periods_router
 from app.api.semester_reports import router as semester_reports_router
 from app.api.compliance import router as compliance_router
 from app.api.audit_logs import router as audit_logs_router
+from app.api.hemis_sync import router as hemis_sync_router
 
 api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth_router)
@@ -43,4 +44,5 @@ api_router.include_router(selection_periods_router)
 api_router.include_router(semester_reports_router)
 api_router.include_router(compliance_router)
 api_router.include_router(audit_logs_router)
+api_router.include_router(hemis_sync_router)
 

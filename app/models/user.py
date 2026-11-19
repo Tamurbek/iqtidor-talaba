@@ -15,6 +15,7 @@ ROLE_CODE_TO_NAME = {
     "supervisor": "Ilmiy rahbar",
     "tutor": "Tyutor",
     "dean": "Fakultet dekani",
+    "leadership": "Rahbariyat",
     "department_chair": "Kafedra mudiri",
 }
 
@@ -30,7 +31,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     hemis_id = Column(String(50), unique=True, index=True, nullable=False)
     full_name = Column(String(255), nullable=False)
-    hashed_password = Column(String(255), nullable=False)
+    # Talaba va xodimlar HEMIS orqali kiradi (parol saqlanmaydi); parol faqat admin/ekspert uchun
+    hashed_password = Column(String(255), nullable=True)
     role = Column(String(50), default="student")  # student, admin, coordinator (legacy fallback)
     faculty = Column(String(255), nullable=True)
     direction = Column(String(255), nullable=True)  # Yo'nalish

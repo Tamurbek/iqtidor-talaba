@@ -9,7 +9,8 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.models.user import User
-from app.models.tutor_assignment import TutorAssignment
+from app.models.tutor_assignment import TutorAssignment, TutorGroup
+from app.services.tutor_groups import apply_tutor_groups, release_tutor_group
 from app.api.deps import get_current_tutor, get_current_admin
 from app.services.notifications import notify
 from app.services.monitoring import get_students_monitoring_data
@@ -120,6 +121,74 @@ async def assign_tutor(
     logger.info(f"Tutor '{tutor.full_name}' assigned to student '{student.full_name}' by admin '{current_admin.full_name}'")
 
     return {"success": True, "message": f"'{student.full_name}' ga tyutor ({tutor.full_name}) biriktirildi"}
+
+
+class TutorGroupPayload(BaseModel):
+    tutor_id: int
+    group_name: str = Field(..., min_length=1, max_length=50)
+
+
+@router.get("/tutors")
+async def list_tutors(
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_admin),
+):
+    users = (await db.execute(select(User).where(User.is_active.is_(True)).order_by(User.full_name))).scalars().all()
+    return [{"id": u.id, "full_name": u.full_name} for u in users if u.has_role("tutor")]
+
+
+@router.post("/assign-group")
+async def assign_tutor_group(
+    payload: TutorGroupPayload,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_admin),
+):
+    """Tyutorni guruhga biriktirish: guruhning hozirgi va keyin HEMIS'dan keladigan talabalari unga o'tadi."""
+    tutor = await db.get(User, payload.tutor_id)
+    if not tutor or not tutor.has_role("tutor"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ko'rsatilgan foydalanuvchi tyutor emas")
+    group_name = payload.group_name.strip()
+    has_students = (await db.execute(
+        select(User.id).where(User.group_name == group_name, User.role == "student").limit(1)
+    )).scalar_one_or_none()
+    if not has_students:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bu guruhda talabalar topilmadi")
+
+    tg = (await db.execute(select(TutorGroup).where(TutorGroup.group_name == group_name))).scalar_one_or_none()
+    if tg:
+        tg.tutor_id = tutor.id
+        tg.assigned_by_id = current_admin.id
+        tg.assigned_at = datetime.utcnow()
+    else:
+        db.add(TutorGroup(tutor_id=tutor.id, group_name=group_name, assigned_by_id=current_admin.id))
+    await db.flush()
+    count = await apply_tutor_groups(db, group_name=group_name, assigned_by_id=current_admin.id)
+    await notify(
+        db,
+        user_id=tutor.id,
+        title=f"Sizga {group_name} guruhi biriktirildi",
+        type="tutor_assignment",
+        related_entity_type="tutor_group",
+        related_entity_id=tutor.id,
+        commit=False,
+    )
+    await db.commit()
+    logger.info(f"Tutor '{tutor.full_name}' assigned to group '{group_name}' ({count} students) by '{current_admin.full_name}'")
+    return {"success": True, "message": f"{group_name} guruhi {tutor.full_name} ga biriktirildi ({count} ta talaba)"}
+
+
+@router.delete("/assign-group/{group_name}")
+async def unassign_tutor_group(
+    group_name: str,
+    db: AsyncSession = Depends(get_db),
+    current_admin: User = Depends(get_current_admin),
+):
+    tg = (await db.execute(select(TutorGroup).where(TutorGroup.group_name == group_name))).scalar_one_or_none()
+    if not tg:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bu guruhga tyutor biriktirilmagan")
+    await release_tutor_group(db, group_name)
+    await db.commit()
+    return {"success": True, "message": f"{group_name} guruhidan tyutor olib tashlandi"}
 
 
 # ==============================================================================

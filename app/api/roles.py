@@ -1,13 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, func
 from pydantic import BaseModel
 from typing import List, Optional
 
 from app.core.database import get_db
 from app.api.deps import get_current_user
 from app.models.user import User
-from app.models.role import Role, Permission, LOCKED_ROLE_PERMISSIONS
+from app.models.tutor_assignment import TutorGroup
+from app.models.role import Role, Permission, LOCKED_ROLE_PERMISSIONS, user_roles
+from app.core.pagination import PageParams, paginate_query, total_pages
+from app.core.role_utils import scoped_faculty
 from app.models.achievement import StudentAchievement
 from app.models.application import ContestApplication
 from app.services.ranking import compute_achievement_points
@@ -148,61 +151,131 @@ async def create_role(
     return {"message": "Yangi rol muvaffaqiyatli yaratildi", "role_id": new_role.id}
 
 
+def _starosta_scope(current_user: User, faculty: Optional[str]) -> Optional[str]:
+    if not (current_user.is_department_head or current_user.has_permission("starostas.view")):
+        raise HTTPException(status_code=403, detail="Starostalar ro'yxatini ko'rish huquqingiz yo'q")
+    # Nizom 24-modda: fakultet mas'uli faqat o'z fakulteti guruhlarini ko'radi
+    return scoped_faculty(current_user, faculty)
+
+
+def _starosta_info(s: User) -> dict:
+    return {
+        "id": s.id,
+        "hemis_id": s.hemis_id,
+        "full_name": s.full_name,
+        "avg_gpa": s.avg_gpa or 0.0,
+        "social_points": s.social_points or 0.0,
+        "is_starosta": s.is_starosta,
+    }
+
+
 @router.get("/starostas")
 async def list_group_starostas(
+    q: Optional[str] = Query(None, max_length=50),
+    faculty: Optional[str] = Query(None, max_length=255),
+    page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Returns list of all academic groups with their assigned Starosta.
-    Accessible by Department Head, Super Admin, or users with 'starostas.view' permission.
-    """
-    if not (current_user.is_department_head or current_user.has_permission("starostas.view")):
-        raise HTTPException(status_code=403, detail="Starostalar ro'yxatini ko'rish huquqingiz yo'q")
+    """Akademik guruhlar (sahifalab) va ularning sardori/tyutori. Talabalar ro'yxati
+    alohida: GET /roles/starostas/{group_name}/students."""
+    faculty = _starosta_scope(current_user, faculty)
 
-    # Fetch all students
-    res = await db.execute(select(User).where(User.group_name.is_not(None)).order_by(User.faculty, User.group_name, User.full_name))
-    students = res.scalars().all()
+    base = select(User).where(User.group_name.is_not(None), User.role == "student")
+    if faculty:
+        base = base.where(User.faculty == faculty)
+    groups_q = (
+        select(
+            User.group_name,
+            func.max(User.faculty).label("faculty"),
+            func.max(User.direction).label("direction"),
+            func.max(User.course).label("course"),
+            func.count(User.id).label("student_count"),
+        )
+        .where(User.id.in_(base.with_only_columns(User.id)))
+        .group_by(User.group_name)
+        .order_by(func.max(User.faculty), User.group_name)
+    )
+    if q and q.strip():
+        groups_q = groups_q.where(User.group_name.ilike(f"%{q.strip()}%"))
 
-    # Group students by group_name
-    groups_map = {}
-    for s in students:
-        g = s.group_name
-        if not g:
-            continue
-        if g not in groups_map:
-            groups_map[g] = {
-                "group_name": g,
-                "faculty": s.faculty or "Noma'lum fakultet",
-                "direction": s.direction or "Noma'lum yo'nalish",
-                "course": s.course or 1,
-                "starosta": None,
-                "students": []
-            }
+    res, total = await paginate_query(db, groups_q, page_params.page, page_params.page_size)
+    rows = res.all()
+    names = [r.group_name for r in rows]
 
-        is_star = s.is_starosta
-        student_info = {
-            "id": s.id,
-            "hemis_id": s.hemis_id,
-            "full_name": s.full_name,
-            "avg_gpa": s.avg_gpa or 0.0,
-            "social_points": s.social_points or 0.0,
-            "is_starosta": is_star
+    starostas = {}
+    tutors = {}
+    if names:
+        starosta_role = (await db.execute(select(Role.id).where(Role.code == "starosta"))).scalar_one_or_none()
+        if starosta_role:
+            st_users = (await db.execute(
+                select(User).join(user_roles, user_roles.c.user_id == User.id)
+                .where(user_roles.c.role_id == starosta_role, User.group_name.in_(names))
+            )).scalars().all()
+            starostas = {u.group_name: _starosta_info(u) for u in st_users}
+        tutor_rows = (await db.execute(
+            select(TutorGroup.group_name, User.id, User.full_name)
+            .join(User, User.id == TutorGroup.tutor_id)
+            .where(TutorGroup.group_name.in_(names))
+        )).all()
+        tutors = {g: {"id": uid, "full_name": name} for g, uid, name in tutor_rows}
+
+    groups_list = [
+        {
+            "group_name": r.group_name,
+            "faculty": r.faculty or "Noma'lum fakultet",
+            "direction": r.direction or "Noma'lum yo'nalish",
+            "course": r.course or 1,
+            "student_count": r.student_count,
+            "starosta": starostas.get(r.group_name),
+            "tutor": tutors.get(r.group_name),
         }
-        groups_map[g]["students"].append(student_info)
-        if is_star:
-            groups_map[g]["starosta"] = student_info
+        for r in rows
+    ]
 
-    groups_list = list(groups_map.values())
-    total_groups = len(groups_list)
-    assigned_count = sum(1 for grp in groups_list if grp["starosta"] is not None)
+    # Umumiy ko'rsatkichlar (filtr bo'yicha, sahifadan qat'i nazar)
+    all_groups = (await db.execute(
+        select(func.count(func.distinct(User.group_name))).where(User.id.in_(base.with_only_columns(User.id)))
+    )).scalar_one()
+    assigned = 0
+    starosta_role_id = (await db.execute(select(Role.id).where(Role.code == "starosta"))).scalar_one_or_none()
+    if starosta_role_id:
+        assigned = (await db.execute(
+            select(func.count(func.distinct(User.group_name)))
+            .join(user_roles, user_roles.c.user_id == User.id)
+            .where(user_roles.c.role_id == starosta_role_id, User.id.in_(base.with_only_columns(User.id)))
+        )).scalar_one()
+    faculties = (await db.execute(
+        select(User.faculty).where(User.role == "student", User.group_name.is_not(None), User.faculty.is_not(None))
+        .group_by(User.faculty).order_by(User.faculty)
+    )).scalars().all()
 
     return {
         "groups": groups_list,
-        "total_groups": total_groups,
-        "assigned_count": assigned_count,
-        "unassigned_count": total_groups - assigned_count
+        "total": total,
+        "page": page_params.page,
+        "page_size": page_params.page_size,
+        "total_pages": total_pages(total, page_params.page_size),
+        "total_groups": all_groups,
+        "assigned_count": assigned,
+        "unassigned_count": all_groups - assigned,
+        "faculties": [faculty] if faculty and current_user.is_faculty_staff else faculties,
     }
+
+
+@router.get("/starostas/{group_name:path}/students")
+async def list_group_students(
+    group_name: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Sardor tanlash oynasi uchun guruh talabalari."""
+    faculty = _starosta_scope(current_user, None)
+    stmt = select(User).where(User.group_name == group_name, User.role == "student").order_by(User.full_name)
+    if faculty:
+        stmt = stmt.where(User.faculty == faculty)
+    students = (await db.execute(stmt)).scalars().all()
+    return {"group_name": group_name, "students": [_starosta_info(s) for s in students]}
 
 
 @router.post("/starostas/assign")

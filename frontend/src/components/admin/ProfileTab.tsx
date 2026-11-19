@@ -174,6 +174,7 @@ export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged
           ) : null}
         </div>
 
+        {data?.has_password !== false && (
         <div style={cardStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
             <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -222,6 +223,7 @@ export default function ProfileTab({ showToast, onProfileUpdated, onLoginChanged
             </button>
           </form>
         </div>
+        )}
       </div>
     </div>
   )

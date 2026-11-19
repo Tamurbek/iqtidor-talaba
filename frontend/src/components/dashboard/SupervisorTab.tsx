@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import client from '../../api/client'
 import { useAuth } from '../../context/AuthContext'
 import type { IncomingSupervisorRequest, IncomingSupervisorRequestListResponse, SupervisorCapacityResponse, SupervisorOption, SupervisorRequestItem } from '../../types/admin'
@@ -9,6 +9,7 @@ import Pagination from '../common/Pagination'
 import { withBase } from '../../utils/basePath'
 
 const INCOMING_PAGE_SIZE = 10
+const CAPACITY_PAGE_SIZE = 20
 
 interface Props {
   user: User
@@ -48,6 +49,8 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
   const [decidingId, setDecidingId] = useState<number | null>(null)
   const [capacityDrafts, setCapacityDrafts] = useState<Record<number, string>>({})
   const [savingCapacityId, setSavingCapacityId] = useState<number | null>(null)
+  const [capacityPage, setCapacityPage] = useState(1)
+  const [capacitySearch, setCapacitySearch] = useState('')
 
   const hasSupervisor = Boolean(user.supervisor_id)
   const hasPendingRequest = myRequests.some((r) => r.status === 'pending')
@@ -175,6 +178,15 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     }
   }
 
+  const filteredSupervisors = useMemo(() => {
+    const q = capacitySearch.trim().toLowerCase()
+    if (!q) return supervisors
+    return supervisors.filter((s) => [s.full_name, s.department, s.faculty].some((v) => v?.toLowerCase().includes(q)))
+  }, [supervisors, capacitySearch])
+  const capacityTotalPages = Math.max(1, Math.ceil(filteredSupervisors.length / CAPACITY_PAGE_SIZE))
+  const safeCapacityPage = Math.min(capacityPage, capacityTotalPages)
+  const pagedSupervisors = filteredSupervisors.slice((safeCapacityPage - 1) * CAPACITY_PAGE_SIZE, safeCapacityPage * CAPACITY_PAGE_SIZE)
+
   if (loading) {
     return <div style={cardStyle}>Yuklanmoqda...</div>
   }
@@ -189,8 +201,18 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
           <p style={{ margin: '0 0 14px', fontSize: 13, color: 'var(--text-muted)' }}>
             Har bir professor-o'qituvchi biriktirilishi mumkin bo'lgan talabalar sonini belgilang. Kvota belgilanmaguncha rahbarga so'rov yuborilmaydi va talaba biriktirilmaydi (10.5-10.6-modda).
           </p>
+          <input
+            type="search"
+            value={capacitySearch}
+            onChange={(e) => {
+              setCapacitySearch(e.target.value)
+              setCapacityPage(1)
+            }}
+            placeholder="F.I.Sh., kafedra yoki fakultet bo'yicha qidirish..."
+            style={{ width: '100%', maxWidth: 420, padding: '8px 12px', marginBottom: 12, border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13 }}
+          />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {supervisors.map((s) => (
+            {pagedSupervisors.map((s) => (
               <div key={s.id} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, border: '1px solid var(--border-light)', borderRadius: 10, padding: '10px 14px' }}>
                 <div style={{ flex: '1 1 220px' }}>
                   <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text-dark)' }}>{s.full_name}</div>
@@ -219,7 +241,11 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                 </button>
               </div>
             ))}
+            {filteredSupervisors.length === 0 && (
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 16 }}>Hech narsa topilmadi</div>
+            )}
           </div>
+          <Pagination page={safeCapacityPage} totalPages={capacityTotalPages} total={filteredSupervisors.length} pageSize={CAPACITY_PAGE_SIZE} onPageChange={setCapacityPage} />
         </div>
       )}
 

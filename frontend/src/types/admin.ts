@@ -253,17 +253,29 @@ export interface StarostaGroup {
   direction: string
   course: number
   starosta: StarostaStudent | null
-  students: StarostaStudent[]
+  tutor?: { id: number; full_name: string } | null
+  student_count: number
 }
 
 export interface StarostasResponse {
   groups: StarostaGroup[]
+  total: number
+  page: number
+  page_size: number
+  total_pages: number
+  faculties: string[]
   total_groups: number
   assigned_count: number
   unassigned_count: number
 }
 
 // GET /users
+// Faqat shu rollar lokal parol bilan kiradi; talaba va xodimlar HEMIS orqali
+export const PASSWORD_ROLES = ['admin', 'super_admin', 'jury_expert']
+
+export const needsPassword = (u: Pick<AdminUser, 'role' | 'assigned_roles'>) =>
+  PASSWORD_ROLES.includes(u.role) || u.assigned_roles.some((r) => PASSWORD_ROLES.includes(r.code))
+
 export interface AdminUser {
   id: number
   login: string
@@ -370,6 +382,7 @@ export interface MyProfile {
   is_active: boolean
   is_department_head: boolean
   is_starosta: boolean
+  has_password?: boolean
 }
 
 // PUT /users/me

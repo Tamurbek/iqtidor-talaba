@@ -3,13 +3,26 @@ import client from '../../api/client'
 import type { StarostaGroup, StarostaStudent } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
+import HemisSyncButton from './HemisSyncButton'
+import Pagination from '../common/Pagination'
 
 interface Props {
   groups: StarostaGroup[] | null
   loading: boolean
   error: string | null
-  onStarostaAssigned: (groupName: string, studentId: number) => void
-  onStarostaRevoked: (groupName: string) => void
+  page: number
+  totalPages: number
+  total: number
+  pageSize: number
+  onPageChange: (page: number) => void
+  search: string
+  onSearchChange: (value: string) => void
+  faculty: string
+  onFacultyChange: (value: string) => void
+  faculties: string[]
+  totalGroups: number
+  assignedCount: number
+  onReload: () => void
   showToast: ShowToast
 }
 
@@ -22,11 +35,36 @@ const StarIcon = () => (
   </svg>
 )
 
-export default function StarostasTab({ groups, loading, error, onStarostaAssigned, onStarostaRevoked, showToast }: Props) {
+export default function StarostasTab({
+  groups, loading, error, page, totalPages, total, pageSize, onPageChange,
+  search, onSearchChange, faculty, onFacultyChange, faculties, totalGroups, assignedCount, onReload, showToast,
+}: Props) {
   const [pickerGroup, setPickerGroup] = useState<StarostaGroup | null>(null)
+  const [pickerStudents, setPickerStudents] = useState<StarostaStudent[] | null>(null)
   const [justAssigned, setJustAssigned] = useState<Record<string, boolean>>({})
   const [assigningId, setAssigningId] = useState<number | null>(null)
   const [revokingGroup, setRevokingGroup] = useState<string | null>(null)
+  const [tutors, setTutors] = useState<{ id: number; full_name: string }[]>([])
+  const [savingTutorGroup, setSavingTutorGroup] = useState<string | null>(null)
+
+  useEffect(() => {
+    client.get<{ id: number; full_name: string }[]>('/tutor/tutors').then(({ data }) => setTutors(data)).catch(() => setTutors([]))
+  }, [])
+
+  const changeGroupTutor = async (groupName: string, tutorId: string) => {
+    setSavingTutorGroup(groupName)
+    try {
+      const { data } = tutorId
+        ? await client.post<{ message?: string }>('/tutor/assign-group', { group_name: groupName, tutor_id: Number(tutorId) })
+        : await client.delete<{ message?: string }>(`/tutor/assign-group/${encodeURIComponent(groupName)}`)
+      showToast(data.message || 'Saqlandi', 'success')
+      onReload()
+    } catch (err) {
+      showToast(extractErrorMessage(err, "Tyutorni biriktirib bo'lmadi"), 'error')
+    } finally {
+      setSavingTutorGroup(null)
+    }
+  }
 
   const list = groups ?? []
 
@@ -39,12 +77,16 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
     return () => window.removeEventListener('keydown', onKey)
   }, [pickerGroup])
 
-  const openAssignStarostaModal = (group: StarostaGroup) => {
-    if (!group.students || group.students.length === 0) {
-      showToast(`${group.group_name} guruhida ro'yxatdan o'tgan talabalar topilmadi.`, 'info')
-      return
-    }
+  const openAssignStarostaModal = async (group: StarostaGroup) => {
     setPickerGroup(group)
+    setPickerStudents(null)
+    try {
+      const { data } = await client.get<{ students: StarostaStudent[] }>(`/roles/starostas/${encodeURIComponent(group.group_name)}/students`)
+      setPickerStudents(data.students)
+    } catch (err) {
+      setPickerGroup(null)
+      showToast(extractErrorMessage(err, "Guruh talabalarini yuklab bo'lmadi"), 'error')
+    }
   }
 
   const executeAssignStarosta = async (groupName: string, student: StarostaStudent) => {
@@ -52,7 +94,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
     try {
       const { data } = await client.post<{ message?: string }>('/roles/starostas/assign', { group_name: groupName, student_id: student.id })
       setPickerGroup(null)
-      onStarostaAssigned(groupName, student.id)
+      onReload()
       setJustAssigned((prev) => ({ ...prev, [groupName]: true }))
       showToast(data.message || `${student.full_name} guruh sardori etib tayinlandi!`, 'success')
     } catch (err) {
@@ -69,7 +111,7 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
     setRevokingGroup(group.group_name)
     try {
       const { data } = await client.post<{ message?: string }>('/roles/starostas/revoke', { group_name: group.group_name })
-      onStarostaRevoked(group.group_name)
+      onReload()
       setJustAssigned((prev) => ({ ...prev, [group.group_name]: false }))
       showToast(data.message || `${group.group_name} guruhi sardorligi bekor qilindi`, 'success')
     } catch (err) {
@@ -90,20 +132,42 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
             <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 3 }}>Iqtidorli bo'lim boshlig'i tomonidan har bir akademik guruhga bitta mas'ul guruh sardorini tayinlash va monitoring qilish</p>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <HemisSyncButton showToast={showToast} onFinished={onReload} />
             <span style={{ background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', padding: '6px 14px', borderRadius: 20, fontSize: 12.5, fontWeight: 700 }}>
-              Jami guruhlar: {list.length} ta
+              Jami guruhlar: {totalGroups} ta · sardor tayinlangan: {assignedCount} ta
             </span>
           </div>
         </div>
 
+        <div style={{ padding: '14px 26px', borderBottom: '1px solid var(--border-light)', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <input
+            type="search"
+            aria-label="Guruh nomi bo'yicha qidirish"
+            placeholder="Guruh nomi bo'yicha qidirish..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            style={{ flex: '1 1 220px', maxWidth: 320, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-white)', color: 'var(--text-dark)', fontSize: 13.5 }}
+          />
+          <select
+            aria-label="Fakultet bo'yicha filtr"
+            value={faculty}
+            onChange={(e) => onFacultyChange(e.target.value)}
+            style={{ flex: '0 1 260px', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-white)', color: 'var(--text-dark)', fontSize: 13.5 }}
+          >
+            <option value="">Barcha fakultetlar</option>
+            {faculties.map((f) => <option key={f} value={f}>{f}</option>)}
+          </select>
+        </div>
+
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', minWidth: 980, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }} id="starostasTable">
+          <table style={{ width: '100%', minWidth: 1180, borderCollapse: 'collapse', textAlign: 'left', fontSize: 14 }} id="starostasTable">
             <thead>
               <tr style={{ background: 'var(--bg-light)', borderBottom: '2px solid var(--border-color)', color: 'var(--text-table-header)', fontWeight: 700 }}>
                 <th style={thStyle}>Guruh</th>
                 <th style={thStyle}>Fakultet va yo'nalish</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>Kurs</th>
                 <th style={thStyle}>Tayinlangan Guruh sardori</th>
+                <th style={thStyle}>Tyutor</th>
                 <th style={{ ...thStyle, textAlign: 'center' }}>Talabalar soni</th>
                 <th style={{ ...thStyle, textAlign: 'right' }}>Amallar</th>
               </tr>
@@ -111,17 +175,17 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
+                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Yuklanmoqda...</td>
                 </tr>
               )}
               {!loading && error && (
                 <tr>
-                  <td colSpan={6} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
+                  <td colSpan={7} role="alert" style={{ padding: 24, textAlign: 'center', color: 'var(--badge-danger-text)' }}>{error}</td>
                 </tr>
               )}
               {!loading && !error && list.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Hozircha akademik guruhlar mavjud emas.</td>
+                  <td colSpan={7} style={{ padding: 24, textAlign: 'center', color: 'var(--text-light)' }}>Hozircha akademik guruhlar mavjud emas.</td>
                 </tr>
               )}
               {!loading && !error && list.map((g) => (
@@ -157,8 +221,21 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
                       </span>
                     )}
                   </td>
+                  <td style={tdStyle}>
+                    <select
+                      aria-label={`${g.group_name} guruhi tyutori`}
+                      value={g.tutor?.id ?? ''}
+                      disabled={savingTutorGroup === g.group_name}
+                      onChange={(e) => changeGroupTutor(g.group_name, e.target.value)}
+                      style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-white)', color: 'var(--text-dark)', fontSize: 13, maxWidth: 220 }}
+                    >
+                      <option value="">— Biriktirilmagan —</option>
+                      {g.tutor && !tutors.some((t) => t.id === g.tutor?.id) && <option value={g.tutor.id}>{g.tutor.full_name}</option>}
+                      {tutors.map((t) => <option key={t.id} value={t.id}>{t.full_name}</option>)}
+                    </select>
+                  </td>
                   <td style={{ ...tdStyle, textAlign: 'center', fontWeight: 700, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                    {g.students.length} nafar
+                    {g.student_count} nafar
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'right' }}>
                     <div style={{ display: 'inline-flex', gap: 8 }}>
@@ -188,6 +265,9 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
             </tbody>
           </table>
         </div>
+        <Pagination page={page} totalPages={totalPages} total={total} pageSize={pageSize} onPageChange={onPageChange} />
+        <div>
+        </div>
       </div>
 
       {pickerGroup && (
@@ -203,7 +283,9 @@ export default function StarostasTab({ groups, loading, error, onStarostaAssigne
               </button>
             </div>
             <div style={{ maxHeight: 340, overflowY: 'auto' }}>
-              {pickerGroup.students.map((s) => {
+              {pickerStudents === null && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Yuklanmoqda...</p>}
+              {pickerStudents !== null && pickerStudents.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Guruhda talabalar topilmadi.</p>}
+              {(pickerStudents ?? []).map((s) => {
                 const isCurrent = s.id === currentStarostaId
                 return (
                   <div key={s.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 14px', border: `1px solid ${isCurrent ? 'var(--primary-color)' : 'var(--border-color)'}`, borderRadius: 8, marginBottom: 8, background: isCurrent ? 'rgba(59,130,246,0.12)' : 'var(--bg-white)' }}>

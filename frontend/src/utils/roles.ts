@@ -44,13 +44,15 @@ export function getAdminCapabilities(role: string | undefined | null): AdminCapa
   const facultyReviewer = deptHead || (facultyStaff && role !== 'department_chair')
   // contests.review / reports.view: coordinatorLevel + jury_expert
   const reviewerLevel = facultyReviewer || role === 'jury_expert'
+  // Rahbariyat (direktor, prorektor): butun universitet bo'yicha faqat ko'rish (seed_data.py: leadership)
+  const leadership = role === 'leadership'
 
   return {
     isDeptHeadLevel: deptHead,
     canVerifyAchievements: coordinatorLevel,
     canReviewContests: reviewerLevel,
-    canViewReports: coordinatorLevel || role === 'jury_expert',
-    canViewStarostas: coordinatorLevel,
+    canViewReports: coordinatorLevel || role === 'jury_expert' || leadership,
+    canViewStarostas: coordinatorLevel || leadership,
     canManageStarostas: deptHead,
     canManageRoles: deptHead,
     canManageUsers: deptHead,

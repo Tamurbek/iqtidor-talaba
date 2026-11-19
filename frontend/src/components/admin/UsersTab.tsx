@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import client from '../../api/client'
+import { needsPassword } from '../../types/admin'
 import type { AdminUser, MessageResponse, RoleItem } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
-import { AddUserModal, EditUserModal, ResetPasswordModal } from './UserModals'
+import { EditUserModal, ResetPasswordModal } from './UserModals'
+import HemisSyncButton from './HemisSyncButton'
 import Pagination from '../common/Pagination'
 
 interface Props {
@@ -36,6 +38,8 @@ function RoleBadge({ role }: { role: string }) {
   switch (role) {
     case 'admin':
       return <span style={roleBadge('var(--badge-purple-bg)', 'var(--badge-purple-text)')}>Super Administrator</span>
+    case 'leadership':
+      return <span style={roleBadge('var(--badge-purple-bg)', 'var(--badge-purple-text)')}>Rahbariyat</span>
     case 'department_head':
       return <span style={roleBadge('#e0e7ff', '#4338ca')}>Bo'lim boshlig'i</span>
     case 'coordinator':
@@ -53,13 +57,14 @@ function RoleBadge({ role }: { role: string }) {
       return <span style={roleBadge('var(--badge-warning-bg)', 'var(--badge-warning-text)')}>Guruh sardori</span>
     case 'jury_expert':
       return <span style={roleBadge('var(--badge-purple-bg)', 'var(--badge-purple-text)')}>Hakam / Ekspert</span>
-    default:
+    case 'student':
       return <span style={roleBadge('var(--badge-success-bg)', 'var(--badge-success-text)', 600)}>Talaba</span>
+    default:
+      return <span style={roleBadge('var(--bg-light)', 'var(--text-secondary)', 600)}>{role}</span>
   }
 }
 
 type ModalState =
-  | { kind: 'add' }
   | { kind: 'edit'; user: AdminUser }
   | { kind: 'reset'; user: AdminUser }
   | null
@@ -96,9 +101,6 @@ export default function UsersTab({
   }
 
   const toggleUserStatus = async (u: AdminUser) => {
-    const actionText = u.is_active ? 'bloklash' : 'faollashtirish'
-    if (!window.confirm(`'${u.full_name}' akkauntini ${actionText}ni xohlaysizmi?`)) return
-
     setBusyId(u.id)
     try {
       const { data } = await client.put<MessageResponse>(`/users/${encodeURIComponent(u.id)}`, { is_active: !u.is_active })
@@ -106,21 +108,6 @@ export default function UsersTab({
       onReload()
     } catch (err) {
       showToast(extractErrorMessage(err, 'Amalni bajarishda xatolik yuz berdi'), 'error')
-    } finally {
-      setBusyId(null)
-    }
-  }
-
-  const deleteUserPermanently = async (u: AdminUser) => {
-    if (!window.confirm(`'${u.full_name}' akkauntini tizimdan butunlay o'chirib tashlashni xohlaysizmi? Bu amalni ortga qaytarib bo'lmaydi.`)) return
-
-    setBusyId(u.id)
-    try {
-      const { data } = await client.delete<MessageResponse>(`/users/${encodeURIComponent(u.id)}`, { params: { permanent: true } })
-      showToast(data.message || "Foydalanuvchi o'chirildi", 'success')
-      onReload()
-    } catch (err) {
-      showToast(extractErrorMessage(err, "Foydalanuvchini o'chirishda xatolik"), 'error')
     } finally {
       setBusyId(null)
     }
@@ -136,13 +123,7 @@ export default function UsersTab({
               Adminlar, fakultet koordinatorlari, bo'lim boshliqlari, hakamlar va talabalar ro'yxati
             </p>
           </div>
-          <button type="button" onClick={() => setModal({ kind: 'add' })} style={{ background: 'var(--primary-color)', color: '#ffffff', border: 'none', padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 2px 8px rgba(11,59,112,0.25)' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Yangi foydalanuvchi qo'shish</span>
-          </button>
+          <HemisSyncButton showToast={showToast} onFinished={onReload} />
         </div>
 
         <div style={{ padding: '16px 26px', background: 'var(--bg-light)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -230,29 +211,27 @@ export default function UsersTab({
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'center' }}>
                     <div style={{ display: 'flex', gap: 6, justifyContent: 'center', alignItems: 'center' }}>
-                      <button type="button" className="btn-edit-user" onClick={() => setModal({ kind: 'edit', user: u })} style={{ background: 'var(--border-light)', color: 'var(--text-dark)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Ma'lumotlarni tahrirlash">
-                        Tahrirlash
+                      <button type="button" className="btn-edit-user" onClick={() => setModal({ kind: 'edit', user: u })} style={{ background: 'var(--border-light)', color: 'var(--text-dark)', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Rolni almashtirish">
+                        Rol
                       </button>
+                      {needsPassword(u) && (
                       <button type="button" className="btn-reset-user-pass" onClick={() => setModal({ kind: 'reset', user: u })} style={{ background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)', border: '1px solid var(--badge-warning-border)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Parolni yangilash">
                         Parol
                       </button>
-                      {u.id !== currentUserId && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn-toggle-user-status"
-                            disabled={busyId === u.id}
-                            onClick={() => toggleUserStatus(u)}
-                            style={{ background: u.is_active ? 'var(--badge-danger-bg)' : 'var(--badge-success-bg)', color: u.is_active ? 'var(--badge-danger-text)' : 'var(--badge-success-text)', border: `1px solid ${u.is_active ? 'var(--badge-danger-border)' : 'var(--border-color)'}`, padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
-                            title={u.is_active ? 'Akkauntni bloklash' : 'Akkauntni faollashtirish'}
-                          >
-                            {u.is_active ? 'Bloklash' : 'Faollashtirish'}
-                          </button>
-                          <button type="button" className="btn-delete-user" disabled={busyId === u.id} onClick={() => deleteUserPermanently(u)} style={{ background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', border: '1px solid var(--badge-danger-border)', padding: '6px 10px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer' }} title="Tizimdan butunlay o'chirish">
-                            O'chirish
-                          </button>
-                        </>
                       )}
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={u.is_active}
+                        aria-label={u.is_active ? 'Faol — nofaol qilish' : 'Nofaol — faollashtirish'}
+                        title={u.is_active ? 'Nofaol qilish' : 'Faollashtirish'}
+                        className="btn-toggle-user-status"
+                        disabled={busyId === u.id || u.id === currentUserId}
+                        onClick={() => toggleUserStatus(u)}
+                        style={{ position: 'relative', width: 40, height: 22, borderRadius: 11, border: 'none', padding: 0, background: u.is_active ? 'var(--badge-success-text)' : 'var(--border-color)', cursor: busyId === u.id || u.id === currentUserId ? 'not-allowed' : 'pointer', opacity: u.id === currentUserId ? 0.5 : 1, transition: 'background 0.15s', flexShrink: 0 }}
+                      >
+                        <span style={{ position: 'absolute', top: 3, left: u.is_active ? 21 : 3, width: 16, height: 16, borderRadius: '50%', background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', transition: 'left 0.15s' }} />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -266,7 +245,6 @@ export default function UsersTab({
         )}
       </div>
 
-      {modal?.kind === 'add' && <AddUserModal onClose={() => setModal(null)} onSaved={(m) => handleSaved(m)} />}
       {modal?.kind === 'edit' && <EditUserModal user={modal.user} roles={roles} onClose={() => setModal(null)} onSaved={(m) => handleSaved(m)} />}
       {modal?.kind === 'reset' && <ResetPasswordModal user={modal.user} onClose={() => setModal(null)} onSaved={(m) => handleSaved(m, false)} />}
     </div>

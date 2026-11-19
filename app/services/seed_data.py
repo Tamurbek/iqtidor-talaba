@@ -404,6 +404,13 @@ async def seed_roles_and_permissions(db: AsyncSession):
             "permissions": ["achievements.view", "achievements.verify", "reports.view", "starostas.view"]
         },
         {
+            "code": "leadership",
+            "name": "Rahbariyat",
+            "description": "Direktor, prorektorlar va ularning o'rinbosarlari: butun universitet bo'yicha hisobot va ko'rsatkichlarni ko'rish (HEMIS lavozimidan avtomatik)",
+            "is_system": True,
+            "permissions": ["achievements.view", "reports.view", "starostas.view"]
+        },
+        {
             "code": "jury_expert",
             "name": "Hakamlar hay'ati / Ekspert",
             "description": "2-bosqich taqdimot va ijodiy ishlarni baholovchi komissiya a'zosi",

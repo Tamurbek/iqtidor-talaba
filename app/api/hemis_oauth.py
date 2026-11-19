@@ -13,7 +13,7 @@ from app.api.deps import get_current_user
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.role_utils import get_assigned_roles_for_user
-from app.core.security import create_access_token, get_password_hash
+from app.core.security import create_access_token
 from app.models.user import User
 from app.schemas.user import Token, UserResponse
 from app.services import hemis_oauth
@@ -66,14 +66,9 @@ async def _resolve_user(portal: str, info: dict, db: AsyncSession) -> Optional[U
     if portal == "student":
         hemis_id = info["student_id_number"] or info["login"]
         user = (await db.execute(select(User).where(User.hemis_id == hemis_id))).scalar_one_or_none()
+        # Talaba avtomatik yaratilmaydi: admin HEMIS'dan import qilgan bo'lishi shart
         if not user:
-            user = User(
-                hemis_id=hemis_id,
-                full_name=info["full_name"],
-                hashed_password=get_password_hash(secrets.token_urlsafe(32)),
-                role="student",
-            )
-            db.add(user)
+            return None
         if user.role == "student":
             user.full_name = info["full_name"]
             for field in ("faculty", "direction", "group_name", "course", "image_url"):
@@ -83,11 +78,12 @@ async def _resolve_user(portal: str, info: dict, db: AsyncSession) -> Optional[U
         await db.refresh(user)
         return user
 
-    # Xodimlar avtomatik yaratilmaydi: admin qo'lda qo'shgan (login = HEMIS login) akkaunt bo'lishi shart
+    # Xodimlar ham avtomatik yaratilmaydi: admin qo'shgan (login = HEMIS login/ID) akkaunt bo'lishi shart
     candidates = [c for c in (info["login"], info["employee_id_number"]) if c]
     user = (await db.execute(select(User).where(User.hemis_id.in_(candidates)))).scalars().first()
-    if user and not user.image_url and info["image_url"]:
-        user.image_url = info["image_url"]
+    if user:
+        if not user.image_url and info["image_url"]:
+            user.image_url = info["image_url"]
         await db.commit()
         await db.refresh(user)
     return user
@@ -130,7 +126,7 @@ async def hemis_callback(
 
     user = await _resolve_user(portal, info, db)
     if not user:
-        logger.info(f"HEMIS OAuth: xodim akkaunti topilmadi (login={info['login']})")
+        logger.info(f"HEMIS OAuth ({portal}): akkaunt tizimga import qilinmagan (login={info['login']})")
         return fail("not_registered")
     if not user.is_active:
         return fail("inactive")

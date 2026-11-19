@@ -58,30 +58,35 @@ async def login(
         result = await db.execute(select(User).where(User.hemis_id == login_str))
         local_user = result.scalar_one_or_none()
 
-    # Staff / Admin / Coordinator login (Instant internal credential verification)
-    if local_user and local_user.role != "student":
+    # 3. Avval bizning bazada mavjudligi tekshiriladi: admin import qilmagan (yoki faolsizlantirilgan)
+    #    foydalanuvchi uchun HEMIS'ga umuman so'rov yuborilmaydi.
+    if not local_user:
+        await BruteForceProtector.record_failed_attempt(request, login_str)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Bu login tizimda ro'yxatdan o'tmagan. Administrator bilan bog'laning.",
+        )
+    if not local_user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Ushbu foydalanuvchi akkaunti faolsizlantirilgan"
+        )
+
+    if local_user.hashed_password:
+        # Admin / ekspert: lokal parol
         if verify_password(login_data.password, local_user.hashed_password):
             user = local_user
-    elif login_str.isdigit() and len(login_str) >= 8:
-        # Student with HEMIS ID -> Sync with Live HEMIS API
+    elif local_user.role == "student":
+        # Talaba: parolni HEMIS tekshiradi, akademik ma'lumotlar yangilanadi
         try:
-            hemis_res = await hemis_service.sync_student_login(
-                login_str=login_str,
-                password=login_data.password,
-                db=db
-            )
+            hemis_res = await hemis_service.sync_student_login(local_user, login_data.password, db)
             if hemis_res:
                 user, hemis_token_str = hemis_res
         except Exception as e:
             logger.warning(f"Live HEMIS sync exception: {e}")
-
-        # Fallback to local DB check for student
-        if not user and local_user:
-            if verify_password(login_data.password, local_user.hashed_password):
-                user = local_user
     else:
-        # Local fallback for any account
-        if local_user and verify_password(login_data.password, local_user.hashed_password):
+        # Xodim: parolni HEMIS tekshiradi
+        if await hemis_service.verify_employee_login(local_user.hemis_id, login_data.password):
             user = local_user
 
     if not user:
@@ -90,12 +95,6 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="HEMIS ID yoki parol noto'g'ri kiritildi"
-        )
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Ushbu foydalanuvchi akkaunti faolsizlantirilgan"
         )
 
     # Success: clear failed counters for this account and IP

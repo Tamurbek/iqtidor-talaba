@@ -83,7 +83,6 @@ const loadRanking = (page: number, page_size: number) =>
   client.get<RankingResponse>('/achievements/ranking', { params: { page, page_size } }).then(({ data }) => data)
 const loadApplications = (page: number, page_size: number) =>
   client.get<ApplicationListResponse>('/applications/all', { params: { page, page_size } }).then(({ data }) => data)
-const loadStarostas = () => client.get<StarostasResponse>('/roles/starostas').then(({ data }) => data.groups)
 const loadRoles = () => client.get<RolesResponse>('/roles').then(({ data }) => data.roles)
 const loadNews = (page: number, page_size: number) =>
   client.get<NewsListResponse>('/news', { params: { page, page_size } }).then(({ data }) => data)
@@ -150,6 +149,24 @@ export default function AdminDashboardPage() {
     return () => window.clearTimeout(t)
   }, [userSearch])
 
+  const [groupSearch, setGroupSearch] = useState('')
+  const [groupSearchDebounced, setGroupSearchDebounced] = useState('')
+  const [groupFaculty, setGroupFaculty] = useState('')
+  useEffect(() => {
+    const t = window.setTimeout(() => setGroupSearchDebounced(groupSearch.trim()), 350)
+    return () => window.clearTimeout(t)
+  }, [groupSearch])
+
+  const loadStarostas = useCallback(
+    (page: number, page_size: number) =>
+      client
+        .get<StarostasResponse>('/roles/starostas', {
+          params: { page, page_size, q: groupSearchDebounced || undefined, faculty: groupFaculty || undefined },
+        })
+        .then(({ data }) => data),
+    [groupSearchDebounced, groupFaculty]
+  )
+
   const loadUsers = useCallback(
     (page: number, page_size: number) =>
       client
@@ -178,7 +195,7 @@ export default function AdminDashboardPage() {
   const achievements = usePaginatedResource(loadAchievements, (r) => r.achievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", caps.canVerifyAchievements, 8)
   const ranking = usePaginatedResource(loadRanking, (r) => r.ranking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports, 10)
   const applications = usePaginatedResource(loadApplications, (r) => r.items, 'Tanlov arizalarini yuklashda xatolik yuz berdi', caps.canReviewContests, 10)
-  const starostas = useApiResource(loadStarostas, "Guruh ma'lumotlarini yuklab bo'lmadi", caps.canViewStarostas)
+  const starostas = usePaginatedResource(loadStarostas, (r) => r.groups, "Guruh ma'lumotlarini yuklab bo'lmadi", caps.canViewStarostas, 20)
   const roles = useApiResource(loadRoles, "Rollar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageRoles)
   const news = usePaginatedResource(loadNews, (r) => r.items, 'Yangiliklarni yuklashda xatolik yuz berdi', caps.canManageContent, 10)
   const documents = usePaginatedResource(loadDocuments, (r) => r.items, "Hujjatlar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageContent, 10)
@@ -266,7 +283,7 @@ export default function AdminDashboardPage() {
             pending: pendingCount,
             applications: applications.response ? applications.total : null,
             ranking: ranking.response ? ranking.total : null,
-            groups: starostas.data?.length ?? null,
+            groups: starostas.response ? starostas.response.total_groups : null,
             roles: roles.data?.length ?? null,
             news: news.response ? news.total : null,
             documents: documents.response ? documents.total : null,
@@ -354,31 +371,22 @@ export default function AdminDashboardPage() {
           )}
           {activeTab === 'starostas-management' && (
             <StarostasTab
-              groups={starostas.data}
+              groups={starostas.items}
               loading={starostas.loading}
               error={starostas.error}
-              onStarostaAssigned={(groupName, studentId) =>
-                starostas.setData((prev) =>
-                  prev
-                    ? prev.map((g) => {
-                        if (g.group_name !== groupName) return g
-                        const students = g.students.map((s) => ({ ...s, is_starosta: s.id === studentId }))
-                        return { ...g, students, starosta: students.find((s) => s.id === studentId) ?? null }
-                      })
-                    : prev
-                )
-              }
-              onStarostaRevoked={(groupName) =>
-                starostas.setData((prev) =>
-                  prev
-                    ? prev.map((g) => {
-                        if (g.group_name !== groupName) return g
-                        const students = g.students.map((s) => ({ ...s, is_starosta: false }))
-                        return { ...g, students, starosta: null }
-                      })
-                    : prev
-                )
-              }
+              page={starostas.page}
+              totalPages={starostas.totalPages}
+              total={starostas.total}
+              pageSize={starostas.pageSize}
+              onPageChange={starostas.setPage}
+              search={groupSearch}
+              onSearchChange={(v) => { setGroupSearch(v); starostas.setPage(1) }}
+              faculty={groupFaculty}
+              onFacultyChange={(v) => { setGroupFaculty(v); starostas.setPage(1) }}
+              faculties={starostas.response?.faculties ?? []}
+              totalGroups={starostas.response?.total_groups ?? 0}
+              assignedCount={starostas.response?.assigned_count ?? 0}
+              onReload={starostas.reload}
               showToast={showToast}
             />
           )}
