@@ -16,7 +16,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-const ACTIVE_ROLE_KEY = 'active_role'
+const ACTIVE_ROLE_KEY = 'iqtidor_active_role'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -24,8 +24,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [activeRole, setActiveRoleState] = useState<string | null>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token')
-    const storedUser = localStorage.getItem('current_user')
+    const token = localStorage.getItem('iqtidor_access_token')
+    const storedUser = localStorage.getItem('iqtidor_current_user')
     if (token && storedUser) {
       try {
         const user = JSON.parse(storedUser) as User
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setCurrentUser((prev) => {
               if (!prev) return prev
               const next = { ...prev, role: data.role, assigned_roles: data.assigned_roles }
-              localStorage.setItem('current_user', JSON.stringify(next))
+              localStorage.setItem('iqtidor_current_user', JSON.stringify(next))
               return next
             })
             setActiveRoleState((prevActiveRole) => {
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Tarmoq xatosi bo'lsa localStorage'dagi eski ma'lumot bilan davom etamiz.
           })
       } catch {
-        localStorage.removeItem('current_user')
+        localStorage.removeItem('iqtidor_current_user')
       }
     }
     setIsLoading(false)
@@ -78,8 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const loginWithToken = useCallback((accessToken: string, user: User) => {
-    localStorage.setItem('access_token', accessToken)
-    localStorage.setItem('current_user', JSON.stringify(user))
+    localStorage.setItem('iqtidor_access_token', accessToken)
+    localStorage.setItem('iqtidor_current_user', JSON.stringify(user))
     localStorage.setItem(ACTIVE_ROLE_KEY, user.role)
     setCurrentUser(user)
     setActiveRoleState(user.role)
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCurrentUser((prev) => {
       if (!prev) return prev
       const next = { ...prev, ...patch }
-      localStorage.setItem('current_user', JSON.stringify(next))
+      localStorage.setItem('iqtidor_current_user', JSON.stringify(next))
       return next
     })
   }, [])
@@ -110,8 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore network errors on logout
     }
-    localStorage.removeItem('access_token')
-    localStorage.removeItem('current_user')
+    localStorage.removeItem('iqtidor_access_token')
+    localStorage.removeItem('iqtidor_current_user')
     localStorage.removeItem(ACTIVE_ROLE_KEY)
     setCurrentUser(null)
     setActiveRoleState(null)

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { RoleAssignment } from '../../types/user'
 import NotificationBell from './NotificationBell'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   title: string
@@ -73,7 +74,7 @@ export default function CabinetTopbar({
             onClick={() => setMenuOpen((v) => !v)}
           >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={userName} className="cabinet-topbar-avatar" />
+              <img src={withBase(avatarUrl)} alt={userName} className="cabinet-topbar-avatar" />
             ) : (
               <div className="cabinet-topbar-avatar-placeholder">{userName ? userName[0] : 'T'}</div>
             )}
@@ -92,7 +93,7 @@ export default function CabinetTopbar({
             <div className="role-switcher-panel">
               <div className="role-switcher-panel-header">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={userName} className="cabinet-topbar-avatar" />
+                  <img src={withBase(avatarUrl)} alt={userName} className="cabinet-topbar-avatar" />
                 ) : (
                   <div className="cabinet-topbar-avatar-placeholder">{userName ? userName[0] : 'T'}</div>
                 )}

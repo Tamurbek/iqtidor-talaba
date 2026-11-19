@@ -5,6 +5,7 @@ import type { DocumentUploadResponse } from '../../types/admin'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 import Pagination from '../common/Pagination'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   documents: DocumentItem[] | null
@@ -260,7 +261,7 @@ export default function DocumentsTab({ documents, loading, error, page, totalPag
                     <td style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 600 }}>{d.download_count}</td>
                     <td style={{ ...tdStyle, textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: 6 }}>
-                        <a href={d.file_url} target="_blank" rel="noopener noreferrer" title="Ko'rish" style={{ background: 'var(--border-light)', color: 'var(--text-heading)', border: 'none', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
+                        <a href={withBase(d.file_url)} target="_blank" rel="noopener noreferrer" title="Ko'rish" style={{ background: 'var(--border-light)', color: 'var(--text-heading)', border: 'none', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                           <span>Ko'rish</span>
                         </a>

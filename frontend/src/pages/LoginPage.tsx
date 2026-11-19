@@ -4,6 +4,7 @@ import client from '../api/client'
 import { useAuth } from '../context/AuthContext'
 import type { Token } from '../types/user'
 import '../styles/legacy-css/login.css'
+import { BASE_PATH, withBase } from '../utils/basePath'
 
 interface EimzoCertificate {
   disk?: string
@@ -308,7 +309,7 @@ export default function LoginPage() {
       {/* Left brand panel */}
       <div className="login-brand-panel">
         <div className="login-brand-top">
-          <img src="/static/images/logo.png" alt="Iqtidorli talabalar" className="login-brand-logo" />
+          <img src={withBase('/static/images/logo.png')} alt="Iqtidorli talabalar" className="login-brand-logo" />
           <div className="login-brand-name">
             Iqtidorli talabalar
             <span>O'zMU Jizzax filiali</span>
@@ -363,7 +364,7 @@ export default function LoginPage() {
       <div className="login-form-panel">
         <div className="login-card-container">
           <div className="login-mobile-logo">
-            <img src="/static/images/logo.png" alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
+            <img src={withBase('/static/images/logo.png')} alt="Iqtidorli talabalar O'zMU Jizzax filiali" />
           </div>
 
           {/* Header */}
@@ -473,7 +474,7 @@ export default function LoginPage() {
         <span>E-IMZO orqali kirish</span>
       </button>
 
-      <a href="/" className="back-to-home-link" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+      <a href={`${BASE_PATH}/`} className="back-to-home-link" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>

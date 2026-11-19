@@ -6,6 +6,7 @@ import type { User } from '../../types/user'
 import { extractErrorMessage } from '../../types/dashboard'
 import { isDeptHeadLevel } from '../../utils/roles'
 import Pagination from '../common/Pagination'
+import { withBase } from '../../utils/basePath'
 
 const INCOMING_PAGE_SIZE = 10
 
@@ -329,7 +330,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                     >
                       {s.image_url ? (
                         <img
-                          src={s.image_url}
+                          src={withBase(s.image_url)}
                           alt={s.full_name}
                           style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }}
                         />

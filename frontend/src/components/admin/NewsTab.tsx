@@ -4,6 +4,7 @@ import type { NewsItem } from '../../types/content'
 import { extractErrorMessage } from '../../types/dashboard'
 import type { ShowToast } from './AdminToasts'
 import Pagination from '../common/Pagination'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   news: NewsItem[] | null
@@ -67,7 +68,7 @@ export default function NewsTab({ news, loading, error, page, totalPages, total,
     return (!q || n.title.toLowerCase().includes(q)) && (statusFilter === 'all' || rowStatus === statusFilter)
   })
 
-  const currentImageSrc = filePreview || imageUrl
+  const currentImageSrc = withBase(filePreview || imageUrl)
 
   const handleNewsImageFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0]
@@ -421,7 +422,7 @@ export default function NewsTab({ news, loading, error, page, totalPages, total,
                   return (
                     <tr key={n.id} id={`news-row-${n.id}`} data-status={n.status || 'published'} style={{ borderBottom: '1px solid var(--border-light)', transition: 'background 0.15s' }}>
                       <td style={tdStyle}>
-                        <img src={n.image_url || DEFAULT_IMAGE} alt={n.title} id={`news-row-img-${n.id}`} style={{ width: 52, height: 38, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-color)' }} />
+                        <img src={withBase(n.image_url || DEFAULT_IMAGE)} alt={n.title} id={`news-row-img-${n.id}`} style={{ width: 52, height: 38, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border-color)' }} />
                       </td>
                       <td style={{ ...tdStyle, maxWidth: 320 }}>
                         <div style={{ fontWeight: 700, color: 'var(--text-heading)', lineHeight: 1.3 }} className="news-item-title" id={`news-row-title-${n.id}`}>{n.title}</div>

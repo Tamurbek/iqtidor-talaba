@@ -1,5 +1,6 @@
 import type { Achievement } from '../../types/dashboard'
 import { getAchievementCategoryLabel } from '../../types/dashboard'
+import { withBase } from '../../utils/basePath'
 
 interface Props {
   achievements: Achievement[]
@@ -101,7 +102,7 @@ export default function AchievementsTab({ achievements, loading, error, onGoToUp
                     </td>
                     <td style={{ padding: '14px 18px' }}>
                       {item.file_url ? (
-                        <a href={item.file_url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--text-heading)', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
+                        <a href={withBase(item.file_url)} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--text-heading)', fontWeight: 600, fontSize: 13, textDecoration: 'none' }}>
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
