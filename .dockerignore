@@ -7,6 +7,7 @@ env/
 venv/
 .venv/
 .git
+.github
 .gitignore
 .dockerignore
 .idea/
@@ -15,3 +16,18 @@ venv/
 *.jpg
 !app/static/images/**
 !src/**
+
+# Sirlar image ichiga tushmasin - konteynerga env_file orqali beriladi
+.env
+.env.*
+!.env.example
+
+# Backend image'ga keraksiz
+frontend/
+_arxiv/
+backups/
+node_modules/
+*.db
+*.sqlite3
+app/static/uploads/
+DEPLOYMENT.md

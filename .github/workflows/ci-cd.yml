@@ -71,10 +71,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd ${{ vars.DEPLOY_PATH || '/var/www/iqtidorli-talabalar' }}
+            cd ${{ vars.DEPLOY_PATH || '/var/www/iqtidorli-talaba' }}
 
             PREV_COMMIT=$(git rev-parse HEAD)
-            HEALTH_URL="http://localhost:${{ vars.NGINX_PORT || '8088' }}/"
+            FRONTEND_HEALTH_URL="http://127.0.0.1:${{ vars.FRONTEND_PORT || '5179' }}/"
+            BACKEND_HEALTH_URL="http://127.0.0.1:${{ vars.BACKEND_PORT || '8092' }}/api/v1/news"
 
             rollback() {
               echo "Deploy failed, rolling back to $PREV_COMMIT"
@@ -91,7 +92,7 @@ jobs:
             # Run new migrations against the new image while the old
             # containers are still serving traffic, so the site stays up.
             for i in $(seq 1 10); do
-              docker compose run --rm web alembic upgrade head && break
+              docker compose run --rm web python -m app.core.migrations && break
               echo "waiting for db, retrying ($i/10)..."
               sleep 3
             done || rollback
@@ -102,7 +103,7 @@ jobs:
 
             sleep 5
             for i in $(seq 1 10); do
-              curl -sf "$HEALTH_URL" > /dev/null && exit 0
+              curl -sf "$FRONTEND_HEALTH_URL" > /dev/null && curl -sf "$BACKEND_HEALTH_URL" > /dev/null && exit 0
               sleep 3
             done
             rollback

@@ -43,38 +43,43 @@ Ushbu loyiha O'zbekiston Milliy universiteti Jizzax filiali **"Iqtidorli talabal
    - Yutuq yoki sertifikat yuklash formasi
 
 5. **API Hujjatlari**:
-   - Swagger UI: `http://localhost:8000/api/docs`
+   - Swagger UI: `http://localhost:8000/api/docs` (serverda: `https://jbnuu.uz/iqtidorli-talaba/api/docs`)
    - ReDoc: `http://localhost:8000/api/redoc`
 
 ---
 
-## 🐳 Docker orqali serverda ishga tushirish
+## 🐳 Serverda ishga tushirish (Docker)
 
-Loyiha serverda Docker va Docker Compose orqali to'liq avtomatlashtirilgan. Baza jadvallari va boshlang'ich ma'lumotlar birinchi ishga tushganda avtomatik ravishda yuklanadi (`seed`).
+Production `jbnuu.uz/iqtidorli-talaba` subpath ostida ishlaydi:
 
-### 1. Loyihani yuklab oling va papkaga kiring:
+| Servis | Host porti | Host nginx yo'li |
+|---|---|---|
+| frontend (React build + nginx) | `127.0.0.1:5179` | `/iqtidorli-talaba/` |
+| web (FastAPI) | `127.0.0.1:8092` | `/iqtidorli-talaba/api/`, `/iqtidorli-talaba/static/` |
+| db (PostgreSQL), redis | — | — |
+
 ```bash
-cd "Iqtidorli talabalar"
-```
-
-### 2. Docker compose orqali ishga tushiring:
-```bash
-docker compose up --build -d
-```
-
-### 3. Konteynerlar holatini tekshirish:
-```bash
-docker compose ps
+cp .env.example .env          # SECRET_KEY, POSTGRES_*, ADMIN_LOGIN, ADMIN_PASSWORD ni to'ldiring
+docker compose up -d --build
 docker compose logs -f web
 ```
 
-### 4. Saytga kirish:
-Brauzeringizda oching:
-👉 **http://localhost:8000** yoki server IP manzili: **http://SERVER_IP:8000**
+`entrypoint.sh` har ishga tushishda: bazani kutadi → migratsiyalarni qo'llaydi (bo'sh bazada sxemani yaratadi) →
+`.env` dagi `ADMIN_LOGIN` / `ADMIN_PASSWORD` bo'yicha admin hisobini yaratadi (mavjud bo'lsa parolga tegmaydi) → uvicorn.
+
+## 💻 Lokal ishlab chiqish
+
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --reload          # http://localhost:8000 (Postgres bo'lmasa SQLite)
+cd frontend && npm install && npm run dev   # http://localhost:5173, /api va /static -> :8000
+```
 
 ---
 
 ## 🔑 Sinov uchun HEMIS hisoblari
+
+> Faqat `SEED_DEMO_DATA=true` bo'lganda yaratiladi (productionda o'chiq).
 
 | Rol | HEMIS ID (Login) | Parol | Ma'lumot |
 |---|---|---|---|

@@ -9,3 +9,6 @@ node_modules/
 .DS_Store
 app/static/uploads/
 backups/
+
+# Server deployment yo'riqnomasi (lokal, repoga kirmaydi)
+DEPLOYMENT.md

@@ -3,14 +3,13 @@ import time
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from alembic import command
-from alembic.config import Config as AlembicConfig
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.database import engine, AsyncSessionLocal
+from app.core.migrations import run_migrations
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 from app.services.seed_data import seed_initial_data, seed_roles_and_permissions
 from app.api import api_router
@@ -23,18 +22,12 @@ logger = logging.getLogger("iqtidorli_app")
 # to WARNING; pin this logger's own level so its INFO messages still show.
 logger.setLevel(logging.INFO)
 
-def _run_migrations() -> None:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    alembic_cfg = AlembicConfig(os.path.join(os.path.dirname(base_dir), "alembic.ini"))
-    command.upgrade(alembic_cfg, "head")
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: apply pending Alembic migrations, then seed data.
     logger.info("Applying database migrations...")
     try:
-        await asyncio.to_thread(_run_migrations)
+        await asyncio.to_thread(run_migrations)
 
         async with AsyncSessionLocal() as session:
             # Roles/permissions are real RBAC configuration, always required.
@@ -60,7 +53,10 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     lifespan=lifespan,
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
+    # /api ostida bo'lishi kerak: subpath deploymentda nginx faqat /api va /static ni
+    # backendga yuboradi, /openapi.json esa frontendga tushib qolardi.
+    openapi_url="/api/openapi.json",
 )
 
 # Global Security Headers Middleware (+ Nizom 26-modda: o'zgartiruvchi so'rovlar audit jurnali)
