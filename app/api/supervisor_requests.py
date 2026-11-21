@@ -347,6 +347,26 @@ async def reject_supervisor_request(
     return {"success": True, "message": "So'rov rad etildi."}
 
 
+@router.post("/{request_id}/cancel")
+async def cancel_supervisor_request(
+    request_id: int,
+    db: AsyncSession = Depends(get_db),
+    student: User = Depends(get_current_student)
+):
+    """Talaba o'zi yuborgan, hali javob berilmagan so'rovni bekor qiladi."""
+    res = await db.execute(select(SupervisorRequest).where(SupervisorRequest.id == request_id))
+    req = res.scalar_one_or_none()
+    if not req or req.student_id != student.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="So'rov topilmadi")
+    if req.status != "pending":
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Faqat javob kutilayotgan so'rovni bekor qilish mumkin")
+
+    req.status = "cancelled"
+    req.decided_at = datetime.utcnow()
+    await db.commit()
+    return {"success": True, "message": "So'rov bekor qilindi. Endi boshqa ilmiy rahbarga so'rov yuborishingiz mumkin."}
+
+
 class SupervisorCapacityPayload(BaseModel):
     capacity: Optional[int] = None
 

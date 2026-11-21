@@ -157,6 +157,22 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
     }
   }
 
+  const handleCancel = async (id: number) => {
+    if (!window.confirm("So'rovni bekor qilmoqchimisiz?")) return
+    setDecidingId(id)
+    setError(null)
+    setMessage(null)
+    try {
+      const { data } = await client.post<{ success: boolean; message?: string }>(`/supervisor-requests/${id}/cancel`)
+      setMessage(data.message || "So'rov bekor qilindi")
+      await load()
+    } catch (err) {
+      setError(extractErrorMessage(err, "So'rovni bekor qilishda xatolik yuz berdi"))
+    } finally {
+      setDecidingId(null)
+    }
+  }
+
   const handleSaveCapacity = async (supervisorId: number) => {
     const raw = (capacityDrafts[supervisorId] ?? '').trim()
     const capacity = raw === '' ? null : parseInt(raw, 10)
@@ -320,7 +336,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
           </p>
           {hasPendingRequest ? (
             <div style={{ padding: 12, borderRadius: 8, fontSize: 13, background: 'var(--badge-warning-bg)', color: 'var(--badge-warning-text)' }}>
-              Sizda hal qilinmagan so'rov mavjud. Javobni kuting yoki avval uni bekor qiling.
+              Sizda hal qilinmagan so'rov mavjud. Javobni kuting yoki pastdagi "So'rovlarim tarixi"dan uni bekor qiling.
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -422,7 +438,19 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                       <div style={{ fontSize: 12, color: 'var(--badge-danger-text)', marginTop: 2 }}>Sabab: {r.rejection_reason}</div>
                     )}
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: st.color, background: st.bg, padding: '4px 10px', borderRadius: 999 }}>{st.text}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: st.color, background: st.bg, padding: '4px 10px', borderRadius: 999 }}>{st.text}</span>
+                    {r.status === 'pending' && (
+                      <button
+                        type="button"
+                        disabled={decidingId === r.id}
+                        onClick={() => handleCancel(r.id)}
+                        style={{ padding: '6px 12px', border: '1px solid var(--badge-danger-text)', background: 'var(--badge-danger-bg)', color: 'var(--badge-danger-text)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+                      >
+                        {decidingId === r.id ? 'Bekor qilinmoqda...' : 'Bekor qilish'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )
             })}
