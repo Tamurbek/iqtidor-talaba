@@ -10,6 +10,7 @@ import { withBase } from '../../utils/basePath'
 
 const INCOMING_PAGE_SIZE = 10
 const CAPACITY_PAGE_SIZE = 20
+const PICKER_PAGE_SIZE = 12
 
 interface Props {
   user: User
@@ -51,6 +52,8 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
   const [savingCapacityId, setSavingCapacityId] = useState<number | null>(null)
   const [capacityPage, setCapacityPage] = useState(1)
   const [capacitySearch, setCapacitySearch] = useState('')
+  const [pickerSearch, setPickerSearch] = useState('')
+  const [pickerPage, setPickerPage] = useState(1)
 
   const hasSupervisor = Boolean(user.supervisor_id)
   const hasPendingRequest = myRequests.some((r) => r.status === 'pending')
@@ -203,6 +206,15 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
   const safeCapacityPage = Math.min(capacityPage, capacityTotalPages)
   const pagedSupervisors = filteredSupervisors.slice((safeCapacityPage - 1) * CAPACITY_PAGE_SIZE, safeCapacityPage * CAPACITY_PAGE_SIZE)
 
+  const pickerFiltered = useMemo(() => {
+    const q = pickerSearch.trim().toLowerCase()
+    if (!q) return supervisors
+    return supervisors.filter((s) => [s.full_name, s.department, s.faculty, s.degree].some((v) => v?.toLowerCase().includes(q)))
+  }, [supervisors, pickerSearch])
+  const pickerTotalPages = Math.max(1, Math.ceil(pickerFiltered.length / PICKER_PAGE_SIZE))
+  const safePickerPage = Math.min(pickerPage, pickerTotalPages)
+  const pagedPicker = pickerFiltered.slice((safePickerPage - 1) * PICKER_PAGE_SIZE, safePickerPage * PICKER_PAGE_SIZE)
+
   if (loading) {
     return <div style={cardStyle}>Yuklanmoqda...</div>
   }
@@ -340,6 +352,17 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input
+                type="search"
+                aria-label="Ilmiy rahbarni qidirish"
+                value={pickerSearch}
+                onChange={(e) => {
+                  setPickerSearch(e.target.value)
+                  setPickerPage(1)
+                }}
+                placeholder="F.I.Sh., kafedra, fakultet yoki ilmiy daraja bo'yicha qidirish..."
+                style={{ width: '100%', maxWidth: 460, boxSizing: 'border-box', padding: '9px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13.5, background: 'var(--bg-white)', color: 'var(--text-dark)' }}
+              />
               <div
                 style={{
                   display: 'grid',
@@ -347,7 +370,7 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                   gap: 12,
                 }}
               >
-                {supervisors.map((s) => {
+                {pagedPicker.map((s) => {
                   const isSelected = selectedId === String(s.id)
                   return (
                     <button
@@ -404,6 +427,12 @@ export default function SupervisorTab({ user, hideSelfRequest = false }: Props) 
                   )
                 })}
               </div>
+              {pickerFiltered.length === 0 && (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 13, padding: 16 }}>Hech narsa topilmadi</div>
+              )}
+              {pickerFiltered.length > PICKER_PAGE_SIZE && (
+                <Pagination page={safePickerPage} totalPages={pickerTotalPages} total={pickerFiltered.length} pageSize={PICKER_PAGE_SIZE} onPageChange={setPickerPage} />
+              )}
               <textarea
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
