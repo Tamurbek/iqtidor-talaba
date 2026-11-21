@@ -115,3 +115,15 @@ def require_permission(perm_code: str):
             )
         return current_user
     return checker
+
+
+def require_any_permission(*perm_codes: str):
+    """require_permission kabi, lekin berilgan huquqlardan kamida bittasi yetarli."""
+    async def checker(current_user: User = Depends(get_current_user)) -> User:
+        if not current_user.is_department_head and not any(current_user.has_permission(c) for c in perm_codes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Ushbu amalni bajarish uchun kerakli huquq mavjud emas"
+            )
+        return current_user
+    return checker

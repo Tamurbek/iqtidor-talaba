@@ -18,6 +18,7 @@ interface Props {
   onPageChange: (page: number) => void
   onReload: () => void
   showToast: ShowToast
+  canAssignSupervisor: boolean
 }
 
 const selectStyle: React.CSSProperties = { padding: '9px 12px', border: '1px solid var(--border-color)', borderRadius: 8, fontSize: 13, background: 'var(--bg-white)' }
@@ -61,7 +62,7 @@ async function blobErrorMessage(err: unknown, fallback: string): Promise<string>
   return extractErrorMessage(err, fallback)
 }
 
-export default function RankingExportTab({ ranking, loading, error, page, totalPages, total, pageSize, onPageChange, onReload, showToast }: Props) {
+export default function RankingExportTab({ ranking, loading, error, page, totalPages, total, pageSize, onPageChange, onReload, showToast, canAssignSupervisor }: Props) {
   const [faculty, setFaculty] = useState('')
   const [direction, setDirection] = useState('')
   const [course, setCourse] = useState('')
@@ -157,7 +158,7 @@ export default function RankingExportTab({ ranking, loading, error, page, totalP
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>1. GPA (maks 20)</th>
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>2. Test sinovi (maks 40)</th>
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>3. Yutuqlar (maks 40)</th>
-                <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Ilmiy rahbar & Mavzu</th>
+                <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Ilmiy rahbar</th>
                 <th style={{ ...thStyle, textAlign: 'right', whiteSpace: 'nowrap' }}>JAMI (100)</th>
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Saralash darajasi</th>
                 <th style={{ ...thStyle, textAlign: 'center', whiteSpace: 'nowrap' }}>Guvohnoma</th>
@@ -249,15 +250,19 @@ export default function RankingExportTab({ ranking, loading, error, page, totalP
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }} title={r.research_topic || ''}>
                           {r.research_topic && r.research_topic.length > 26 ? r.research_topic.slice(0, 26) + '...' : r.research_topic || 'Mavzu belgilanmagan'}
                         </div>
+                        {canAssignSupervisor && (
                         <button type="button" onClick={() => setSupervisorTarget(r)} style={{ marginTop: 4, background: 'var(--badge-info-bg)', color: 'var(--badge-info-text)', border: '1px solid var(--badge-info-text)', padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer' }}>
-                          Tahrirlash
+                          O'zgartirish
                         </button>
+                        )}
                       </>
-                    ) : (
+                    ) : canAssignSupervisor ? (
                       <button type="button" onClick={() => setSupervisorTarget(r)} style={{ background: 'var(--badge-success-bg)', color: 'var(--badge-success-text)', border: '1px solid var(--badge-success-text)', padding: '4px 10px', borderRadius: 6, fontSize: 11.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         <span>Biriktirish</span>
                       </button>
+                    ) : (
+                      <span style={{ color: 'var(--text-light)', fontSize: 12 }}>Biriktirilmagan</span>
                     )}
                   </td>
                   <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 800, color: 'var(--text-heading)', fontSize: 16, whiteSpace: 'nowrap' }}>

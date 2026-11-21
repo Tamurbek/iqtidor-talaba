@@ -1,5 +1,6 @@
 import re
 import logging
+from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,8 +12,9 @@ from app.core.security import verify_password, get_password_hash
 from app.models.user import User, ROLE_ALIASES
 from app.models.role import Role
 from app.models.tutor_assignment import TutorAssignment
-from app.api.deps import get_current_user, get_current_admin, get_current_superadmin
-from app.core.role_utils import get_assigned_roles_for_user, can_be_supervisor
+from app.models.supervisor_request import SupervisorRequest
+from app.api.deps import get_current_user, get_current_admin, get_current_superadmin, require_permission
+from app.core.role_utils import get_assigned_roles_for_user, can_be_supervisor, scoped_faculty
 from app.core.pagination import PageParams, paginate_query, total_pages
 from app.services.tutor_groups import link_hemis_tutor_groups
 from app.services.hemis_roles import HEMIS_MANAGED_ROLES
@@ -96,6 +98,7 @@ async def get_my_profile(db: AsyncSession = Depends(get_db), current_user: User 
         "is_active": current_user.is_active,
         "is_department_head": current_user.is_department_head,
         "is_starosta": current_user.is_starosta,
+        "permissions": sorted({p.code for r in current_user.roles for p in r.permissions}),
         # Talaba va xodimlarda parol yo'q (HEMIS orqali kiradi)
         "has_password": bool(current_user.hashed_password),
     }
@@ -513,14 +516,20 @@ async def get_available_supervisors(
 async def assign_scientific_supervisor(
     student_id: int,
     payload: SupervisorAssignPayload,
-    current_admin: User = Depends(get_current_admin),
+    current_admin: User = Depends(require_permission("supervisors.assign")),
     db: AsyncSession = Depends(get_db)
 ):
-    """Iqtidorli talabaga ilmiy rahbar va ilmiy-tadqiqot mavzusini biriktirish/yangilash."""
+    """Admin yoki "supervisors.assign" huquqiga ega xodim talabaga ilmiy rahbar
+    (o'qituvchilar ro'yxatidan) va ilmiy-tadqiqot mavzusini biriktiradi/yangilaydi."""
     res = await db.execute(select(User).where(User.id == student_id))
     student = res.scalar_one_or_none()
     if not student:
         raise HTTPException(status_code=404, detail="Talaba topilmadi")
+
+    # Nizom 24-modda: fakultet mas'uli faqat o'z fakulteti talabalariga biriktira oladi
+    own_faculty = scoped_faculty(current_admin, None)
+    if own_faculty is not None and student.faculty != own_faculty:
+        raise HTTPException(status_code=403, detail="Faqat o'z fakultetingiz talabalariga ilmiy rahbar biriktira olasiz")
 
     # Agar supervisor_id berilgan bo'lsa, o'sha o'qituvchi ma'lumotlarini tekshirish
     if student.role != "student":
@@ -559,9 +568,22 @@ async def assign_scientific_supervisor(
     student.supervisor_id = payload.supervisor_id
     student.supervisor_name = (payload.supervisor_name or (sup_user.full_name if sup_user else "") or "").strip()
     student.supervisor_degree = (payload.supervisor_degree or (sup_user.supervisor_degree if sup_user else "") or "").strip()
-    student.supervisor_department = (payload.supervisor_department or (sup_user.faculty if sup_user else "") or "").strip()
-    student.supervisor_phone = (payload.supervisor_phone or "").strip()
+    student.supervisor_department = (payload.supervisor_department or (sup_user and (sup_user.supervisor_department or sup_user.faculty)) or "").strip()
+    student.supervisor_phone = (payload.supervisor_phone or (sup_user.supervisor_phone if sup_user else "") or "").strip()
     student.research_topic = (payload.research_topic or "").strip()
+
+    # Nizom 10.6-modda: rahbar biriktirilgach talabaning kutilayotgan so'rovlari bekor qilinadi
+    if student.supervisor_id:
+        pending = await db.execute(
+            select(SupervisorRequest).where(
+                SupervisorRequest.student_id == student.id,
+                SupervisorRequest.status == "pending",
+            )
+        )
+        now = datetime.utcnow()
+        for req in pending.scalars().all():
+            req.status = "accepted" if req.supervisor_id == student.supervisor_id else "cancelled"
+            req.decided_at = now
 
     await db.commit()
     await db.refresh(student)

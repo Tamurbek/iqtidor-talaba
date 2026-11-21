@@ -340,6 +340,8 @@ async def seed_roles_and_permissions(db: AsyncSession):
         {"code": "roles.manage", "name": "Rollar va huquqlarni boshqarish", "module": "roles"},
         {"code": "users.manage", "name": "Foydalanuvchilarni boshqarish", "module": "users"},
         {"code": "reports.view", "name": "Reytinglar va tahliliy hisobotlar", "module": "reports"},
+        # Ilmiy rahbarlik (Nizom 10-modda)
+        {"code": "supervisors.assign", "name": "Talabaga ilmiy rahbar biriktirish", "module": "supervisors"},
         # Guruh faoliyati (Guruh sardori uchun)
         {"code": "group.view", "name": "O'z guruhi talabalari faoliyatini ko'rish (Guruh sardori)", "module": "group"}
     ]
@@ -379,7 +381,7 @@ async def seed_roles_and_permissions(db: AsyncSession):
                 "contests.manage", "contests.review",
                 "gifted_applications.review",
                 "exams.manage", "exams.reset",
-                "reports.view", "users.manage"
+                "reports.view", "users.manage", "supervisors.assign"
             ]
         },
         {

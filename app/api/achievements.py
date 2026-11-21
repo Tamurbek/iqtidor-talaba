@@ -25,7 +25,7 @@ from app.schemas.achievement import (
     AdminAchievementResponse,
     AdminAchievementListResponse,
 )
-from app.api.deps import get_current_student, require_permission
+from app.api.deps import get_current_student, require_permission, require_any_permission
 from app.services.ranking import compute_ranking, RANKING_DISCLAIMER
 from app.core.pagination import PageParams, paginate_query, paginate_sequence, total_pages
 from app.core.role_utils import scoped_faculty
@@ -383,7 +383,7 @@ async def get_students_ranking(
     course: Optional[int] = None,
     page_params: PageParams = Depends(),
     db: AsyncSession = Depends(get_db),
-    current_admin: User = Depends(require_permission("reports.view")),
+    current_admin: User = Depends(require_any_permission("reports.view", "supervisors.assign")),
 ):
     # Nizom 13-14-moddalari baholash shkalasi (jami 100 ball):
     # GPA*4 (max 20) + 1-bosqich imtihon (max 40) + Ilmiy-ijodiy yutuqlar (max 40)

@@ -129,6 +129,18 @@ export default function AdminDashboardPage() {
 
   if (caps.canViewSemesterReports) visibleTabs.add('semester-reports')
 
+  // "supervisors.assign" huquqi istalgan rolga admin paneldan berilishi mumkin
+  const [permissions, setPermissions] = useState<string[]>([])
+  useEffect(() => {
+    if (!currentUser) return
+    client
+      .get<{ permissions?: string[] }>('/users/me')
+      .then(({ data }) => setPermissions(data.permissions ?? []))
+      .catch(() => setPermissions([]))
+  }, [currentUser])
+  const canAssignSupervisor = caps.isDeptHeadLevel || permissions.includes('supervisors.assign')
+  if (canAssignSupervisor) visibleTabs.add('ranking')
+
   if (caps.canViewCompliance) visibleTabs.add('compliance')
 
   const [activeTab, setActiveTab] = useState<AdminTabKey>(() => {
@@ -193,7 +205,7 @@ export default function AdminDashboardPage() {
   }, [currentUser?.role, activeRole])
 
   const achievements = usePaginatedResource(loadAchievements, (r) => r.achievements, "Yutuqlar ro'yxatini yuklashda xatolik yuz berdi", caps.canVerifyAchievements, 8)
-  const ranking = usePaginatedResource(loadRanking, (r) => r.ranking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports, 10)
+  const ranking = usePaginatedResource(loadRanking, (r) => r.ranking, "Reyting ma'lumotlarini yuklashda xatolik yuz berdi", caps.canViewReports || canAssignSupervisor, 10)
   const applications = usePaginatedResource(loadApplications, (r) => r.items, 'Tanlov arizalarini yuklashda xatolik yuz berdi', caps.canReviewContests, 10)
   const starostas = usePaginatedResource(loadStarostas, (r) => r.groups, "Guruh ma'lumotlarini yuklab bo'lmadi", caps.canViewStarostas, 20)
   const roles = useApiResource(loadRoles, "Rollar ro'yxatini yuklashda xatolik yuz berdi", caps.canManageRoles)
@@ -354,6 +366,7 @@ export default function AdminDashboardPage() {
               onPageChange={ranking.setPage}
               onReload={ranking.reload}
               showToast={showToast}
+              canAssignSupervisor={canAssignSupervisor}
             />
           )}
           {activeTab === 'starostas-management' && (
