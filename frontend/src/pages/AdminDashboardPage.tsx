@@ -36,6 +36,7 @@ import MeetingsTab from '../components/dashboard/MeetingsTab'
 import MonitoringTab from '../components/dashboard/MonitoringTab'
 import ComplianceTab from '../components/admin/ComplianceTab'
 import SemesterReportsTab from '../components/admin/SemesterReportsTab'
+import AllSupervisorRequestsCard from '../components/admin/AllSupervisorRequestsCard'
 import { getAdminCapabilities } from '../utils/roles'
 import '../styles/admin-dashboard.css'
 
@@ -139,7 +140,10 @@ export default function AdminDashboardPage() {
       .catch(() => setPermissions([]))
   }, [currentUser])
   const canAssignSupervisor = caps.isDeptHeadLevel || permissions.includes('supervisors.assign')
-  if (canAssignSupervisor) visibleTabs.add('ranking')
+  if (canAssignSupervisor) {
+    visibleTabs.add('ranking')
+    visibleTabs.add('supervisor-requests')
+  }
 
   if (caps.canViewCompliance) visibleTabs.add('compliance')
 
@@ -455,9 +459,14 @@ export default function AdminDashboardPage() {
           )}
           {activeTab === 'supervisor-requests' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <SupervisorTab user={currentUser} hideSelfRequest />
-              <DevelopmentPlanTab user={currentUser} mode="supervisor" />
-              <MeetingsTab user={currentUser} mode="supervisor" />
+              {canAssignSupervisor && <AllSupervisorRequestsCard showToast={showToast} />}
+              {caps.canManageSupervisorRequests && (
+                <>
+                  <SupervisorTab user={currentUser} hideSelfRequest />
+                  <DevelopmentPlanTab user={currentUser} mode="supervisor" />
+                  <MeetingsTab user={currentUser} mode="supervisor" />
+                </>
+              )}
             </div>
           )}
           {activeTab === 'tutor-students' && (

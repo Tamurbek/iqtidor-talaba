@@ -2,18 +2,19 @@ import logging
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
+from sqlalchemy.orm import aliased
 
 from app.core.database import get_db
 from app.models.user import User
 from app.models.supervisor_request import SupervisorRequest
 from app.models.tutor_assignment import TutorAssignment
-from app.api.deps import get_current_user, get_current_student, get_current_admin
+from app.api.deps import get_current_user, get_current_student, get_current_admin, require_permission
 from app.core.pagination import PageParams, paginate_query, total_pages
-from app.core.role_utils import can_be_supervisor
+from app.core.role_utils import can_be_supervisor, scoped_faculty
 
 logger = logging.getLogger("iqtidorli_supervisor_requests")
 
@@ -135,6 +136,63 @@ async def get_my_requests(
         }
         for r, full_name, degree, faculty in rows
     ]
+
+
+@router.get("/all")
+async def get_all_requests(
+    status_filter: Optional[str] = Query("pending", alias="status"),
+    page_params: PageParams = Depends(),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_permission("supervisors.assign")),
+):
+    """Admin va "supervisors.assign" huquqiga ega xodim barcha talabalarning
+    ilmiy rahbarlik so'rovlarini ko'radi (fakultet mas'uli — faqat o'z fakultetini)."""
+    Student = aliased(User)
+    Supervisor = aliased(User)
+    query = (
+        select(
+            SupervisorRequest,
+            Student.full_name, Student.hemis_id, Student.faculty, Student.group_name, Student.supervisor_id,
+            Supervisor.full_name, Supervisor.supervisor_department, Supervisor.faculty,
+        )
+        .join(Student, Student.id == SupervisorRequest.student_id)
+        .join(Supervisor, Supervisor.id == SupervisorRequest.supervisor_id)
+        .order_by(SupervisorRequest.requested_at.desc())
+    )
+    if status_filter and status_filter != "all":
+        query = query.where(SupervisorRequest.status == status_filter)
+    own_faculty = scoped_faculty(current_user, None)
+    if own_faculty is not None:
+        query = query.where(Student.faculty == own_faculty)
+
+    res, total = await paginate_query(db, query, page_params.page, page_params.page_size)
+    items = [
+        {
+            "id": r.id,
+            "student_id": r.student_id,
+            "student_name": s_name,
+            "hemis_id": s_hemis,
+            "faculty": s_faculty,
+            "group_name": s_group,
+            "student_has_supervisor": bool(s_sup_id),
+            "supervisor_id": r.supervisor_id,
+            "supervisor_name": sup_name,
+            "supervisor_department": sup_dept or sup_faculty,
+            "research_topic": r.research_topic,
+            "status": r.status,
+            "rejection_reason": r.rejection_reason,
+            "requested_at": r.requested_at,
+            "decided_at": r.decided_at,
+        }
+        for r, s_name, s_hemis, s_faculty, s_group, s_sup_id, sup_name, sup_dept, sup_faculty in res.all()
+    ]
+    return {
+        "items": items,
+        "total": total,
+        "page": page_params.page,
+        "page_size": page_params.page_size,
+        "total_pages": total_pages(total, page_params.page_size),
+    }
 
 
 @router.get("/incoming")

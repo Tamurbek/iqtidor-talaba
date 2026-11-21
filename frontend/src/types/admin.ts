@@ -350,6 +350,27 @@ export interface IncomingSupervisorRequest {
 
 export interface IncomingSupervisorRequestListResponse extends PaginatedResponse<IncomingSupervisorRequest> {}
 
+// GET /supervisor-requests/all
+export interface AdminSupervisorRequest {
+  id: number
+  student_id: number
+  student_name: string
+  hemis_id: string
+  faculty: string | null
+  group_name: string | null
+  student_has_supervisor: boolean
+  supervisor_id: number
+  supervisor_name: string
+  supervisor_department: string | null
+  research_topic: string | null
+  status: 'pending' | 'accepted' | 'rejected' | 'cancelled'
+  rejection_reason: string | null
+  requested_at: string
+  decided_at: string | null
+}
+
+export interface AdminSupervisorRequestListResponse extends PaginatedResponse<AdminSupervisorRequest> {}
+
 // GET /tutor/students
 export interface TutorStudent {
   id: number
