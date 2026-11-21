@@ -43,7 +43,7 @@ Ushbu loyiha O'zbekiston Milliy universiteti Jizzax filiali **"Iqtidorli talabal
    - Yutuq yoki sertifikat yuklash formasi
 
 5. **API Hujjatlari**:
-   - Swagger UI: `http://localhost:8000/api/docs` (serverda: `https://jbnuu.uz/iqtidorli-talaba/api/docs`)
+   - Swagger UI: `http://localhost:8000/api/docs` (faqat `ENABLE_API_DOCS=true` bo'lsa; productionda o'chiq)
    - ReDoc: `http://localhost:8000/api/redoc`
 
 ---

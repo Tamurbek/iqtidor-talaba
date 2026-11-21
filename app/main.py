@@ -54,11 +54,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     lifespan=lifespan,
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    docs_url="/api/docs" if settings.ENABLE_API_DOCS else None,
+    redoc_url="/api/redoc" if settings.ENABLE_API_DOCS else None,
     # /api ostida bo'lishi kerak: subpath deploymentda nginx faqat /api va /static ni
     # backendga yuboradi, /openapi.json esa frontendga tushib qolardi.
-    openapi_url="/api/openapi.json",
+    openapi_url="/api/openapi.json" if settings.ENABLE_API_DOCS else None,
 )
 
 # Global Security Headers Middleware (+ Nizom 26-modda: o'zgartiruvchi so'rovlar audit jurnali)

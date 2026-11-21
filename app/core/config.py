@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # Demo/test ma'lumotlarini seed qilish - productionda HECH QACHON yoqilmasin
     SEED_DEMO_DATA: bool = os.getenv("SEED_DEMO_DATA", "false").lower() == "true"
 
+    # Swagger/ReDoc/OpenAPI - productionda o'chiq; lokalda ENABLE_API_DOCS=true
+    ENABLE_API_DOCS: bool = os.getenv("ENABLE_API_DOCS", "false").lower() == "true"
+
     # Birinchi admin: ikkalasi berilsa va bunday login bazada bo'lmasa, startda yaratiladi
     ADMIN_LOGIN: str = os.getenv("ADMIN_LOGIN", "")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
